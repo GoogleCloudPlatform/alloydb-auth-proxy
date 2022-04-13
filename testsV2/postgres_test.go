@@ -21,8 +21,8 @@ import (
 	"os"
 	"testing"
 
-	_ "github.com/GoogleCloudPlatform/cloudsql-proxy/v2/proxy/dialers/postgres"
-	_ "github.com/lib/pq"
+	"cloud.google.com/go/cloudsqlconn"
+	"cloud.google.com/go/cloudsqlconn/postgres/pgxv4"
 )
 
 var (
@@ -53,8 +53,15 @@ func TestPostgresTCP(t *testing.T) {
 	}
 	requirePostgresVars(t)
 
-	dsn := fmt.Sprintf("user=%s password=%s database=%s sslmode=disable", *postgresUser, *postgresPass, *postgresDB)
-	proxyConnTest(t, []string{*postgresConnName}, "postgres", dsn)
+	cleanup, err := pgxv4.RegisterDriver("postgres1")
+	if err != nil {
+		t.Fatalf("failed to register driver: %v", err)
+	}
+	defer cleanup()
+
+	dsn := fmt.Sprintf("host=%v user=%v password=%v database=%v sslmode=disable",
+		*postgresConnName, *postgresUser, *postgresPass, *postgresDB)
+	proxyConnTest(t, []string{*postgresConnName}, "postgres1", dsn)
 }
 
 func TestPostgresAuthWithToken(t *testing.T) {
@@ -62,14 +69,19 @@ func TestPostgresAuthWithToken(t *testing.T) {
 		t.Skip("skipping Postgres integration tests")
 	}
 	requirePostgresVars(t)
-	tok, _, cleanup := removeAuthEnvVar(t)
+	cleanup, err := pgxv4.RegisterDriver("postgres2", cloudsqlconn.WithIAMAuthN())
+	if err != nil {
+		t.Fatalf("failed to register driver: %v", err)
+	}
 	defer cleanup()
+	tok, _, cleanup2 := removeAuthEnvVar(t)
+	defer cleanup2()
 
-	dsn := fmt.Sprintf("user=%s password=%s database=%s sslmode=disable",
-		*postgresUser, *postgresPass, *postgresDB)
+	dsn := fmt.Sprintf("host=%v user=%v password=%v database=%v sslmode=disable",
+		*postgresConnName, *postgresUser, *postgresPass, *postgresDB)
 	proxyConnTest(t,
 		[]string{"--token", tok.AccessToken, *postgresConnName},
-		"postgres", dsn)
+		"postgres2", dsn)
 }
 
 func TestPostgresAuthWithCredentialsFile(t *testing.T) {
@@ -77,12 +89,17 @@ func TestPostgresAuthWithCredentialsFile(t *testing.T) {
 		t.Skip("skipping Postgres integration tests")
 	}
 	requirePostgresVars(t)
-	_, path, cleanup := removeAuthEnvVar(t)
+	cleanup, err := pgxv4.RegisterDriver("postgres3", cloudsqlconn.WithIAMAuthN())
+	if err != nil {
+		t.Fatalf("failed to register driver: %v", err)
+	}
 	defer cleanup()
+	_, path, cleanup2 := removeAuthEnvVar(t)
+	defer cleanup2()
 
-	dsn := fmt.Sprintf("user=%s password=%s database=%s sslmode=disable",
-		*postgresUser, *postgresPass, *postgresDB)
+	dsn := fmt.Sprintf("host=%v user=%v password=%v database=%v sslmode=disable",
+		*postgresConnName, *postgresUser, *postgresPass, *postgresDB)
 	proxyConnTest(t,
 		[]string{"--credentials-file", path, *postgresConnName},
-		"postgres", dsn)
+		"postgres3", dsn)
 }
