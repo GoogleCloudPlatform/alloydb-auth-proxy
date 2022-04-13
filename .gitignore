@@ -1,0 +1,14 @@
+# direnv
+.envrc
+
+# IDEs
+.idea/
+.vscode/
+
+# Compiled binary
+/cmd/cloud_sql_proxy/cloud_sql_proxy
+/cloud_sql_proxy
+# v2 binary
+/cloudsql-proxy
+
+/key.json
