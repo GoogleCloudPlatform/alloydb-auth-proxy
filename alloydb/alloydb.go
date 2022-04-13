@@ -12,23 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package cloudsql
+package alloydb
 
 import (
 	"context"
 	"io"
 	"net"
 
-	"cloud.google.com/go/cloudsqlconn"
+	"cloud.google.com/go/alloydbconn"
 )
 
-// Dialer dials a Cloud SQL instance and returns its database engine version.
+// Dialer dials an AlloyDB instance.
 type Dialer interface {
 	// Dial returns a connection to the specified instance.
-	Dial(ctx context.Context, inst string, opts ...cloudsqlconn.DialOption) (net.Conn, error)
-	// EngineVersion retrieves the provided instance's database version (e.g.,
-	// POSTGRES_14)
-	EngineVersion(ctx context.Context, inst string) (string, error)
+	Dial(ctx context.Context, inst string, opts ...alloydbconn.DialOption) (net.Conn, error)
 
 	io.Closer
 }

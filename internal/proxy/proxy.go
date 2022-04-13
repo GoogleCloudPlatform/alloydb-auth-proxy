@@ -19,12 +19,11 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"strings"
 	"sync"
 	"time"
 
-	"cloud.google.com/go/cloudsqlconn"
-	"github.com/GoogleCloudPlatform/cloudsql-proxy/v2/cloudsql"
+	"cloud.google.com/go/alloydbconn"
+	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/alloydb"
 	"github.com/spf13/cobra"
 	"golang.org/x/oauth2"
 )
@@ -59,20 +58,20 @@ type Config struct {
 	// configuration takes precedence over global configuration.
 	Instances []InstanceConnConfig
 
-	// Dialer specifies the dialer to use when connecting to Cloud SQL
+	// Dialer specifies the dialer to use when connecting to AlloyDB
 	// instances.
-	Dialer cloudsql.Dialer
+	Dialer alloydb.Dialer
 }
 
-func (c *Config) DialerOpts() []cloudsqlconn.Option {
-	var opts []cloudsqlconn.Option
+func (c *Config) DialerOpts() []alloydbconn.Option {
+	var opts []alloydbconn.Option
 	switch {
 	case c.Token != "":
-		opts = append(opts, cloudsqlconn.WithTokenSource(
+		opts = append(opts, alloydbconn.WithTokenSource(
 			oauth2.StaticTokenSource(&oauth2.Token{AccessToken: c.Token}),
 		))
 	case c.CredentialsFile != "":
-		opts = append(opts, cloudsqlconn.WithCredentialsFile(
+		opts = append(opts, alloydbconn.WithCredentialsFile(
 			c.CredentialsFile,
 		))
 	}
@@ -80,18 +79,12 @@ func (c *Config) DialerOpts() []cloudsqlconn.Option {
 }
 
 type portConfig struct {
-	global    int
-	postgres  int
-	mysql     int
-	sqlserver int
+	global int
 }
 
 func newPortConfig(global int) *portConfig {
 	return &portConfig{
-		global:    global,
-		postgres:  5432,
-		mysql:     3306,
-		sqlserver: 1433,
+		global: global,
 	}
 }
 
@@ -102,44 +95,18 @@ func (c *portConfig) nextPort() int {
 	return p
 }
 
-func (c *portConfig) nextDBPort(version string) int {
-	switch {
-	case strings.HasPrefix(version, "MYSQL"):
-		p := c.mysql
-		c.mysql++
-		return p
-	case strings.HasPrefix(version, "POSTGRES"):
-		p := c.postgres
-		c.postgres++
-		return p
-	case strings.HasPrefix(version, "SQLSERVER"):
-		p := c.sqlserver
-		c.sqlserver++
-		return p
-	default:
-		// Unexpected engine version, use global port setting instead.
-		return c.nextPort()
-	}
-}
-
 // Client represents the state of the current instantiation of the proxy.
 type Client struct {
 	cmd    *cobra.Command
-	dialer cloudsql.Dialer
+	dialer alloydb.Dialer
 
 	// mnts is a list of all mounted sockets for this client
 	mnts []*socketMount
 }
 
 // NewClient completes the initial setup required to get the proxy to a "steady" state.
-func NewClient(ctx context.Context, d cloudsql.Dialer, cmd *cobra.Command, conf *Config) (*Client, error) {
+func NewClient(ctx context.Context, d alloydb.Dialer, cmd *cobra.Command, conf *Config) (*Client, error) {
 	var mnts []*socketMount
-	for _, inst := range conf.Instances {
-		go func(name string) {
-			// Initiate refresh operation
-			d.EngineVersion(ctx, name)
-		}(inst.Name)
-	}
 	pc := newPortConfig(conf.Port)
 	for _, inst := range conf.Instances {
 		m := &socketMount{inst: inst.Name}
@@ -147,18 +114,12 @@ func NewClient(ctx context.Context, d cloudsql.Dialer, cmd *cobra.Command, conf 
 		if inst.Addr != "" {
 			a = inst.Addr
 		}
-		version, err := d.EngineVersion(ctx, inst.Name)
-		if err != nil {
-			return nil, err
-		}
 		var np int
 		switch {
 		case inst.Port != 0:
 			np = inst.Port
-		case conf.Port != 0:
+		default: // use next increment from conf.Port
 			np = pc.nextPort()
-		default:
-			np = pc.nextDBPort(version)
 		}
 		addr, err := m.listen(ctx, "tcp", net.JoinHostPort(a, fmt.Sprint(np)))
 		if err != nil {
@@ -207,7 +168,7 @@ func (c *Client) Close() {
 }
 
 // serveSocketMount persistently listens to the socketMounts listener and proxies connections to a
-// given Cloud SQL instance.
+// given AlloyDB instance.
 func (c *Client) serveSocketMount(ctx context.Context, s *socketMount) error {
 	if s.listener == nil {
 		return fmt.Errorf("[%s] mount doesn't have a listener set", s.inst)
@@ -242,7 +203,7 @@ func (c *Client) serveSocketMount(ctx context.Context, s *socketMount) error {
 	}
 }
 
-// socketMount is a tcp/unix socket that listens for a Cloud SQL instance.
+// socketMount is a tcp/unix socket that listens for an AlloyDB instance.
 type socketMount struct {
 	inst     string
 	listener net.Listener

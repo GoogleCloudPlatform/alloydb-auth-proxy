@@ -22,8 +22,8 @@ import (
 	"testing"
 	"time"
 
-	"cloud.google.com/go/cloudsqlconn"
-	"github.com/GoogleCloudPlatform/cloudsql-proxy/v2/internal/proxy"
+	"cloud.google.com/go/alloydbconn"
+	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/proxy"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/spf13/cobra"
@@ -240,15 +240,11 @@ func (s *spyDialer) instance() string {
 	return i
 }
 
-func (*spyDialer) Dial(_ context.Context, inst string, _ ...cloudsqlconn.DialOption) (net.Conn, error) {
-	return nil, errors.New("spy dialer does not dial")
-}
-
-func (s *spyDialer) EngineVersion(ctx context.Context, inst string) (string, error) {
+func (s *spyDialer) Dial(_ context.Context, inst string, _ ...alloydbconn.DialOption) (net.Conn, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.got = inst
-	return "", nil
+	return nil, errors.New("spy dialer does not dial")
 }
 
 func (*spyDialer) Close() error {

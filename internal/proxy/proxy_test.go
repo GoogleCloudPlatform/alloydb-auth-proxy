@@ -17,43 +17,16 @@ package proxy_test
 import (
 	"context"
 	"net"
-	"strings"
 	"testing"
 
-	"github.com/GoogleCloudPlatform/cloudsql-proxy/v2/cloudsql"
-	"github.com/GoogleCloudPlatform/cloudsql-proxy/v2/internal/proxy"
+	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/proxy"
 	"github.com/spf13/cobra"
 )
-
-type fakeDialer struct {
-	cloudsql.Dialer
-}
-
-func (fakeDialer) Close() error {
-	return nil
-}
-
-func (fakeDialer) EngineVersion(_ context.Context, inst string) (string, error) {
-	switch {
-	case strings.Contains(inst, "pg"):
-		return "POSTGRES_14", nil
-	case strings.Contains(inst, "mysql"):
-		return "MYSQL_8_0", nil
-	case strings.Contains(inst, "sqlserver"):
-		return "SQLSERVER_2019_STANDARD", nil
-	default:
-		return "POSTGRES_14", nil
-	}
-}
 
 func TestClientInitialization(t *testing.T) {
 	ctx := context.Background()
 	pg := "proj:region:pg"
 	pg2 := "proj:region:pg2"
-	mysql := "proj:region:mysql"
-	mysql2 := "proj:region:mysql2"
-	sqlserver := "proj:region:sqlserver"
-	sqlserver2 := "proj:region:sqlserver2"
 
 	tcs := []struct {
 		desc      string
@@ -67,11 +40,10 @@ func TestClientInitialization(t *testing.T) {
 				Port: 5000,
 				Instances: []proxy.InstanceConnConfig{
 					{Name: pg},
-					{Name: mysql},
-					{Name: sqlserver},
+					{Name: pg2},
 				},
 			},
-			wantAddrs: []string{"127.0.0.1:5000", "127.0.0.1:5001", "127.0.0.1:5002"},
+			wantAddrs: []string{"127.0.0.1:5000", "127.0.0.1:5001"},
 		},
 		{
 			desc: "with instance address",
@@ -113,14 +85,12 @@ func TestClientInitialization(t *testing.T) {
 				Port: 5000,
 				Instances: []proxy.InstanceConnConfig{
 					{Name: pg},
-					{Name: mysql, Port: 6000},
-					{Name: sqlserver},
+					{Name: pg2, Port: 6000},
 				},
 			},
 			wantAddrs: []string{
 				"127.0.0.1:5000",
 				"127.0.0.1:6000",
-				"127.0.0.1:5001",
 			},
 		},
 		{
@@ -130,26 +100,18 @@ func TestClientInitialization(t *testing.T) {
 				Instances: []proxy.InstanceConnConfig{
 					{Name: pg},
 					{Name: pg2},
-					{Name: mysql},
-					{Name: mysql2},
-					{Name: sqlserver},
-					{Name: sqlserver2},
 				},
 			},
 			wantAddrs: []string{
 				"127.0.0.1:5432",
 				"127.0.0.1:5433",
-				"127.0.0.1:3306",
-				"127.0.0.1:3307",
-				"127.0.0.1:1433",
-				"127.0.0.1:1434",
 			},
 		},
 	}
 
 	for _, tc := range tcs {
 		t.Run(tc.desc, func(t *testing.T) {
-			c, err := proxy.NewClient(ctx, fakeDialer{}, &cobra.Command{}, tc.in)
+			c, err := proxy.NewClient(ctx, nil, &cobra.Command{}, tc.in)
 			if err != nil {
 				t.Fatalf("want error = nil, got = %v", err)
 			}

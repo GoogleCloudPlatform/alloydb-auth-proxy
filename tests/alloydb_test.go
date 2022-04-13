@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// postgres_test runs various tests against a Postgres flavored Cloud SQL instance.
 package tests
 
 import (
@@ -21,29 +20,26 @@ import (
 	"os"
 	"testing"
 
-	"cloud.google.com/go/cloudsqlconn"
-	"cloud.google.com/go/cloudsqlconn/postgres/pgxv4"
+	"cloud.google.com/go/alloydbconn/driver/pgxv4"
 )
 
 var (
-	postgresConnName = flag.String("postgres_conn_name", os.Getenv("POSTGRES_CONNECTION_NAME"), "Cloud SQL Postgres instance connection name, in the form of 'project:region:instance'.")
-	postgresUser     = flag.String("postgres_user", os.Getenv("POSTGRES_USER"), "Name of database user.")
-	postgresPass     = flag.String("postgres_pass", os.Getenv("POSTGRES_PASS"), "Password for the database user; be careful when entering a password on the command line (it may go into your terminal's history).")
-	postgresDB       = flag.String("postgres_db", os.Getenv("POSTGRES_DB"), "Name of the database to connect to.")
-
-	postgresIAMUser = flag.String("postgres_user_iam", os.Getenv("POSTGRES_USER_IAM"), "Name of database user configured with IAM DB Authentication.")
+	alloydbConnName = flag.String("alloydb_conn_name", os.Getenv("ALLOYDB_CONNECTION_NAME"), "AlloyDB instance connection name, in the form of 'project:region:instance'.")
+	alloydbUser     = flag.String("alloydb_user", os.Getenv("ALLOYDB_USER"), "Name of database user.")
+	alloydbPass     = flag.String("alloydb_pass", os.Getenv("ALLOYDB_PASS"), "Password for the database user; be careful when entering a password on the command line (it may go into your terminal's history).")
+	alloydbDB       = flag.String("alloydb_db", os.Getenv("ALLOYDB_DB"), "Name of the database to connect to.")
 )
 
 func requirePostgresVars(t *testing.T) {
 	switch "" {
-	case *postgresConnName:
-		t.Fatal("'postgres_conn_name' not set")
-	case *postgresUser:
-		t.Fatal("'postgres_user' not set")
-	case *postgresPass:
-		t.Fatal("'postgres_pass' not set")
-	case *postgresDB:
-		t.Fatal("'postgres_db' not set")
+	case *alloydbConnName:
+		t.Fatal("'alloydb_conn_name' not set")
+	case *alloydbUser:
+		t.Fatal("'alloydb_user' not set")
+	case *alloydbPass:
+		t.Fatal("'alloydb_pass' not set")
+	case *alloydbDB:
+		t.Fatal("'alloydb_db' not set")
 	}
 }
 
@@ -53,15 +49,15 @@ func TestPostgresTCP(t *testing.T) {
 	}
 	requirePostgresVars(t)
 
-	cleanup, err := pgxv4.RegisterDriver("postgres1")
+	cleanup, err := pgxv4.RegisterDriver("alloydb1")
 	if err != nil {
 		t.Fatalf("failed to register driver: %v", err)
 	}
 	defer cleanup()
 
 	dsn := fmt.Sprintf("host=%v user=%v password=%v database=%v sslmode=disable",
-		*postgresConnName, *postgresUser, *postgresPass, *postgresDB)
-	proxyConnTest(t, []string{*postgresConnName}, "postgres1", dsn)
+		*alloydbConnName, *alloydbUser, *alloydbPass, *alloydbDB)
+	proxyConnTest(t, []string{*alloydbConnName}, "alloydb1", dsn)
 }
 
 func TestPostgresAuthWithToken(t *testing.T) {
@@ -69,7 +65,7 @@ func TestPostgresAuthWithToken(t *testing.T) {
 		t.Skip("skipping Postgres integration tests")
 	}
 	requirePostgresVars(t)
-	cleanup, err := pgxv4.RegisterDriver("postgres2", cloudsqlconn.WithIAMAuthN())
+	cleanup, err := pgxv4.RegisterDriver("alloydb2")
 	if err != nil {
 		t.Fatalf("failed to register driver: %v", err)
 	}
@@ -78,10 +74,10 @@ func TestPostgresAuthWithToken(t *testing.T) {
 	defer cleanup2()
 
 	dsn := fmt.Sprintf("host=%v user=%v password=%v database=%v sslmode=disable",
-		*postgresConnName, *postgresUser, *postgresPass, *postgresDB)
+		*alloydbConnName, *alloydbUser, *alloydbPass, *alloydbDB)
 	proxyConnTest(t,
-		[]string{"--token", tok.AccessToken, *postgresConnName},
-		"postgres2", dsn)
+		[]string{"--token", tok.AccessToken, *alloydbConnName},
+		"alloydb2", dsn)
 }
 
 func TestPostgresAuthWithCredentialsFile(t *testing.T) {
@@ -89,7 +85,7 @@ func TestPostgresAuthWithCredentialsFile(t *testing.T) {
 		t.Skip("skipping Postgres integration tests")
 	}
 	requirePostgresVars(t)
-	cleanup, err := pgxv4.RegisterDriver("postgres3", cloudsqlconn.WithIAMAuthN())
+	cleanup, err := pgxv4.RegisterDriver("alloydb3")
 	if err != nil {
 		t.Fatalf("failed to register driver: %v", err)
 	}
@@ -98,8 +94,8 @@ func TestPostgresAuthWithCredentialsFile(t *testing.T) {
 	defer cleanup2()
 
 	dsn := fmt.Sprintf("host=%v user=%v password=%v database=%v sslmode=disable",
-		*postgresConnName, *postgresUser, *postgresPass, *postgresDB)
+		*alloydbConnName, *alloydbUser, *alloydbPass, *alloydbDB)
 	proxyConnTest(t,
-		[]string{"--credentials-file", path, *postgresConnName},
-		"postgres3", dsn)
+		[]string{"--credentials-file", path, *alloydbConnName},
+		"alloydb3", dsn)
 }

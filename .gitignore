@@ -6,9 +6,6 @@
 .vscode/
 
 # Compiled binary
-/cmd/cloud_sql_proxy/cloud_sql_proxy
-/cloud_sql_proxy
-# v2 binary
-/cloudsql-proxy
+/alloydb-auth-proxy
 
 /key.json

@@ -12,11 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package tests contains end to end tests meant to verify the Cloud SQL Auth proxy
-// works as expected when executed as a binary.
-//
-// Required flags:
-//    -mysql_conn_name, -db_user, -db_pass
+// Package tests contains end to end tests meant to verify the AlloyDB Auth
+// proxy works as expected when executed as a binary.
 package tests
 
 import (
@@ -28,10 +25,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/GoogleCloudPlatform/cloudsql-proxy/v2/cmd"
+	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/cmd"
 )
 
-// proxyExec represents an execution of the Cloud SQL proxy.
+// proxyExec represents an execution of the AlloyDB proxy.
 type proxyExec struct {
 	Out io.ReadCloser
 
