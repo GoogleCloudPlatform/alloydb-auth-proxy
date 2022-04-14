@@ -27,9 +27,9 @@ import (
 	"strings"
 	"syscall"
 
-	"cloud.google.com/go/cloudsqlconn"
-	"github.com/GoogleCloudPlatform/cloudsql-proxy/v2/cloudsql"
-	"github.com/GoogleCloudPlatform/cloudsql-proxy/v2/internal/proxy"
+	"cloud.google.com/go/alloydbconn"
+	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/alloydb"
+	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/proxy"
 	"github.com/spf13/cobra"
 )
 
@@ -42,7 +42,7 @@ var (
 
 func init() {
 	versionString = strings.TrimSpace(versionString)
-	userAgent = "cloud-sql-auth-proxy/" + versionString
+	userAgent = "alloy-db-auth-proxy/" + versionString
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -57,7 +57,7 @@ func Execute() {
 	}
 }
 
-// Command represents an invocation of the Cloud SQL Auth Proxy.
+// Command represents an invocation of the AlloyDB Auth Proxy.
 type Command struct {
 	*cobra.Command
 	conf *proxy.Config
@@ -67,8 +67,8 @@ type Command struct {
 type Option func(*proxy.Config)
 
 // WithDialer configures the Command to use the provided dialer to connect to
-// Cloud SQL instances.
-func WithDialer(d cloudsql.Dialer) Option {
+// AlloyDB instances.
+func WithDialer(d alloydb.Dialer) Option {
 	return func(c *proxy.Config) {
 		c.Dialer = d
 	}
@@ -84,13 +84,13 @@ func NewCommand(opts ...Option) *Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:     "cloud_sql_proxy instance_connection_name...",
+		Use:     "alloydb-auth-proxy instance_connection_name...",
 		Version: versionString,
-		Short:   "cloud_sql_proxy provides a secure way to authorize connections to Cloud SQL.",
-		Long: `The Cloud SQL Auth proxy provides IAM-based authorization and encryption when
-connecting to Cloud SQL instances. It listens on a local port and forwards connections
-to your instance's IP address, providing a secure connection without having to manage
-any client SSL certificates.`,
+		Short:   "alloydb-auth-proxy provides a secure way to authorize connections to AlloyDB.",
+		Long: `The AlloyDB Auth proxy provides IAM-based authorization and encryption when
+connecting to AlloyDB instances. It listens on a local port and forwards
+connections to your instance's IP address, providing a secure connection
+without having to manage any client SSL certificates.`,
 		Args: func(cmd *cobra.Command, args []string) error {
 			err := parseConfig(cmd, c.conf, args)
 			if err != nil {
@@ -113,8 +113,8 @@ any client SSL certificates.`,
 
 	// Global and per instance flags
 	cmd.PersistentFlags().StringVarP(&c.conf.Addr, "address", "a", "127.0.0.1",
-		"Address on which to bind Cloud SQL instance listeners.")
-	cmd.PersistentFlags().IntVarP(&c.conf.Port, "port", "p", 0,
+		"Address on which to bind AlloyDB instance listeners.")
+	cmd.PersistentFlags().IntVarP(&c.conf.Port, "port", "p", 5432,
 		"Initial port to use for listeners. Subsequent listeners increment from this value.")
 
 	c.Command = cmd
@@ -142,7 +142,7 @@ func parseConfig(cmd *cobra.Command, conf *proxy.Config, args []string) error {
 	case conf.CredentialsFile != "":
 		cmd.Printf("Authorizing with the credentials file at %q\n", conf.CredentialsFile)
 	default:
-		cmd.Printf("Authorizing with Application Default Credentials")
+		cmd.Println("Authorizing with Application Default Credentials")
 	}
 
 	var ics []proxy.InstanceConnConfig
@@ -227,9 +227,9 @@ func runSignalWrapper(cmd *Command) error {
 		// Otherwise, initialize a new one.
 		d := cmd.conf.Dialer
 		if d == nil {
-			opts := append(cmd.conf.DialerOpts(), cloudsqlconn.WithUserAgent(userAgent))
+			opts := append(cmd.conf.DialerOpts(), alloydbconn.WithUserAgent(userAgent))
 			var err error
-			d, err = cloudsqlconn.NewDialer(ctx, opts...)
+			d, err = alloydbconn.NewDialer(ctx, opts...)
 			if err != nil {
 				shutdownCh <- fmt.Errorf("error initializing dialer: %v", err)
 				return

@@ -17,43 +17,27 @@ package proxy_test
 import (
 	"context"
 	"net"
-	"strings"
 	"testing"
 
-	"github.com/GoogleCloudPlatform/cloudsql-proxy/v2/cloudsql"
-	"github.com/GoogleCloudPlatform/cloudsql-proxy/v2/internal/proxy"
+	"cloud.google.com/go/alloydbconn"
+	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/proxy"
 	"github.com/spf13/cobra"
 )
 
-type fakeDialer struct {
-	cloudsql.Dialer
+type fakeDialer struct{}
+
+func (fakeDialer) Dial(ctx context.Context, inst string, opts ...alloydbconn.DialOption) (net.Conn, error) {
+	return nil, nil
 }
 
 func (fakeDialer) Close() error {
 	return nil
 }
 
-func (fakeDialer) EngineVersion(_ context.Context, inst string) (string, error) {
-	switch {
-	case strings.Contains(inst, "pg"):
-		return "POSTGRES_14", nil
-	case strings.Contains(inst, "mysql"):
-		return "MYSQL_8_0", nil
-	case strings.Contains(inst, "sqlserver"):
-		return "SQLSERVER_2019_STANDARD", nil
-	default:
-		return "POSTGRES_14", nil
-	}
-}
-
 func TestClientInitialization(t *testing.T) {
 	ctx := context.Background()
-	pg := "proj:region:pg"
-	pg2 := "proj:region:pg2"
-	mysql := "proj:region:mysql"
-	mysql2 := "proj:region:mysql2"
-	sqlserver := "proj:region:sqlserver"
-	sqlserver2 := "proj:region:sqlserver2"
+	cluster1 := "proj:region:cluster:instance1"
+	cluster2 := "proj:region:cluster:instance2"
 
 	tcs := []struct {
 		desc      string
@@ -66,12 +50,11 @@ func TestClientInitialization(t *testing.T) {
 				Addr: "127.0.0.1",
 				Port: 5000,
 				Instances: []proxy.InstanceConnConfig{
-					{Name: pg},
-					{Name: mysql},
-					{Name: sqlserver},
+					{Name: cluster1},
+					{Name: cluster2},
 				},
 			},
-			wantAddrs: []string{"127.0.0.1:5000", "127.0.0.1:5001", "127.0.0.1:5002"},
+			wantAddrs: []string{"127.0.0.1:5000", "127.0.0.1:5001"},
 		},
 		{
 			desc: "with instance address",
@@ -79,7 +62,7 @@ func TestClientInitialization(t *testing.T) {
 				Addr: "1.1.1.1", // bad address, binding shouldn't happen here.
 				Port: 5000,
 				Instances: []proxy.InstanceConnConfig{
-					{Addr: "0.0.0.0", Name: pg},
+					{Addr: "0.0.0.0", Name: cluster1},
 				},
 			},
 			wantAddrs: []string{"0.0.0.0:5000"},
@@ -90,7 +73,7 @@ func TestClientInitialization(t *testing.T) {
 				Addr: "::1",
 				Port: 5000,
 				Instances: []proxy.InstanceConnConfig{
-					{Name: pg},
+					{Name: cluster1},
 				},
 			},
 			wantAddrs: []string{"[::1]:5000"},
@@ -101,7 +84,7 @@ func TestClientInitialization(t *testing.T) {
 				Addr: "127.0.0.1",
 				Port: 5000,
 				Instances: []proxy.InstanceConnConfig{
-					{Name: pg, Port: 6000},
+					{Name: cluster1, Port: 6000},
 				},
 			},
 			wantAddrs: []string{"127.0.0.1:6000"},
@@ -112,37 +95,28 @@ func TestClientInitialization(t *testing.T) {
 				Addr: "127.0.0.1",
 				Port: 5000,
 				Instances: []proxy.InstanceConnConfig{
-					{Name: pg},
-					{Name: mysql, Port: 6000},
-					{Name: sqlserver},
+					{Name: cluster1},
+					{Name: cluster2, Port: 6000},
 				},
 			},
 			wantAddrs: []string{
 				"127.0.0.1:5000",
 				"127.0.0.1:6000",
-				"127.0.0.1:5001",
 			},
 		},
 		{
 			desc: "with incrementing automatic port selection",
 			in: &proxy.Config{
 				Addr: "127.0.0.1",
+				Port: 5432, // default port
 				Instances: []proxy.InstanceConnConfig{
-					{Name: pg},
-					{Name: pg2},
-					{Name: mysql},
-					{Name: mysql2},
-					{Name: sqlserver},
-					{Name: sqlserver2},
+					{Name: cluster1},
+					{Name: cluster2},
 				},
 			},
 			wantAddrs: []string{
 				"127.0.0.1:5432",
 				"127.0.0.1:5433",
-				"127.0.0.1:3306",
-				"127.0.0.1:3307",
-				"127.0.0.1:1433",
-				"127.0.0.1:1434",
 			},
 		},
 	}
