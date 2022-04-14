@@ -114,7 +114,7 @@ without having to manage any client SSL certificates.`,
 	// Global and per instance flags
 	cmd.PersistentFlags().StringVarP(&c.conf.Addr, "address", "a", "127.0.0.1",
 		"Address on which to bind AlloyDB instance listeners.")
-	cmd.PersistentFlags().IntVarP(&c.conf.Port, "port", "p", 0,
+	cmd.PersistentFlags().IntVarP(&c.conf.Port, "port", "p", 5432,
 		"Initial port to use for listeners. Subsequent listeners increment from this value.")
 
 	c.Command = cmd

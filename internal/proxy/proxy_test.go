@@ -19,14 +19,25 @@ import (
 	"net"
 	"testing"
 
+	"cloud.google.com/go/alloydbconn"
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/proxy"
 	"github.com/spf13/cobra"
 )
 
+type fakeDialer struct{}
+
+func (fakeDialer) Dial(ctx context.Context, inst string, opts ...alloydbconn.DialOption) (net.Conn, error) {
+	return nil, nil
+}
+
+func (fakeDialer) Close() error {
+	return nil
+}
+
 func TestClientInitialization(t *testing.T) {
 	ctx := context.Background()
-	pg := "proj:region:pg"
-	pg2 := "proj:region:pg2"
+	cluster1 := "proj:region:cluster:instance1"
+	cluster2 := "proj:region:cluster:instance2"
 
 	tcs := []struct {
 		desc      string
@@ -39,8 +50,8 @@ func TestClientInitialization(t *testing.T) {
 				Addr: "127.0.0.1",
 				Port: 5000,
 				Instances: []proxy.InstanceConnConfig{
-					{Name: pg},
-					{Name: pg2},
+					{Name: cluster1},
+					{Name: cluster2},
 				},
 			},
 			wantAddrs: []string{"127.0.0.1:5000", "127.0.0.1:5001"},
@@ -51,7 +62,7 @@ func TestClientInitialization(t *testing.T) {
 				Addr: "1.1.1.1", // bad address, binding shouldn't happen here.
 				Port: 5000,
 				Instances: []proxy.InstanceConnConfig{
-					{Addr: "0.0.0.0", Name: pg},
+					{Addr: "0.0.0.0", Name: cluster1},
 				},
 			},
 			wantAddrs: []string{"0.0.0.0:5000"},
@@ -62,7 +73,7 @@ func TestClientInitialization(t *testing.T) {
 				Addr: "::1",
 				Port: 5000,
 				Instances: []proxy.InstanceConnConfig{
-					{Name: pg},
+					{Name: cluster1},
 				},
 			},
 			wantAddrs: []string{"[::1]:5000"},
@@ -73,7 +84,7 @@ func TestClientInitialization(t *testing.T) {
 				Addr: "127.0.0.1",
 				Port: 5000,
 				Instances: []proxy.InstanceConnConfig{
-					{Name: pg, Port: 6000},
+					{Name: cluster1, Port: 6000},
 				},
 			},
 			wantAddrs: []string{"127.0.0.1:6000"},
@@ -84,8 +95,8 @@ func TestClientInitialization(t *testing.T) {
 				Addr: "127.0.0.1",
 				Port: 5000,
 				Instances: []proxy.InstanceConnConfig{
-					{Name: pg},
-					{Name: pg2, Port: 6000},
+					{Name: cluster1},
+					{Name: cluster2, Port: 6000},
 				},
 			},
 			wantAddrs: []string{
@@ -97,9 +108,10 @@ func TestClientInitialization(t *testing.T) {
 			desc: "with incrementing automatic port selection",
 			in: &proxy.Config{
 				Addr: "127.0.0.1",
+				Port: 5432, // default port
 				Instances: []proxy.InstanceConnConfig{
-					{Name: pg},
-					{Name: pg2},
+					{Name: cluster1},
+					{Name: cluster2},
 				},
 			},
 			wantAddrs: []string{
@@ -111,7 +123,7 @@ func TestClientInitialization(t *testing.T) {
 
 	for _, tc := range tcs {
 		t.Run(tc.desc, func(t *testing.T) {
-			c, err := proxy.NewClient(ctx, nil, &cobra.Command{}, tc.in)
+			c, err := proxy.NewClient(ctx, fakeDialer{}, &cobra.Command{}, tc.in)
 			if err != nil {
 				t.Fatalf("want error = nil, got = %v", err)
 			}

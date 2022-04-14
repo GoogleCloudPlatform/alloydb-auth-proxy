@@ -17,6 +17,7 @@ package cmd
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net"
 	"sync"
 	"testing"
@@ -33,6 +34,9 @@ func TestNewCommandArguments(t *testing.T) {
 	withDefaults := func(c *proxy.Config) *proxy.Config {
 		if c.Addr == "" {
 			c.Addr = "127.0.0.1"
+		}
+		if c.Port == 0 {
+			c.Port = 5432
 		}
 		if c.Instances == nil {
 			c.Instances = []proxy.InstanceConnConfig{{}}
@@ -252,22 +256,58 @@ func (*spyDialer) Close() error {
 }
 
 func TestCommandWithCustomDialer(t *testing.T) {
-	want := "my-project:my-region:my-instance"
+	want := "my-project:my-region:my-cluster:my-instance"
 	s := &spyDialer{}
 	c := NewCommand(WithDialer(s))
 	// Keep the test output quiet
 	c.SilenceUsage = true
 	c.SilenceErrors = true
-	c.SetArgs([]string{want})
+	c.SetArgs([]string{"--port", "10000", want})
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	if err := c.ExecuteContext(ctx); !errors.As(err, &errSigInt) {
-		t.Fatalf("want errSigInt, got = %v", err)
-	}
+	go func() {
+		if err := c.ExecuteContext(ctx); !errors.As(err, &errSigInt) {
+			t.Fatalf("want errSigInt, got = %v", err)
+		}
+	}()
 
-	if got := s.instance(); got != want {
-		t.Fatalf("want = %v, got = %v", want, got)
+	// try will run f count times, returning early if f succeeds, or failing
+	// when count has been exceeded.
+	try := func(f func() error, count int) {
+		var (
+			attempts int
+			err      error
+		)
+		for {
+			if attempts == count {
+				t.Fatal(err)
+			}
+			err = f()
+			if err != nil {
+				attempts++
+				time.Sleep(time.Millisecond)
+				continue
+			}
+			return
+		}
 	}
+	// give the listener some time to start
+	try(func() error {
+		conn, err := net.Dial("tcp", "127.0.0.1:10000")
+		if err != nil {
+			return err
+		}
+		defer conn.Close()
+		return nil
+	}, 10)
+
+	// give the proxy some time to run
+	try(func() error {
+		if got := s.instance(); got != want {
+			return fmt.Errorf("want = %v, got = %v", want, got)
+		}
+		return nil
+	}, 10)
 }
