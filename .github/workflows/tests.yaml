@@ -32,9 +32,12 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: "git@github.com:googlecloudplatform/alloydb-go-connector"
-          path: "../"
+          path: "alloydb-auth-proxy/alloydb-go-connector"
       - name: Checkout code
         uses: actions/checkout@v3
+      - name: Point to local connector
+        run: |
+          go mod edit -replace=cloud.google.com/go/alloydbconn=./alloydb-go-connector
       - name: Run tests
         run: |
           go test -v -race -cover -short ./...
