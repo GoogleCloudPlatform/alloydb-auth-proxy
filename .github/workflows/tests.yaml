@@ -30,6 +30,7 @@ jobs:
           go-version: "1.18"
       - name: Checkout AlloyDB connector # TODO remove this step when the repo is public
         uses: actions/checkout@v3
+        with:
           repository: "git@github.com:googlecloudplatform/alloydb-go-connector"
           path: "../"
       - name: Checkout code
