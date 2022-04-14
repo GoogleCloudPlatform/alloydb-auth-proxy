@@ -23,6 +23,7 @@ jobs:
   build:
     name: "unit tests"
     runs-on: ubuntu-latest
+    environment: "Private Repos"
     steps:
       - name: Setup Go
         uses: actions/setup-go@v3
