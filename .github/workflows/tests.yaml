@@ -35,6 +35,7 @@ jobs:
         with:
           repository: "git@github.com:googlecloudplatform/alloydb-go-connector"
           path: "alloydb-auth-proxy/alloydb-go-connector"
+          token: ${{ secrets.GH_PAT }}
       - name: Point to local connector
         run: |
           go mod edit -replace=cloud.google.com/go/alloydbconn=./alloydb-go-connector
