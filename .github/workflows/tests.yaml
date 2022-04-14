@@ -34,7 +34,7 @@ jobs:
       - name: Checkout AlloyDB connector # TODO remove this step when the repo is public
         uses: actions/checkout@v3
         with:
-          repository: "git@github.com:googlecloudplatform/alloydb-go-connector"
+          repository: "https://github.com/googlecloudplatform/alloydb-go-connector"
           path: "alloydb-auth-proxy/alloydb-go-connector"
           token: ${{ secrets.GH_PAT }}
       - name: Point to local connector
