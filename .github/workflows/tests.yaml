@@ -28,13 +28,13 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: "1.18"
+      - name: Checkout code
+        uses: actions/checkout@v3
       - name: Checkout AlloyDB connector # TODO remove this step when the repo is public
         uses: actions/checkout@v3
         with:
           repository: "git@github.com:googlecloudplatform/alloydb-go-connector"
           path: "alloydb-auth-proxy/alloydb-go-connector"
-      - name: Checkout code
-        uses: actions/checkout@v3
       - name: Point to local connector
         run: |
           go mod edit -replace=cloud.google.com/go/alloydbconn=./alloydb-go-connector
