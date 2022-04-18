@@ -36,8 +36,8 @@ func (fakeDialer) Close() error {
 
 func TestClientInitialization(t *testing.T) {
 	ctx := context.Background()
-	cluster1 := "proj:region:cluster:instance1"
-	cluster2 := "proj:region:cluster:instance2"
+	cluster1 := "/projects/proj/locations/region/clusters/clust/instances/inst1"
+	cluster2 := "/projects/proj/locations/region/clusters/clust/instances/inst2"
 
 	tcs := []struct {
 		desc      string
