@@ -37,12 +37,24 @@ var (
 	// versionString indicates the version of this library.
 	//go:embed version.txt
 	versionString string
-	userAgent     string
+	// metadataString indiciates additional build or distribution metadata.
+	metadataString string
+	userAgent      string
 )
 
 func init() {
-	versionString = strings.TrimSpace(versionString)
+	versionString = semanticVersion()
 	userAgent = "alloy-db-auth-proxy/" + versionString
+}
+
+// semanticVersion returns the version of the proxy including an compile-time
+// metadata.
+func semanticVersion() string {
+	v := strings.TrimSpace(versionString)
+	if metadataString != "" {
+		v += "+" + metadataString
+	}
+	return v
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
