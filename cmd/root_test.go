@@ -42,7 +42,7 @@ func TestNewCommandArguments(t *testing.T) {
 			c.Instances = []proxy.InstanceConnConfig{{}}
 		}
 		if i := &c.Instances[0]; i.Name == "" {
-			i.Name = "proj:region:inst"
+			i.Name = "/projects/proj/locations/region/clusters/clust/instances/inst"
 		}
 		return c
 	}
@@ -53,56 +53,56 @@ func TestNewCommandArguments(t *testing.T) {
 	}{
 		{
 			desc: "basic invocation with defaults",
-			args: []string{"proj:region:inst"},
+			args: []string{"/projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
 				Addr:      "127.0.0.1",
-				Instances: []proxy.InstanceConnConfig{{Name: "proj:region:inst"}},
+				Instances: []proxy.InstanceConnConfig{{Name: "/projects/proj/locations/region/clusters/clust/instances/inst"}},
 			}),
 		},
 		{
 			desc: "using the address flag",
-			args: []string{"--address", "0.0.0.0", "proj:region:inst"},
+			args: []string{"--address", "0.0.0.0", "/projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
 				Addr:      "0.0.0.0",
-				Instances: []proxy.InstanceConnConfig{{Name: "proj:region:inst"}},
+				Instances: []proxy.InstanceConnConfig{{Name: "/projects/proj/locations/region/clusters/clust/instances/inst"}},
 			}),
 		},
 		{
 			desc: "using the address (short) flag",
-			args: []string{"-a", "0.0.0.0", "proj:region:inst"},
+			args: []string{"-a", "0.0.0.0", "/projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
 				Addr:      "0.0.0.0",
-				Instances: []proxy.InstanceConnConfig{{Name: "proj:region:inst"}},
+				Instances: []proxy.InstanceConnConfig{{Name: "/projects/proj/locations/region/clusters/clust/instances/inst"}},
 			}),
 		},
 		{
 			desc: "using the address query param",
-			args: []string{"proj:region:inst?address=0.0.0.0"},
+			args: []string{"/projects/proj/locations/region/clusters/clust/instances/inst?address=0.0.0.0"},
 			want: withDefaults(&proxy.Config{
 				Addr: "127.0.0.1",
 				Instances: []proxy.InstanceConnConfig{{
 					Addr: "0.0.0.0",
-					Name: "proj:region:inst",
+					Name: "/projects/proj/locations/region/clusters/clust/instances/inst",
 				}},
 			}),
 		},
 		{
 			desc: "using the port flag",
-			args: []string{"--port", "6000", "proj:region:inst"},
+			args: []string{"--port", "6000", "/projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
 				Port: 6000,
 			}),
 		},
 		{
 			desc: "using the port (short) flag",
-			args: []string{"-p", "6000", "proj:region:inst"},
+			args: []string{"-p", "6000", "/projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
 				Port: 6000,
 			}),
 		},
 		{
 			desc: "using the port query param",
-			args: []string{"proj:region:inst?port=6000"},
+			args: []string{"/projects/proj/locations/region/clusters/clust/instances/inst?port=6000"},
 			want: withDefaults(&proxy.Config{
 				Instances: []proxy.InstanceConnConfig{{
 					Port: 6000,
@@ -111,28 +111,28 @@ func TestNewCommandArguments(t *testing.T) {
 		},
 		{
 			desc: "using the token flag",
-			args: []string{"--token", "MYCOOLTOKEN", "proj:region:inst"},
+			args: []string{"--token", "MYCOOLTOKEN", "/projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
 				Token: "MYCOOLTOKEN",
 			}),
 		},
 		{
 			desc: "using the token (short) flag",
-			args: []string{"-t", "MYCOOLTOKEN", "proj:region:inst"},
+			args: []string{"-t", "MYCOOLTOKEN", "/projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
 				Token: "MYCOOLTOKEN",
 			}),
 		},
 		{
 			desc: "using the credentiale file flag",
-			args: []string{"--credentials-file", "/path/to/file", "proj:region:inst"},
+			args: []string{"--credentials-file", "/path/to/file", "/projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
 				CredentialsFile: "/path/to/file",
 			}),
 		},
 		{
 			desc: "using the (short) credentiale file flag",
-			args: []string{"-c", "/path/to/file", "proj:region:inst"},
+			args: []string{"-c", "/path/to/file", "/projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
 				CredentialsFile: "/path/to/file",
 			}),
@@ -174,41 +174,41 @@ func TestNewCommandWithErrors(t *testing.T) {
 		},
 		{
 			desc: "when the query string is bogus",
-			args: []string{"proj:region:inst?%=foo"},
+			args: []string{"/projects/proj/locations/region/clusters/clust/instances/inst?%=foo"},
 		},
 		{
 			desc: "when the address query param is empty",
-			args: []string{"proj:region:inst?address="},
+			args: []string{"/projects/proj/locations/region/clusters/clust/instances/inst?address="},
 		},
 		{
 			desc: "using the address flag with a bad IP address",
-			args: []string{"--address", "bogus", "proj:region:inst"},
+			args: []string{"--address", "bogus", "/projects/proj/locations/region/clusters/clust/instances/inst"},
 		},
 		{
 			desc: "when the address query param is not an IP address",
-			args: []string{"proj:region:inst?address=世界"},
+			args: []string{"/projects/proj/locations/region/clusters/clust/instances/inst?address=世界"},
 		},
 		{
 			desc: "when the address query param contains multiple values",
-			args: []string{"proj:region:inst?address=0.0.0.0&address=1.1.1.1&address=2.2.2.2"},
+			args: []string{"/projects/proj/locations/region/clusters/clust/instances/inst?address=0.0.0.0&address=1.1.1.1&address=2.2.2.2"},
 		},
 		{
 			desc: "when the query string is invalid",
-			args: []string{"proj:region:inst?address=1.1.1.1?foo=2.2.2.2"},
+			args: []string{"/projects/proj/locations/region/clusters/clust/instances/inst?address=1.1.1.1?foo=2.2.2.2"},
 		},
 		{
 			desc: "when the port query param contains multiple values",
-			args: []string{"proj:region:inst?port=1&port=2"},
+			args: []string{"/projects/proj/locations/region/clusters/clust/instances/inst?port=1&port=2"},
 		},
 		{
 			desc: "when the port query param is not a number",
-			args: []string{"proj:region:inst?port=hi"},
+			args: []string{"/projects/proj/locations/region/clusters/clust/instances/inst?port=hi"},
 		},
 		{
 			desc: "when both token and credentials file is set",
 			args: []string{
 				"--token", "my-token",
-				"--credentials-file", "/path/to/file", "proj:region:inst"},
+				"--credentials-file", "/path/to/file", "/projects/proj/locations/region/clusters/clust/instances/inst"},
 		},
 	}
 
@@ -256,7 +256,7 @@ func (*spyDialer) Close() error {
 }
 
 func TestCommandWithCustomDialer(t *testing.T) {
-	want := "my-project:my-region:my-cluster:my-instance"
+	want := "/projects/my-project/locations/my-region/clusters/my-cluster/instances/my-instance"
 	s := &spyDialer{}
 	c := NewCommand(WithDialer(s))
 	// Keep the test output quiet

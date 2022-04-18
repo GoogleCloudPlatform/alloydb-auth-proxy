@@ -84,7 +84,7 @@ func NewCommand(opts ...Option) *Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:     "alloydb-auth-proxy instance_connection_name...",
+		Use:     "alloydb-auth-proxy instance_uri...",
 		Version: versionString,
 		Short:   "alloydb-auth-proxy provides a secure way to authorize connections to AlloyDB.",
 		Long: `The AlloyDB Auth proxy provides IAM-based authorization and encryption when
@@ -124,7 +124,7 @@ without having to manage any client SSL certificates.`,
 func parseConfig(cmd *cobra.Command, conf *proxy.Config, args []string) error {
 	// If no instance connection names were provided, error.
 	if len(args) == 0 {
-		return newBadCommandError("missing instance_connection_name (e.g., project:region:instance)")
+		return newBadCommandError("missing instance uri (e.g., /projects/$PROJECTS/locations/$LOCTION/clusters/$CLUSTER/instances/$INSTANCES)")
 	}
 	// First, validate global config.
 	if ip := net.ParseIP(conf.Addr); ip == nil {
