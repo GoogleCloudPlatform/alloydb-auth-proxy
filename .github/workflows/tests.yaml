@@ -22,6 +22,7 @@ on:
 jobs:
   integration:
       runs-on: [self-hosted, linux, x64]
+      name: "integration tests"
       environment: "Private Repos"
       steps:
         - name: Setup Go
