@@ -48,7 +48,7 @@ jobs:
             go test -v -race -cover ./...
   build:
       name: "unit tests"
-      runs-on: {{ matrix.os }}
+      runs-on: ${{ matrix.os }}
       environment: "Private Repos"
       strategy:
         matrix:
