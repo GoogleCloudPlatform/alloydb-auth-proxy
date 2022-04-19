@@ -82,14 +82,14 @@ func (c *Client) InstanceGet(ctx context.Context, project, region, cluster, inst
 	if err != nil {
 		return InstanceGetResponse{}, err
 	}
-	if res != nil && res.StatusCode == http.StatusNotModified {
-		var body []byte
-		if res.Body != nil {
-			defer res.Body.Close()
-			body, err = ioutil.ReadAll(res.Body)
-			if err != nil {
-				return InstanceGetResponse{}, err
-			}
+	defer res.Body.Close()
+
+	// If the status code is 300 or greater, capture any information in the
+	// response and return it as part of the error.
+	if res.StatusCode >= http.StatusMultipleChoices {
+		body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			return InstanceGetResponse{}, err
 		}
 
 		return InstanceGetResponse{}, &googleapi.Error{
@@ -98,10 +98,6 @@ func (c *Client) InstanceGet(ctx context.Context, project, region, cluster, inst
 			Body:   string(body),
 		}
 	}
-	if err != nil {
-		return InstanceGetResponse{}, err
-	}
-	defer res.Body.Close()
 	ret := InstanceGetResponse{
 		ServerResponse: googleapi.ServerResponse{
 			Header:         res.Header,
@@ -132,6 +128,20 @@ func (c *Client) GenerateClientCert(ctx context.Context, project, region, cluste
 		return GenerateClientCertificateResponse{}, err
 	}
 	defer res.Body.Close()
+	// If the status code is 300 or greater, capture any information in the
+	// response and return it as part of the error.
+	if res.StatusCode >= http.StatusMultipleChoices {
+		body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			return GenerateClientCertificateResponse{}, err
+		}
+
+		return GenerateClientCertificateResponse{}, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+			Body:   string(body),
+		}
+	}
 	ret := GenerateClientCertificateResponse{
 		ServerResponse: googleapi.ServerResponse{
 			Header:         res.Header,
