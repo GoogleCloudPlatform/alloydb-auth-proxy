@@ -19,7 +19,7 @@ WORKDIR /go/src/alloydb-auth-proxy
 COPY . .
 
 RUN go get ./...
-RUN go build -ldflags "-X main.metadataString=container.alpine"
+RUN go build -ldflags "-X main.metadataString=container.buster"
 
 # Final stage
 FROM debian:buster
