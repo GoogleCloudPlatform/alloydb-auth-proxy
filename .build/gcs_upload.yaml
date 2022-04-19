@@ -26,7 +26,7 @@ steps:
     entrypoint: "bash"
     args:
       - "-c"
-      - 'go build -ldflags "-X main.versionString=${_VERSION} -X main.metadataString=$$GOOS.$$GOARCH" -o alloydb-auth-proxy.$$GOOS.$$GOARCH'
+      - 'go build -ldflags "-X github.com/GoogleCloudPlatform/alloydb-auth-proxy/cmd.metadataString=$$GOOS.$$GOARCH" -o alloydb-auth-proxy.$$GOOS.$$GOARCH'
   - id: linux.386
     name: "golang:1.18"
     env:
@@ -35,7 +35,7 @@ steps:
     entrypoint: "bash"
     args:
       - "-c"
-      - 'go build -ldflags "-X main.versionString=${_VERSION} -X main.metadataString=$$GOOS.$$GOARCH" -o alloydb-auth-proxy.$$GOOS.$$GOARCH'
+      - 'go build -ldflags "-X github.com/GoogleCloudPlatform/alloydb-auth-proxy/cmd.metadataString=$$GOOS.$$GOARCH" -o alloydb-auth-proxy.$$GOOS.$$GOARCH'
   - id: linux.arm64
     name: "golang:1.18"
     env:
@@ -44,7 +44,7 @@ steps:
     entrypoint: "bash"
     args:
       - "-c"
-      - 'go build -ldflags "-X main.versionString=${_VERSION} -X main.metadataString=$$GOOS.$$GOARCH" -o alloydb-auth-proxy.$$GOOS.$$GOARCH'
+      - 'go build -ldflags "-X github.com/GoogleCloudPlatform/alloydb-auth-proxy/cmd.metadataString=$$GOOS.$$GOARCH" -o alloydb-auth-proxy.$$GOOS.$$GOARCH'
   - id: linux.arm
     name: "golang:1.18"
     env:
@@ -53,7 +53,7 @@ steps:
     entrypoint: "bash"
     args:
       - "-c"
-      - 'go build -ldflags "-X main.versionString=${_VERSION} -X main.metadataString=$$GOOS.$$GOARCH" -o alloydb-auth-proxy.$$GOOS.$$GOARCH'
+      - 'go build -ldflags "-X github.com/GoogleCloudPlatform/alloydb-auth-proxy/cmd.metadataString=$$GOOS.$$GOARCH" -o alloydb-auth-proxy.$$GOOS.$$GOARCH'
   - id: darwin.amd64
     name: "golang:1.18"
     env:
@@ -62,7 +62,7 @@ steps:
     entrypoint: "bash"
     args:
       - "-c"
-      - 'go build -ldflags "-X main.versionString=${_VERSION} -X main.metadataString=$$GOOS.$$GOARCH" -o alloydb-auth-proxy.$$GOOS.$$GOARCH'
+      - 'go build -ldflags "-X github.com/GoogleCloudPlatform/alloydb-auth-proxy/cmd.metadataString=$$GOOS.$$GOARCH" -o alloydb-auth-proxy.$$GOOS.$$GOARCH'
   - id: darwin.arm64
     name: "golang:1.18"
     env:
@@ -71,7 +71,7 @@ steps:
     entrypoint: "bash"
     args:
       - "-c"
-      - 'go build -ldflags "-X main.versionString=${_VERSION} -X main.metadataString=$$GOOS.$$GOARCH" -o alloydb-auth-proxy.$$GOOS.$$GOARCH'
+      - 'go build -ldflags "-X github.com/GoogleCloudPlatform/alloydb-auth-proxy/cmd.metadataString=$$GOOS.$$GOARCH" -o alloydb-auth-proxy.$$GOOS.$$GOARCH'
   - id: windows.amd64
     name: "golang:1.18"
     env:
@@ -80,7 +80,7 @@ steps:
     entrypoint: "bash"
     args:
       - "-c"
-      - 'go build -ldflags "-X main.versionString=${_VERSION}  -X main.metadataString=$$GOOS.$$GOARCH" -o alloydb-auth-proxy-x64.exe'
+      - 'go build -ldflags "-X github.com/GoogleCloudPlatform/alloydb-auth-proxy/cmd.metadataString=$$GOOS.$$GOARCH" -o alloydb-auth-proxy-x64.exe'
   - id: windows.386
     name: "golang:1.18"
     env:
@@ -89,7 +89,7 @@ steps:
     entrypoint: "bash"
     args:
       - "-c"
-      - 'go build -ldflags "-X main.versionString=${_VERSION}  -X main.metadataString=$$GOOS.$$GOARCH" -o alloydb-auth-proxy-x86.exe'
+      - 'go build -ldflags "-X github.com/GoogleCloudPlatform/alloydb-auth-proxy/cmd.metadataString=$$GOOS.$$GOARCH" -o alloydb-auth-proxy-x86.exe'
 artifacts:
   objects:
     location: "gs://alloydb-auth-proxy/v${_VERSION}/"
