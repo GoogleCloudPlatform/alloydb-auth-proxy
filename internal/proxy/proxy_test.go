@@ -17,6 +17,7 @@ package proxy_test
 import (
 	"context"
 	"net"
+	"os"
 	"testing"
 
 	"cloud.google.com/go/alloydbconn"
@@ -25,6 +26,12 @@ import (
 )
 
 type fakeDialer struct{}
+
+type testCase struct {
+	desc      string
+	in        *proxy.Config
+	wantAddrs []string
+}
 
 func (fakeDialer) Dial(ctx context.Context, inst string, opts ...alloydbconn.DialOption) (net.Conn, error) {
 	return nil, nil
@@ -39,11 +46,7 @@ func TestClientInitialization(t *testing.T) {
 	cluster1 := "/projects/proj/locations/region/clusters/clust/instances/inst1"
 	cluster2 := "/projects/proj/locations/region/clusters/clust/instances/inst2"
 
-	tcs := []struct {
-		desc      string
-		in        *proxy.Config
-		wantAddrs []string
-	}{
+	tcs := []testCase{
 		{
 			desc: "multiple instances",
 			in: &proxy.Config{
@@ -66,17 +69,6 @@ func TestClientInitialization(t *testing.T) {
 				},
 			},
 			wantAddrs: []string{"0.0.0.0:5000"},
-		},
-		{
-			desc: "IPv6 support",
-			in: &proxy.Config{
-				Addr: "::1",
-				Port: 5000,
-				Instances: []proxy.InstanceConnConfig{
-					{Name: cluster1},
-				},
-			},
-			wantAddrs: []string{"[::1]:5000"},
 		},
 		{
 			desc: "with instance port",
@@ -119,6 +111,20 @@ func TestClientInitialization(t *testing.T) {
 				"127.0.0.1:5433",
 			},
 		},
+	}
+	_, isFlex := os.LookupEnv("GAE_APPLICATION")
+	if !isFlex {
+		tcs = append(tcs, testCase{
+			desc: "IPv6 support",
+			in: &proxy.Config{
+				Addr: "::1",
+				Port: 5000,
+				Instances: []proxy.InstanceConnConfig{
+					{Name: cluster1},
+				},
+			},
+			wantAddrs: []string{"[::1]:5000"},
+		})
 	}
 
 	for _, tc := range tcs {
