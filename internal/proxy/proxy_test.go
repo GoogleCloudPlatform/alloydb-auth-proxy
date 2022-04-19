@@ -112,7 +112,7 @@ func TestClientInitialization(t *testing.T) {
 			},
 		},
 	}
-	_, isFlex := os.LookupEnv("GAE_APPLICATION")
+	_, isFlex := os.LookupEnv("FLEX")
 	if !isFlex {
 		tcs = append(tcs, testCase{
 			desc: "IPv6 support",

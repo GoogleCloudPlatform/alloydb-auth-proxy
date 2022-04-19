@@ -64,7 +64,7 @@ func TestPostgresAuthWithToken(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping Postgres integration tests")
 	}
-	_, isFlex := os.LookupEnv("GAE_APPLICATION")
+	_, isFlex := os.LookupEnv("FLEX")
 	if isFlex {
 		t.Skip("disabling until we migrate tests to Kokoro")
 	}
@@ -88,7 +88,7 @@ func TestPostgresAuthWithCredentialsFile(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping Postgres integration tests")
 	}
-	_, isFlex := os.LookupEnv("GAE_APPLICATION")
+	_, isFlex := os.LookupEnv("FLEX")
 	if isFlex {
 		t.Skip("disabling until we migrate tests to Kokoro")
 	}
