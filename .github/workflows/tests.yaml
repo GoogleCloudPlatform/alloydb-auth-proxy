@@ -20,17 +20,46 @@ on:
       - main
 
 jobs:
+  integration:
+      runs-on: [self-hosted, linux, x64]
+      environment: "Private Repos"
+      steps:
+        - name: Setup Go
+          uses: actions/setup-go@v3
+          with:
+            go-version: "1.18"
+        - name: Checkout code
+          uses: actions/checkout@v3
+        - name: Get Secrets
+          id: 'secrets'
+          uses: 'google-github-actions/get-secretmanager-secrets@v0'
+          with:
+            secrets: |-
+              ALLOYDB_CONN_NAME:alloydb-connector-testing/ALLOYDB_CONN_NAME
+              ALLOYDB_CLUSTER_PASS:alloydb-connector-testing/ALLOYDB_CLUSTER_PASS
+        - name: Run tests
+          env:
+            ALLOYDB_DB: 'postgres'
+            ALLOYDB_USER: 'postgres'
+            ALLOYDB_PASS: '{{ steps.secrets.outputs.ALLOYDB_CLUSTER_PASS }}'
+            ALLOYDB_CONNECTION_NAME: '{{ steps.secrets.outputs.ALLOYDB_CONN_NAME }}'
+          run: |
+            go test -v -race -cover ./...
   build:
-    name: "unit tests"
-    runs-on: ubuntu-latest
-    environment: "Private Repos"
-    steps:
-      - name: Setup Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: "1.18"
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Run tests
-        run: |
-          go test -v -race -cover -short ./...
+      name: "unit tests"
+      runs-on: {{ matrix.os }}
+      environment: "Private Repos"
+      strategy:
+        matrix:
+          os: [macos-latest, windows-latest]
+      steps:
+        - name: Setup Go
+          uses: actions/setup-go@v3
+          with:
+            go-version: "1.18"
+        - name: Checkout code
+          uses: actions/checkout@v3
+        - name: Run tests
+          run: |
+            go test -v -race -cover -short ./...
+
