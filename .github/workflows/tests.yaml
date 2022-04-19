@@ -41,8 +41,8 @@ jobs:
           env:
             ALLOYDB_DB: 'postgres'
             ALLOYDB_USER: 'postgres'
-            ALLOYDB_PASS: '{{ steps.secrets.outputs.ALLOYDB_CLUSTER_PASS }}'
-            ALLOYDB_CONNECTION_NAME: '{{ steps.secrets.outputs.ALLOYDB_CONN_NAME }}'
+            ALLOYDB_PASS: '${{ steps.secrets.outputs.ALLOYDB_CLUSTER_PASS }}'
+            ALLOYDB_CONNECTION_NAME: '${{ steps.secrets.outputs.ALLOYDB_CONN_NAME }}'
           run: |
             go test -v -race -cover ./...
   build:
