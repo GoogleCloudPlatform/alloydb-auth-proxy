@@ -1,19 +1,4 @@
-export GOOGLE_CLOUD_PROJECT="project-name"
-
-export MYSQL_CONNECTION_NAME="project:region:instance"
-export MYSQL_USER="mysql-user"
-export MYSQL_PASS="mysql-password"
-export MYSQL_DB="mysql-db-name"
-
-export POSTGRES_CONNECTION_NAME="project:region:instance"
-export POSTGRES_USER="postgres-user"
-export POSTGRES_PASS="postgres-password"
-export POSTGRES_DB="postgres-db-name"
-export POSTGRES_USER_IAM="some-user-with-db-access@example.com"
-
-export SQLSERVER_CONNECTION_NAME="project:region:instance"
-export SQLSERVER_USER="sqlserver-user"
-export SQLSERVER_PASS="sqlserver-password"
-export SQLSERVER_DB="sqlserver-db-name"
-
-export GOOGLE_APPLICATION_CREDENTIALS=/path/to/key.json
+export ALLOYDB_CONNECTION_NAME="project:region:instance"
+export ALLOYDB_USER="postgres-user"
+export ALLOYDB_PASS="postgres-password"
+export ALLOYDB_DB="postgres-db-name"
