@@ -22,7 +22,7 @@ on:
 jobs:
   integration:
       runs-on: [self-hosted, linux, x64]
-      name: "integration tests"
+      name: "integration tests (linux)"
       steps:
         - name: Setup Go
           uses: actions/setup-go@v3
