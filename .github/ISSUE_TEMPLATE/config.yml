@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+- name: AlloyDB Issue tracker
+  url: https://cloud.google.com/support/docs/issue-trackers
+  about: Please use the AlloyDB Issue tracker for problems with AlloyDB itself.
+- name: StackOverflow
+  url: https://stackoverflow.com/questions/tagged/google-alloydb
+  about: Please use the `google-alloydb` tag for questions on StackOverflow.
