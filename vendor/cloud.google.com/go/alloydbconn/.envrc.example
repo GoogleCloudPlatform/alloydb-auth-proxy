@@ -1,4 +1,4 @@
-export ALLOYDB_CONNECTION_NAME=some-project:some-region:some-instance
+export ALLOYDB_URI=some-project:some-region:some-instance
 export ALLOYDB_USER=some-user
 export ALLOYDB_PASS=some-password
 export ALLOYDB_DB=some-db-name

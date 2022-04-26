@@ -22,7 +22,7 @@ type genericError struct {
 }
 
 func (e *genericError) Error() string {
-	return fmt.Sprintf("%v (connection name = %q)", e.Message, e.ConnName)
+	return fmt.Sprintf("%v (instance URI = %q)", e.Message, e.ConnName)
 }
 
 // NewConfigError initializes a ConfigError.
@@ -33,7 +33,7 @@ func NewConfigError(msg, cn string) *ConfigError {
 }
 
 // ConfigError represents an incorrect request by the user. Config errors
-// usually indicate a semantic error (e.g., the instance connection name is
+// usually indicate a semantic error (e.g., the instance URI is
 // malformated, etc).
 type ConfigError struct{ *genericError }
 
@@ -49,7 +49,7 @@ func NewRefreshError(msg, cn string, err error) *RefreshError {
 // refresh operation. In general, this is an unexpected error caused by
 // an interaction with the API itself (e.g., missing certificates,
 // invalid certificate encoding, region mismatch with the requested
-// instance connection name, etc.).
+// instance URI, etc.).
 type RefreshError struct {
 	*genericError
 	// Err is the underlying error and may be nil.
