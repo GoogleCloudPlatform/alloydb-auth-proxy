@@ -47,5 +47,4 @@ Any relevant stacktrace here. Be sure to filter sensitive information.
 ## Environment
 
 1. OS type and version: <YOUR_OS_HERE>
-2. Go version: `go version`
 2. Proxy version: <YOUR_VERSION_HERE>
