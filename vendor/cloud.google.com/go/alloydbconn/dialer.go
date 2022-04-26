@@ -145,7 +145,7 @@ func NewDialer(ctx context.Context, opts ...Option) (*Dialer, error) {
 
 // Dial returns a net.Conn connected to the specified AlloyDB instance. The
 // instance argument must be the instance's URI, which is in the format
-// /projects/<PROJECT>/locations/<REGION>/clusters/<CLUSTER>/instances/<INSTANCE>
+// projects/<PROJECT>/locations/<REGION>/clusters/<CLUSTER>/instances/<INSTANCE>
 func (d *Dialer) Dial(ctx context.Context, instance string, opts ...DialOption) (conn net.Conn, err error) {
 	startTime := time.Now()
 	var endDial trace.EndSpanFunc
