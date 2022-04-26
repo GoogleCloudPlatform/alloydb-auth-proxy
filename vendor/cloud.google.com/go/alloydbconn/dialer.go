@@ -68,8 +68,7 @@ func getDefaultKeys() (*rsa.PrivateKey, error) {
 // Use NewDialer to initialize a Dialer.
 type Dialer struct {
 	lock sync.RWMutex
-	// instances map connection names (e.g., my-project:us-central1:my-instance)
-	// to *alloydb.Instance types.
+	// instances map instance URIs to *alloydb.Instance types
 	instances      map[string]*alloydb.Instance
 	key            *rsa.PrivateKey
 	refreshTimeout time.Duration
@@ -145,8 +144,8 @@ func NewDialer(ctx context.Context, opts ...Option) (*Dialer, error) {
 }
 
 // Dial returns a net.Conn connected to the specified AlloyDB instance. The
-// instance argument must be the instance's connection name, which is in the
-// format "project-name:region:cluster:instance-name".
+// instance argument must be the instance's URI, which is in the format
+// projects/<PROJECT>/locations/<REGION>/clusters/<CLUSTER>/instances/<INSTANCE>
 func (d *Dialer) Dial(ctx context.Context, instance string, opts ...DialOption) (conn net.Conn, err error) {
 	startTime := time.Now()
 	var endDial trace.EndSpanFunc
@@ -254,24 +253,24 @@ func (d *Dialer) Close() error {
 	return nil
 }
 
-func (d *Dialer) instance(connName string) (*alloydb.Instance, error) {
+func (d *Dialer) instance(instanceURI string) (*alloydb.Instance, error) {
 	// Check instance cache
 	d.lock.RLock()
-	i, ok := d.instances[connName]
+	i, ok := d.instances[instanceURI]
 	d.lock.RUnlock()
 	if !ok {
 		d.lock.Lock()
 		// Recheck to ensure instance wasn't created between locks
-		i, ok = d.instances[connName]
+		i, ok = d.instances[instanceURI]
 		if !ok {
 			// Create a new instance
 			var err error
-			i, err = alloydb.NewInstance(connName, d.client, d.key, d.refreshTimeout, d.dialerID)
+			i, err = alloydb.NewInstance(instanceURI, d.client, d.key, d.refreshTimeout, d.dialerID)
 			if err != nil {
 				d.lock.Unlock()
 				return nil, err
 			}
-			d.instances[connName] = i
+			d.instances[instanceURI] = i
 		}
 		d.lock.Unlock()
 	}

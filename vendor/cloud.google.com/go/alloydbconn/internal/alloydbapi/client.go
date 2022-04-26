@@ -45,12 +45,12 @@ type GenerateClientCertificateResponse struct {
 }
 
 // baseURL is the production API endpoint of the AlloyDB Admin API
-const baseURL = "https://alloydb.googleapis.com"
+const baseURL = "https://alloydb.googleapis.com/v1beta"
 
 type Client struct {
 	client *http.Client
 	// endpoint is the base URL for the AlloyDB Admin API (e.g.
-	// https://alloydb.googleapis.com)
+	// https://alloydb.googleapis.com/v1beta)
 	endpoint string
 }
 
@@ -71,7 +71,7 @@ func NewClient(ctx context.Context, opts ...option.ClientOption) (*Client, error
 
 func (c *Client) InstanceGet(ctx context.Context, project, region, cluster, instance string) (InstanceGetResponse, error) {
 	u := fmt.Sprintf(
-		"%s/v1alpha1/projects/%s/locations/%s/clusters/%s/instances/%s",
+		"%s/projects/%s/locations/%s/clusters/%s/instances/%s",
 		c.endpoint, project, region, cluster, instance,
 	)
 	req, err := http.NewRequestWithContext(ctx, "GET", u, nil)
@@ -112,7 +112,7 @@ func (c *Client) InstanceGet(ctx context.Context, project, region, cluster, inst
 
 func (c *Client) GenerateClientCert(ctx context.Context, project, region, cluster string, csr []byte) (GenerateClientCertificateResponse, error) {
 	u := fmt.Sprintf(
-		"%s/v1alpha1/projects/%s/locations/%s/clusters/%s:generateClientCertificate",
+		"%s/projects/%s/locations/%s/clusters/%s:generateClientCertificate",
 		c.endpoint, project, region, cluster,
 	)
 	body, err := json.Marshal(GenerateClientCertificateRequest{PemCSR: string(csr)})

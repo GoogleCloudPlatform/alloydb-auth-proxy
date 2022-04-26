@@ -40,8 +40,7 @@ var (
 	instURIRegex = regexp.MustCompile("projects/([^:]+(:[^:]+)?)/locations/([^:]+)/clusters/([^:]+)/instances/([^:]+)")
 )
 
-// instanceURI represents the "instance connection name", in the format "project:region:name". Use the
-// "parseConnName" method to initialize this struct.
+// instanceURI reprents an AlloyDB instance.
 type instanceURI struct {
 	project string
 	region  string
@@ -49,8 +48,8 @@ type instanceURI struct {
 	name    string
 }
 
-func (c *instanceURI) String() string {
-	return fmt.Sprintf("%s:%s:%s:%s", c.project, c.region, c.cluster, c.name)
+func (i *instanceURI) String() string {
+	return fmt.Sprintf("%s/%s/%s/%s", i.project, i.region, i.cluster, i.name)
 }
 
 // parseInstURI initializes a new instanceURI struct.
@@ -59,7 +58,7 @@ func parseInstURI(cn string) (instanceURI, error) {
 	m := instURIRegex.FindSubmatch(b)
 	if m == nil {
 		err := errtype.NewConfigError(
-			"invalid instance connection name, expected /projects/<PROJECT>/locations/<REGION>/clusters/<CLUSTER>/instances/<INSTANCE>",
+			"invalid instance URI, expected projects/<PROJECT>/locations/<REGION>/clusters/<CLUSTER>/instances/<INSTANCE>",
 			cn,
 		)
 		return instanceURI{}, err
@@ -147,7 +146,7 @@ type Instance struct {
 	cancel context.CancelFunc
 }
 
-// NewInstance initializes a new Instance given an instance connection name
+// NewInstance initializes a new Instance given an instance URI
 func NewInstance(
 	instance string,
 	client *alloydbapi.Client,
@@ -260,7 +259,7 @@ func (i *Instance) scheduleRefresh(d time.Duration) *refreshOperation {
 	return res
 }
 
-// String returns the instance's connection name.
+// String returns the instance's URI.
 func (i *Instance) String() string {
 	return i.instanceURI.String()
 }
