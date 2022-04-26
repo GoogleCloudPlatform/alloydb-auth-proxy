@@ -44,13 +44,13 @@ jobs:
             ALLOYDB_PASS: '${{ steps.secrets.outputs.ALLOYDB_CLUSTER_PASS }}'
             ALLOYDB_CONNECTION_NAME: '${{ steps.secrets.outputs.ALLOYDB_CONN_NAME }}'
           run: |
-            go test -v -race -cover ./...
+            go test -v -race -cover ./tests
   build:
       name: "unit tests"
       runs-on: ${{ matrix.os }}
       strategy:
         matrix:
-          os: [macos-latest, windows-latest]
+          os: [macos-latest, windows-latest, ubuntu-latest]
       steps:
         - name: Setup Go
           uses: actions/setup-go@v3
