@@ -122,7 +122,8 @@ In addition, both `address` and `port` may be overrided on a per-instance level
 with a query-string style syntax:
 
 ``` bash
-alloydb-auth-proxy '<INSTANCE_URI_1>?address=0.0.0.0&port=6000' \
+alloydb-auth-proxy \
+    '<INSTANCE_URI_1>?address=0.0.0.0&port=6000' \
     '<INSTANCE_URI_2>?address=127.0.0.1&port=7000'
 ```
 
