@@ -66,70 +66,6 @@ go install github.com/GoogleCloudPlatform/alloydb-auth-proxy@latest
 
 The `alloydb-auth-proxy` will be placed in `$GOPATH/bin` or `$HOME/go/bin`.
 
-## Usage
-
-All the following invocations assume valid credentials are present in the
-environment. The following examples all reference an `INSTANCE_URI`,
-which takes the form:
-
-```
-projects/<PROJECT>/locations/<REGION>/clusters/<CLUSTER>/instances/<INSTANCE>
-```
-
-To find the `INSTANCE_URI`, take the name from:
-
-```
-# To find your instance in among all instances
-gcloud alpha alloydb instances list
-
-# or to describe your particular instance
-gcloud alpha alloydb instances describe \
-    --cluster <CLUSTER_NAME> \
-    --region <REGION> \
-    <INSTANCE_NAME>
-```
-
-### Example invocations
-
-``` bash
-# Starts the proxy listening on 127.0.0.1:5432
-alloydb-auth-proxy <INSTANCE_URI>
-```
-
-To connect to multiple instances, use:
-
-``` bash
-# For instance 1, the proxy listens on 127.0.0.1:5432
-# For instance 2, the proxy listens on 127.0.0.1:5433
-alloydb-auth-proxy <INSTANCE_URI_1> <INSTANCE_URI_2>
-```
-
-To override the default address the proxy listens on, use the `--address` flag:
-
-``` bash
-# Starts the proxy listening on 0.0.0.0:5432
-alloydb-auth-proxy --address 0.0.0.0 <INSTANCE_URI>
-```
-
-To override the default port, use the `--port` flag:
-
-``` bash
-# Starts the proxy listening on 127.0.0.1:6000
-alloydb-auth-proxy --port 6000 <INSTANCE_URI>
-```
-
-In addition, both `address` and `port` may be overrided on a per-instance level
-with a query-string style syntax:
-
-``` bash
-alloydb-auth-proxy \
-    '<INSTANCE_URI_1>?address=0.0.0.0&port=6000' \
-    '<INSTANCE_URI_2>?address=127.0.0.1&port=7000'
-```
-
-Note: when using the query-string syntax, the instance URI and query parameters
-must be wrapped in quotes.
-
 ## Credentials
 
 The AlloyDB Auth Proxy uses a Cloud IAM account to authorize connections against
@@ -161,6 +97,74 @@ must have the AlloyDB Admin API enabled. The default service account must also
 have at least writer or editor privileges to any projects of target AlloyDB
 instances.
 
+## Usage
+
+All the following invocations assume valid credentials are present in the
+environment. The following examples all reference an `INSTANCE_URI`,
+which takes the form:
+
+```
+projects/<PROJECT>/locations/<REGION>/clusters/<CLUSTER>/instances/<INSTANCE>
+```
+
+To find the `INSTANCE_URI`, take the name from:
+
+```
+# To find your instance in among all instances
+gcloud alpha alloydb instances list
+
+# or to describe your particular instance
+gcloud alpha alloydb instances describe \
+    --cluster <CLUSTER_NAME> \
+    --region <REGION> \
+    <INSTANCE_NAME>
+```
+
+### Example invocations
+
+Note: the following invocations assume you have downloaded the
+`alloydb-auth-proxy` into the same directory. Consider moving the proxy into a
+well-known location to have it available on your `PATH`.
+
+``` bash
+# Starts the proxy listening on 127.0.0.1:5432
+./alloydb-auth-proxy <INSTANCE_URI>
+```
+
+To connect to multiple instances, use:
+
+``` bash
+# For instance 1, the proxy listens on 127.0.0.1:5432
+# For instance 2, the proxy listens on 127.0.0.1:5433
+./alloydb-auth-proxy <INSTANCE_URI_1> <INSTANCE_URI_2>
+```
+
+To override the default address the proxy listens on, use the `--address` flag:
+
+``` bash
+# Starts the proxy listening on 0.0.0.0:5432
+./alloydb-auth-proxy --address 0.0.0.0 <INSTANCE_URI>
+```
+
+To override the default port, use the `--port` flag:
+
+``` bash
+# Starts the proxy listening on 127.0.0.1:6000
+./alloydb-auth-proxy --port 6000 <INSTANCE_URI>
+```
+
+In addition, both `address` and `port` may be overrided on a per-instance level
+with a query-string style syntax:
+
+``` bash
+./alloydb-auth-proxy \
+    '<INSTANCE_URI_1>?address=0.0.0.0&port=6000' \
+    '<INSTANCE_URI_2>?address=127.0.0.1&port=7000'
+```
+
+Note: when using the query-string syntax, the instance URI and query parameters
+must be wrapped in quotes.
+
 ## Running behind a Socks5 proxy
 
 The AlloyDB Auth Proxy includes support for sending requests through a SOCKS5
@@ -170,7 +174,7 @@ the AlloyDB Auth Proxy would look like:
 ```
 ALL_PROXY=socks5://localhost:8000 \
 HTTPS_PROXY=socks5://localhost:8000 \
-    alloydb-auth-proxy <INSTANCE_URI>
+    ./alloydb-auth-proxy <INSTANCE_URI>
 ```
 
 The `ALL_PROXY` environment variable specifies the proxy for all TCP traffic to
