@@ -155,7 +155,7 @@ Or one may manually assign the following IAM permissions:
 See [Roles and Permissions in AlloyDB][roles-and-permissions] for details.
 
 When the proxy authenticates under the Compute Engine VM's default service
-account, the VM must have at least the `cloud-platform` API scope (i.e.,
+account, the VM must have the `cloud-platform` API scope (i.e.,
 "https://www.googleapis.com/auth/cloud-platform") and the associated project
 must have the AlloyDB Admin API enabled. The default service account must also
 have at least writer or editor privileges to any projects of target AlloyDB
