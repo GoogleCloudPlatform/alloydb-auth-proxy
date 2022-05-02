@@ -174,7 +174,7 @@ HTTPS_PROXY=socks5://localhost:8000 \
 ```
 
 The `ALL_PROXY` environment variable specifies the proxy for all TCP traffic to
-and from a Cloud SQL instance. The `ALL_PROXY` environment variable supports
+and from a AlloyDB instance. The `ALL_PROXY` environment variable supports
 `socks5` and `socks5h` protocols. To route DNS lookups through a proxy, use the
 `socks5h` protocol.
 
