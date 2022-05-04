@@ -44,7 +44,7 @@ currently supported:
 * `$VERSION-alpine` - uses [`alpine:3`](https://hub.docker.com/_/alpine) as a
   base image
 * `$VERSION-buster` - uses [`debian:buster`](https://hub.docker.com/_/debian) as
-  a base image (only supported from v1.17 up)
+  a base image
 
 We recommend using the latest version of the proxy and updating the version
 regularly. However, we also recommend pinning to a specific tag and avoid the
