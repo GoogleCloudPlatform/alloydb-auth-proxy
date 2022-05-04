@@ -42,7 +42,7 @@ currently supported:
 
 * `$VERSION` - default image (recommended)
 * `$VERSION-alpine` - uses [`alpine:3`](https://hub.docker.com/_/alpine) as a
-  base image (only supported from v1.17 up)
+  base image
 * `$VERSION-buster` - uses [`debian:buster`](https://hub.docker.com/_/debian) as
   a base image (only supported from v1.17 up)
 
