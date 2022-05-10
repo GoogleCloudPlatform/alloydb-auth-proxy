@@ -228,8 +228,8 @@ participating in this project you agree to abide by its terms.  See [Contributor
 Code of Conduct][code-of-conduct] for more information.
 
 [adc]:                   https://cloud.google.com/docs/authentication
-[about-proxy]:           TODO
+[about-proxy]:           https://cloud.google.com/alloydb/docs/auth-proxy/overview
 [code-of-conduct]:       CONTRIBUTING.md#contributor-code-of-conduct
 [contributing]:          CONTRIBUTING.md
 [releases]:              https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/releases
-[roles-and-permissions]: https://cloud.google.com/alloydb/docs/roles-and-permissions
+[roles-and-permissions]: https://cloud.google.com/alloydb/docs/auth-proxy/overview#how-authorized
