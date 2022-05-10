@@ -64,6 +64,10 @@ func TestPostgresAuthWithToken(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping Postgres integration tests")
 	}
+	_, isFlex := os.LookupEnv("FLEX")
+	if isFlex {
+		t.Skip("disabling until we migrate tests to Kokoro")
+	}
 	requirePostgresVars(t)
 	cleanup, err := pgxv4.RegisterDriver("alloydb2")
 	if err != nil {
@@ -83,6 +87,10 @@ func TestPostgresAuthWithToken(t *testing.T) {
 func TestPostgresAuthWithCredentialsFile(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping Postgres integration tests")
+	}
+	_, isFlex := os.LookupEnv("FLEX")
+	if isFlex {
+		t.Skip("disabling until we migrate tests to Kokoro")
 	}
 	requirePostgresVars(t)
 	cleanup, err := pgxv4.RegisterDriver("alloydb3")
