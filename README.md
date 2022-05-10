@@ -79,14 +79,8 @@ an AlloyDB instance. The proxy supports the following options:
 Note: Any account connecting to AlloyDB instance will need one of the following
 IAM roles:
 
-- AlloyDB Client (preferred)
-- AlloyDB Editor
-- AlloyDB Admin
-
-Or one may manually assign the following IAM permissions:
-
-- `alloydb.instances.connect`
-- `alloydb.instances.get`
+- Cloud AlloyDB Client (`roles/alloydb.client`) (preferred)
+- Cloud AlloyDB Admin (`roles/alloydb.admin`)
 
 See [Roles and Permissions in AlloyDB][roles-and-permissions] for details.
 
