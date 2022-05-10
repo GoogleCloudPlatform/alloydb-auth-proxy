@@ -13,6 +13,9 @@ have access to it).
 
 ## Installation
 
+Check for the latest version on the [releases page][releases] and use the
+following instructions for your OS and CPU architecture.
+
 <details>
 <summary>Linux amd64</summary>
 
@@ -117,9 +120,6 @@ chmod +x cloud_sql_proxy
 ```
 </details>
 
-
-Releases for additional OS's and architectures and be found on the [releases
-page][releases].
 
 ### Container Images
 
