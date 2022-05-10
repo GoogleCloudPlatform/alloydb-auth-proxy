@@ -15,6 +15,7 @@ have access to it).
 
 <details>
 <summary>Linux amd64</summary>
+
 ```
 URL="https://storage.googleapis.com/alloydb-auth-proxy"
 VERSION=v0.1.0 # see Releases for other versions
@@ -27,6 +28,7 @@ chmod +x cloud_sql_proxy
 
 <details>
 <summary>Linux 386</summary>
+
 ```
 URL="https://storage.googleapis.com/alloydb-auth-proxy"
 VERSION=v0.1.0 # see Releases for other versions
@@ -39,6 +41,7 @@ chmod +x cloud_sql_proxy
 
 <details>
 <summary>Linux arm64</summary>
+
 ```
 URL="https://storage.googleapis.com/alloydb-auth-proxy"
 VERSION=v0.1.0 # see Releases for other versions
@@ -51,6 +54,7 @@ chmod +x cloud_sql_proxy
 
 <details>
 <summary>Linux arm</summary>
+
 ```
 URL="https://storage.googleapis.com/alloydb-auth-proxy"
 VERSION=v0.1.0 # see Releases for other versions
@@ -63,6 +67,7 @@ chmod +x cloud_sql_proxy
 
 <details>
 <summary>Darwin amd64</summary>
+
 ```
 URL="https://storage.googleapis.com/alloydb-auth-proxy"
 VERSION=v0.1.0 # see Releases for other versions
@@ -75,6 +80,7 @@ chmod +x cloud_sql_proxy
 
 <details>
 <summary>Darwin arm64 (Apple Silicon)</summary>
+
 ```
 URL="https://storage.googleapis.com/alloydb-auth-proxy"
 VERSION=v0.1.0 # see Releases for other versions
@@ -87,6 +93,7 @@ chmod +x cloud_sql_proxy
 
 <details>
 <summary>Windows x64</summary>
+
 ```
 URL="https://storage.googleapis.com/alloydb-auth-proxy"
 VERSION=v0.1.0 # see Releases for other versions
@@ -99,6 +106,7 @@ chmod +x cloud_sql_proxy
 
 <details>
 <summary>Windows x86</summary>
+
 ```
 URL="https://storage.googleapis.com/alloydb-auth-proxy"
 VERSION=v0.1.0 # see Releases for other versions
