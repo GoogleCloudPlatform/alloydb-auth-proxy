@@ -99,11 +99,7 @@ chmod +x alloydb-auth-proxy
 
 ``` sh
 # see Releases for other versions
-URL="https://storage.googleapis.com/alloydb-auth-proxy/v0.1.0"
-
-wget "$URL/alloydb-auth-proxy.windows.x64.exe" -O alloydb-auth-proxy.exe
-
-chmod +x alloydb-auth-proxy.exe
+wget https://storage.googleapis.com/alloydb-auth-proxy/v0.1.0/alloydb-auth-proxy-x64.exe -O alloydb-auth-proxy.exe
 ```
 </details>
 
@@ -112,11 +108,7 @@ chmod +x alloydb-auth-proxy.exe
 
 ``` sh
 # see Releases for other versions
-URL="https://storage.googleapis.com/alloydb-auth-proxy/v0.1.0"
-
-wget "$URL/alloydb-auth-proxy.windows.x86.exe" -O alloydb-auth-proxy.exe
-
-chmod +x alloydb-auth-proxy.exe
+wget https://storage.googleapis.com/alloydb-auth-proxy/v0.1.0/alloydb-auth-proxy-x86.exe -O alloydb-auth-proxy.exe
 ```
 </details>
 
