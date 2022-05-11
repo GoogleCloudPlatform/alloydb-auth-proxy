@@ -25,7 +25,7 @@ URL="https://storage.googleapis.com/alloydb-auth-proxy/v0.1.0"
 
 wget "$URL/alloydb-auth-proxy.linux.amd64" -O alloydb-auth-proxy
 
-chmod +x cloud_sql_proxy
+chmod +x alloydb-auth-proxy
 ```
 </details>
 
@@ -38,7 +38,7 @@ URL="https://storage.googleapis.com/alloydb-auth-proxy/v0.1.0"
 
 wget "$URL/alloydb-auth-proxy.linux.386" -O alloydb-auth-proxy
 
-chmod +x cloud_sql_proxy
+chmod +x alloydb-auth-proxy
 ```
 </details>
 
@@ -51,7 +51,7 @@ URL="https://storage.googleapis.com/alloydb-auth-proxy/v0.1.0"
 
 wget "$URL/alloydb-auth-proxy.linux.arm64" -O alloydb-auth-proxy
 
-chmod +x cloud_sql_proxy
+chmod +x alloydb-auth-proxy
 ```
 </details>
 
@@ -64,7 +64,7 @@ URL="https://storage.googleapis.com/alloydb-auth-proxy/v0.1.0"
 
 wget "$URL/alloydb-auth-proxy.linux.arm" -O alloydb-auth-proxy
 
-chmod +x cloud_sql_proxy
+chmod +x alloydb-auth-proxy
 ```
 </details>
 
@@ -77,7 +77,7 @@ URL="https://storage.googleapis.com/alloydb-auth-proxy/v0.1.0"
 
 wget "$URL/alloydb-auth-proxy.darwin.amd64" -O alloydb-auth-proxy
 
-chmod +x cloud_sql_proxy
+chmod +x alloydb-auth-proxy
 ```
 </details>
 
@@ -90,7 +90,7 @@ URL="https://storage.googleapis.com/alloydb-auth-proxy/v0.1.0"
 
 wget "$URL/alloydb-auth-proxy.darwin.arm64" -O alloydb-auth-proxy
 
-chmod +x cloud_sql_proxy
+chmod +x alloydb-auth-proxy
 ```
 </details>
 
@@ -103,7 +103,7 @@ URL="https://storage.googleapis.com/alloydb-auth-proxy/v0.1.0"
 
 wget "$URL/alloydb-auth-proxy.windows.x64.exe" -O alloydb-auth-proxy.exe
 
-chmod +x cloud_sql_proxy
+chmod +x alloydb-auth-proxy
 ```
 </details>
 
@@ -116,7 +116,7 @@ URL="https://storage.googleapis.com/alloydb-auth-proxy/v0.1.0"
 
 wget "$URL/alloydb-auth-proxy.windows.x86.exe" -O alloydb-auth-proxy.exe
 
-chmod +x cloud_sql_proxy
+chmod +x alloydb-auth-proxy
 ```
 </details>
 
