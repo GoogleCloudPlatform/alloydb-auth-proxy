@@ -19,11 +19,11 @@ following instructions for your OS and CPU architecture.
 <details>
 <summary>Linux amd64</summary>
 
-```
-URL="https://storage.googleapis.com/alloydb-auth-proxy"
-VERSION=v0.1.0 # see Releases for other versions
+``` sh
+# see Releases for other versions
+URL="https://storage.googleapis.com/alloydb-auth-proxy/v0.1.0"
 
-wget "$URL/$VERSION/alloydb-auth-proxy.linux.amd64" -O alloydb-auth-proxy
+wget "$URL/alloydb-auth-proxy.linux.amd64" -O alloydb-auth-proxy
 
 chmod +x cloud_sql_proxy
 ```
@@ -32,11 +32,11 @@ chmod +x cloud_sql_proxy
 <details>
 <summary>Linux 386</summary>
 
-```
-URL="https://storage.googleapis.com/alloydb-auth-proxy"
-VERSION=v0.1.0 # see Releases for other versions
+``` sh
+# see Releases for other versions
+URL="https://storage.googleapis.com/alloydb-auth-proxy/v0.1.0"
 
-wget "$URL/$VERSION/alloydb-auth-proxy.linux.386" -O alloydb-auth-proxy
+wget "$URL/alloydb-auth-proxy.linux.386" -O alloydb-auth-proxy
 
 chmod +x cloud_sql_proxy
 ```
@@ -45,11 +45,11 @@ chmod +x cloud_sql_proxy
 <details>
 <summary>Linux arm64</summary>
 
-```
-URL="https://storage.googleapis.com/alloydb-auth-proxy"
-VERSION=v0.1.0 # see Releases for other versions
+``` sh
+# see Releases for other versions
+URL="https://storage.googleapis.com/alloydb-auth-proxy/v0.1.0"
 
-wget "$URL/$VERSION/alloydb-auth-proxy.linux.arm64" -O alloydb-auth-proxy
+wget "$URL/alloydb-auth-proxy.linux.arm64" -O alloydb-auth-proxy
 
 chmod +x cloud_sql_proxy
 ```
@@ -58,37 +58,37 @@ chmod +x cloud_sql_proxy
 <details>
 <summary>Linux arm</summary>
 
-```
-URL="https://storage.googleapis.com/alloydb-auth-proxy"
-VERSION=v0.1.0 # see Releases for other versions
+``` sh
+# see Releases for other versions
+URL="https://storage.googleapis.com/alloydb-auth-proxy/v0.1.0"
 
-wget "$URL/$VERSION/alloydb-auth-proxy.linux.arm" -O alloydb-auth-proxy
-
-chmod +x cloud_sql_proxy
-```
-</details>
-
-<details>
-<summary>Darwin amd64</summary>
-
-```
-URL="https://storage.googleapis.com/alloydb-auth-proxy"
-VERSION=v0.1.0 # see Releases for other versions
-
-wget "$URL/$VERSION/alloydb-auth-proxy.darwin.amd64" -O alloydb-auth-proxy
+wget "$URL/alloydb-auth-proxy.linux.arm" -O alloydb-auth-proxy
 
 chmod +x cloud_sql_proxy
 ```
 </details>
 
 <details>
-<summary>Darwin arm64 (Apple Silicon)</summary>
+<summary>Mac (Intel)</summary>
 
+``` sh
+# see Releases for other versions
+URL="https://storage.googleapis.com/alloydb-auth-proxy/v0.1.0"
+
+wget "$URL/alloydb-auth-proxy.darwin.amd64" -O alloydb-auth-proxy
+
+chmod +x cloud_sql_proxy
 ```
-URL="https://storage.googleapis.com/alloydb-auth-proxy"
-VERSION=v0.1.0 # see Releases for other versions
+</details>
 
-wget "$URL/$VERSION/alloydb-auth-proxy.darwin.arm64" -O alloydb-auth-proxy
+<details>
+<summary>Mac (Apple Silicon)</summary>
+
+``` sh
+# see Releases for other versions
+URL="https://storage.googleapis.com/alloydb-auth-proxy/v0.1.0"
+
+wget "$URL/alloydb-auth-proxy.darwin.arm64" -O alloydb-auth-proxy
 
 chmod +x cloud_sql_proxy
 ```
@@ -97,11 +97,11 @@ chmod +x cloud_sql_proxy
 <details>
 <summary>Windows x64</summary>
 
-```
-URL="https://storage.googleapis.com/alloydb-auth-proxy"
-VERSION=v0.1.0 # see Releases for other versions
+``` sh
+# see Releases for other versions
+URL="https://storage.googleapis.com/alloydb-auth-proxy/v0.1.0"
 
-wget "$URL/$VERSION/alloydb-auth-proxy.windows.x64.exe" -O alloydb-auth-proxy.exe
+wget "$URL/alloydb-auth-proxy.windows.x64.exe" -O alloydb-auth-proxy.exe
 
 chmod +x cloud_sql_proxy
 ```
@@ -110,11 +110,11 @@ chmod +x cloud_sql_proxy
 <details>
 <summary>Windows x86</summary>
 
-```
-URL="https://storage.googleapis.com/alloydb-auth-proxy"
-VERSION=v0.1.0 # see Releases for other versions
+``` sh
+# see Releases for other versions
+URL="https://storage.googleapis.com/alloydb-auth-proxy/v0.1.0"
 
-wget "$URL/$VERSION/alloydb-auth-proxy.windows.x86.exe" -O alloydb-auth-proxy.exe
+wget "$URL/alloydb-auth-proxy.windows.x86.exe" -O alloydb-auth-proxy.exe
 
 chmod +x cloud_sql_proxy
 ```
