@@ -318,6 +318,7 @@ Code of Conduct][code-of-conduct] for more information.
 [adc]:                   https://cloud.google.com/docs/authentication
 [about-proxy]:           https://cloud.google.com/alloydb/docs/auth-proxy/overview
 [code-of-conduct]:       CONTRIBUTING.md#contributor-code-of-conduct
+[connection-overview]:   https://cloud.google.com/alloydb/docs/auth-proxy/connect
 [contributing]:          CONTRIBUTING.md
 [releases]:              https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/releases
 [roles-and-permissions]: https://cloud.google.com/alloydb/docs/auth-proxy/overview#how-authorized
