@@ -3,7 +3,7 @@ module github.com/GoogleCloudPlatform/alloydb-auth-proxy
 go 1.16
 
 require (
-	cloud.google.com/go/alloydbconn v0.0.0-00010101000000-000000000000
+	cloud.google.com/go/alloydbconn v0.1.0
 	github.com/google/go-cmp v0.5.7
 	github.com/lib/pq v1.10.5 // indirect
 	github.com/spf13/cobra v1.2.1
@@ -12,5 +12,3 @@ require (
 	google.golang.org/api v0.74.0 // indirect
 	google.golang.org/genproto v0.0.0-20220401170504-314d38edb7de // indirect
 )
-
-replace cloud.google.com/go/alloydbconn => ../alloydb-go-connector
