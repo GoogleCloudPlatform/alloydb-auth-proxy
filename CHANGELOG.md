@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v0.1.0...v0.2.0) (2022-05-18)
+
+
+### Features
+
+* make Docker images ARM-friendly ([#20](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/20)) ([bc56066](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/bc56066f46e49543f083f634995d12a693423253))
+
 ## 0.1.0 (2022-04-27)
 
 
