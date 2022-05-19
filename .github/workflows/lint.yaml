@@ -13,10 +13,13 @@
 # limitations under the License.
 
 name: lint
-on: [pull_request]
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
 
 jobs:
   build:
+    if: ${{ github.event.action != 'labeled' || github.event.label.name == 'actions:run' }}
     name: lint
     runs-on: ubuntu-latest
     steps:
