@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.2.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v0.1.0...v0.2.0) (2022-05-19)
+
+
+### Features
+
+* make Docker images ARM-friendly ([#20](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/20)) ([bc56066](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/bc56066f46e49543f083f634995d12a693423253))
+
+
+### Bug Fixes
+
+* address alignment for 32-bit binaries ([55247b1](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/55247b10ef3215cb5d39a51a3781750bdb164c52))
+* specify scope when using --credentials-file flag ([55247b1](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/55247b10ef3215cb5d39a51a3781750bdb164c52))
+
 ## 0.1.0 (2022-04-27)
 
 
