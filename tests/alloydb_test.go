@@ -21,6 +21,7 @@ import (
 	"testing"
 
 	"cloud.google.com/go/alloydbconn/driver/pgxv4"
+	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/testutil"
 )
 
 var (
@@ -106,4 +107,20 @@ func TestPostgresAuthWithCredentialsFile(t *testing.T) {
 	proxyConnTest(t,
 		[]string{"--credentials-file", path, *alloydbConnName},
 		"alloydb3", dsn)
+}
+
+func TestAuthWithGcloudAuth(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping Postgres integration tests")
+	}
+	requirePostgresVars(t)
+
+	cleanup := testutil.ConfigureGcloud(t)
+	defer cleanup()
+
+	dsn := fmt.Sprintf("host=localhost user=%s password=%s database=%s sslmode=disable",
+		*alloydbUser, *alloydbPass, *alloydbDB)
+	proxyConnTest(t,
+		[]string{"--gcloud-auth", *alloydbConnName},
+		"pgx", dsn)
 }

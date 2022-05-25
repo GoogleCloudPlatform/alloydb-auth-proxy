@@ -25,12 +25,16 @@ import (
 
 	"cloud.google.com/go/alloydbconn"
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/proxy"
+	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/testutil"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/spf13/cobra"
 )
 
 func TestNewCommandArguments(t *testing.T) {
+	cleanup := testutil.ConfigureGcloud(t)
+	defer cleanup()
+
 	withDefaults := func(c *proxy.Config) *proxy.Config {
 		if c.Addr == "" {
 			c.Addr = "127.0.0.1"
@@ -137,6 +141,20 @@ func TestNewCommandArguments(t *testing.T) {
 				CredentialsFile: "/path/to/file",
 			}),
 		},
+		{
+			desc: "using the gcloud auth flag",
+			args: []string{"--gcloud-auth", "proj:region:inst"},
+			want: withDefaults(&proxy.Config{
+				GcloudAuth: true,
+			}),
+		},
+		{
+			desc: "using the (short) gcloud auth flag",
+			args: []string{"-g", "proj:region:inst"},
+			want: withDefaults(&proxy.Config{
+				GcloudAuth: true,
+			}),
+		},
 	}
 
 	for _, tc := range tcs {
@@ -156,7 +174,8 @@ func TestNewCommandArguments(t *testing.T) {
 				t.Fatalf("want error = nil, got = %v", err)
 			}
 
-			if got := c.conf; !cmp.Equal(tc.want, got, cmpopts.IgnoreUnexported(proxy.Config{})) {
+			opts := cmpopts.IgnoreFields(proxy.Config{}, "DialerOpts")
+			if got := c.conf; !cmp.Equal(tc.want, got, opts) {
 				t.Fatalf("want = %#v\ngot = %#v\ndiff = %v", tc.want, got, cmp.Diff(tc.want, got))
 			}
 		})
@@ -205,10 +224,22 @@ func TestNewCommandWithErrors(t *testing.T) {
 			args: []string{"/projects/proj/locations/region/clusters/clust/instances/inst?port=hi"},
 		},
 		{
-			desc: "when both token and credentials file is set",
+			desc: "when both token and credentials file are set",
 			args: []string{
 				"--token", "my-token",
 				"--credentials-file", "/path/to/file", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+		},
+		{
+			desc: "when both token and gcloud auth are set",
+			args: []string{
+				"--token", "my-token",
+				"--gcloud-auth", "proj:region:inst"},
+		},
+		{
+			desc: "when both gcloud auth and credentials file are set",
+			args: []string{
+				"--gcloud-auth",
+				"--credential-file", "/path/to/file", "proj:region:inst"},
 		},
 	}
 
