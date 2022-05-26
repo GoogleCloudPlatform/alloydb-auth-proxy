@@ -82,8 +82,12 @@ func TestPostgresUnix(t *testing.T) {
 	tmpDir, cleanup := createTempDir(t)
 	defer cleanup()
 
+	dir, err := proxy.UnixSocketDir(tmpDir, *alloydbConnName)
+	if err != nil {
+		t.Fatalf("invalid connection name: %v", *alloydbConnName)
+	}
 	dsn := fmt.Sprintf("host=%s user=%s password=%s database=%s sslmode=disable",
-		proxy.UnixAddress(tmpDir, *alloydbConnName),
+		dir,
 		*alloydbUser, *alloydbPass, *alloydbDB)
 
 	proxyConnTest(t,
