@@ -128,6 +128,8 @@ without having to manage any client SSL certificates.`,
 		"Address on which to bind AlloyDB instance listeners.")
 	cmd.PersistentFlags().IntVarP(&c.conf.Port, "port", "p", 5432,
 		"Initial port to use for listeners. Subsequent listeners increment from this value.")
+	cmd.PersistentFlags().StringVarP(&c.conf.UnixSocket, "unix-socket", "u", "",
+		`Enables Unix sockets for all listeners using the provided directory.`)
 
 	c.Command = cmd
 	return c
@@ -137,6 +139,15 @@ func parseConfig(cmd *cobra.Command, conf *proxy.Config, args []string) error {
 	// If no instance connection names were provided, error.
 	if len(args) == 0 {
 		return newBadCommandError("missing instance uri (e.g., /projects/$PROJECTS/locations/$LOCTION/clusters/$CLUSTER/instances/$INSTANCES)")
+	}
+	userHasSet := func(f string) bool {
+		return cmd.PersistentFlags().Lookup(f).Changed
+	}
+	if userHasSet("address") && userHasSet("unix-socket") {
+		return newBadCommandError("cannot specify --unix-socket and --address together")
+	}
+	if userHasSet("port") && userHasSet("unix-socket") {
+		return newBadCommandError("cannot specify --unix-socket and --port together")
 	}
 	// First, validate global config.
 	if ip := net.ParseIP(conf.Addr); ip == nil {
@@ -171,7 +182,18 @@ func parseConfig(cmd *cobra.Command, conf *proxy.Config, args []string) error {
 				return newBadCommandError(fmt.Sprintf("could not parse query: %q", res[1]))
 			}
 
-			if a, ok := q["address"]; ok {
+			a, aok := q["address"]
+			p, pok := q["port"]
+			u, uok := q["unix-socket"]
+
+			if aok && uok {
+				return newBadCommandError("cannot specify both address and unix-socket query params")
+			}
+			if pok && uok {
+				return newBadCommandError("cannot specify both port and unix-socket query params")
+			}
+
+			if aok {
 				if len(a) != 1 {
 					return newBadCommandError(fmt.Sprintf("address query param should be only one value: %q", a))
 				}
@@ -184,7 +206,7 @@ func parseConfig(cmd *cobra.Command, conf *proxy.Config, args []string) error {
 				ic.Addr = a[0]
 			}
 
-			if p, ok := q["port"]; ok {
+			if pok {
 				if len(p) != 1 {
 					return newBadCommandError(fmt.Sprintf("port query param should be only one value: %q", a))
 				}
@@ -196,6 +218,14 @@ func parseConfig(cmd *cobra.Command, conf *proxy.Config, args []string) error {
 						))
 				}
 				ic.Port = pp
+			}
+
+			if uok {
+				if len(u) != 1 {
+					return newBadCommandError(fmt.Sprintf("unix query param should be only one value: %q", a))
+				}
+				ic.UnixSocket = u[0]
+
 			}
 		}
 		ics = append(ics, ic)

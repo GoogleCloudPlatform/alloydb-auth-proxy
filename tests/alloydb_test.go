@@ -17,10 +17,12 @@ package tests
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"testing"
 
 	"cloud.google.com/go/alloydbconn/driver/pgxv4"
+	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/proxy"
 )
 
 var (
@@ -58,6 +60,34 @@ func TestPostgresTCP(t *testing.T) {
 	dsn := fmt.Sprintf("host=%v user=%v password=%v database=%v sslmode=disable",
 		*alloydbConnName, *alloydbUser, *alloydbPass, *alloydbDB)
 	proxyConnTest(t, []string{*alloydbConnName}, "alloydb1", dsn)
+}
+
+func createTempDir(t *testing.T) (string, func()) {
+	testDir, err := ioutil.TempDir("", "*")
+	if err != nil {
+		t.Fatalf("failed to create temp dir: %v", err)
+	}
+	return testDir, func() {
+		if err := os.RemoveAll(testDir); err != nil {
+			t.Logf("failed to cleanup temp dir: %v", err)
+		}
+	}
+}
+
+func TestPostgresUnix(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping Postgres integration tests")
+	}
+	requirePostgresVars(t)
+	tmpDir, cleanup := createTempDir(t)
+	defer cleanup()
+
+	dsn := fmt.Sprintf("host=%s user=%s password=%s database=%s sslmode=disable",
+		proxy.UnixAddress(tmpDir, *alloydbConnName),
+		*alloydbUser, *alloydbPass, *alloydbDB)
+
+	proxyConnTest(t,
+		[]string{"--unix-socket", tmpDir, *alloydbConnName}, "pgx", dsn)
 }
 
 func TestPostgresAuthWithToken(t *testing.T) {
