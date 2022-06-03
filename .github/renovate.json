@@ -10,15 +10,5 @@
   "semanticCommits": true,
   "postUpdateOptions": [
     "gomodTidy"
-  ],
-  "packageRules": [
-     {
-       "matchPackagePatterns": [".*"],
-       "addLabels": ["automerge"]
-     }
-  ],
-  "schedule": [
-    "after 8am on Friday",
-    "before 12pm on Friday"
   ]
 }
