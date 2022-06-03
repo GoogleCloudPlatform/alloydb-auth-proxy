@@ -48,9 +48,9 @@ tag_latest() {
         cmd="gcloud container images add-tag '$base_image:$new_version' '$base_image:latest'"
         if [ "$dry_run" != true ]
         then
-            eval $cmd
+            eval "$cmd"
         else
-            echo [DRY RUN] $cmd
+            echo "[DRY RUN] $cmd"
         fi
     done
 }
