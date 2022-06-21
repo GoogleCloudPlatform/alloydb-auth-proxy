@@ -1,5 +1,13 @@
 # AlloyDB Auth Proxy
 
+[![CI][ci-badge]][ci-build]
+[![Go Reference][pkg-badge]][pkg-docs]
+
+[ci-badge]: https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/actions/workflows/tests.yaml/badge.svg?event=push
+[ci-build]: https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/actions/workflows/tests.yaml?query=event%3Apush+branch%3Amain
+[pkg-badge]: https://pkg.go.dev/badge/github.com/GoogleCloudPlatform/alloydb-auth-proxy.svg
+[pkg-docs]: https://pkg.go.dev/github.com/GoogleCloudPlatform/alloydb-auth-proxy
+
 The AlloyDB Auth Proxy is a binary that provides IAM-based authorization and
 encryption when connecting to an AlloyDB instance.
 
