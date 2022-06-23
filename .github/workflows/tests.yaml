@@ -18,46 +18,110 @@ on:
   push:
     branches:
       - main
+  pull_request_target:
+    types: [labeled]
+  schedule:
+  - cron:  '0 2 * * *'
 
 jobs:
   integration:
-      runs-on: [self-hosted, linux, x64]
-      name: "integration tests (linux)"
-      steps:
-        - name: Setup Go
-          uses: actions/setup-go@v3
-          with:
-            go-version: "1.18"
-        - name: Checkout code
-          uses: actions/checkout@v3
-        - name: Get Secrets
-          id: 'secrets'
-          uses: 'google-github-actions/get-secretmanager-secrets@v0'
-          with:
-            secrets: |-
-              ALLOYDB_CONN_NAME:alloydb-connector-testing/ALLOYDB_CONN_NAME
-              ALLOYDB_CLUSTER_PASS:alloydb-connector-testing/ALLOYDB_CLUSTER_PASS
-        - name: Run tests
-          env:
-            ALLOYDB_DB: 'postgres'
-            ALLOYDB_USER: 'postgres'
-            ALLOYDB_PASS: '${{ steps.secrets.outputs.ALLOYDB_CLUSTER_PASS }}'
-            ALLOYDB_CONNECTION_NAME: '${{ steps.secrets.outputs.ALLOYDB_CONN_NAME }}'
-          run: |
-            go test -v -race -cover ./tests
-  build:
-      name: "unit tests"
-      runs-on: ${{ matrix.os }}
-      strategy:
-        matrix:
-          os: [macos-latest, windows-latest, ubuntu-latest]
-      steps:
-        - name: Setup Go
-          uses: actions/setup-go@v3
-          with:
-            go-version: "1.18"
-        - name: Checkout code
-          uses: actions/checkout@v3
-        - name: Run tests
-          run: |
-            go test -v -race -cover -short ./...
+    # run job on proper workflow event triggers (skip job for pull_request event from forks and only run pull_request_target for "tests: run" label)  
+    if: "${{ (github.event.action != 'labeled' && github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name) || github.event.label.name == 'tests: run' }}"
+    runs-on: [self-hosted, linux, x64]
+    name: "integration tests (linux)"
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    steps:
+      - name: Remove PR label
+        if: "${{ github.event.action == 'labeled' && github.event.label.name == 'tests: run' }}"
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                name: 'tests: run',
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number
+              });
+            } catch (e) {
+              console.log('Failed to remove label. Another job may have already removed it!');
+            }
+
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: "1.18"
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v0.8.0'
+        with:
+          workload_identity_provider: ${{ secrets.PROVIDER_NAME }}
+          service_account: ${{ secrets.SERVICE_ACCOUNT }}
+
+      - name: Get Secrets
+        id: 'secrets'
+        uses: 'google-github-actions/get-secretmanager-secrets@v0.5.0'
+        with:
+          secrets: |-
+            ALLOYDB_CONN_NAME:${{ secrets.GOOGLE_CLOUD_PROJECT }}/ALLOYDB_CONN_NAME
+            ALLOYDB_CLUSTER_PASS:${{ secrets.GOOGLE_CLOUD_PROJECT }}/ALLOYDB_CLUSTER_PASS
+
+      - name: Run tests
+        env:
+          ALLOYDB_DB: 'postgres'
+          ALLOYDB_USER: 'postgres'
+          ALLOYDB_PASS: '${{ steps.secrets.outputs.ALLOYDB_CLUSTER_PASS }}'
+          ALLOYDB_CONNECTION_NAME: '${{ steps.secrets.outputs.ALLOYDB_CONN_NAME }}'
+        run: |
+          go test -v -race -cover ./tests
+
+  unit:
+    if: "${{ github.event.action != 'labeled' || github.event.label.name == 'tests: run' }}"
+    name: "unit tests"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+      fail-fast: false
+    steps:
+      - name: Remove PR label
+        if: "${{ github.event.action == 'labeled' && github.event.label.name == 'tests: run' }}"
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                name: 'tests: run',
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number
+              });
+            } catch (e) {
+              console.log('Failed to remove label. Another job may have already removed it!');
+            }
+
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: "1.18"
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+
+      - name: Run tests
+        run: |
+          go test -v -race -cover -short ./...
