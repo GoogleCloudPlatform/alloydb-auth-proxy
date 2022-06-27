@@ -138,20 +138,6 @@ func TestNewCommandArguments(t *testing.T) {
 			}),
 		},
 		{
-			desc: "using the gcloud auth flag",
-			args: []string{"--gcloud-auth", "/projects/proj/locations/region/clusters/clust/instances/inst"},
-			want: withDefaults(&proxy.Config{
-				GcloudAuth: true,
-			}),
-		},
-		{
-			desc: "using the (short) gcloud auth flag",
-			args: []string{"-g", "/projects/proj/locations/region/clusters/clust/instances/inst"},
-			want: withDefaults(&proxy.Config{
-				GcloudAuth: true,
-			}),
-		},
-		{
 			desc: "using the unix socket flag",
 			args: []string{"--unix-socket", "/path/to/dir/", "/projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
@@ -196,6 +182,50 @@ func TestNewCommandArguments(t *testing.T) {
 			opts := cmpopts.IgnoreFields(proxy.Config{}, "DialerOpts")
 			if got := c.conf; !cmp.Equal(tc.want, got, opts) {
 				t.Fatalf("want = %#v\ngot = %#v\ndiff = %v", tc.want, got, cmp.Diff(tc.want, got))
+			}
+		})
+	}
+}
+
+func TestNewCommandWithGcloudAuth(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping Gcloud auth test")
+	}
+	tcs := []struct {
+		desc string
+		args []string
+		want bool
+	}{
+		{
+			desc: "using the gcloud auth flag",
+			args: []string{"--gcloud-auth", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+			want: true,
+		},
+		{
+			desc: "using the (short) gcloud auth flag",
+			args: []string{"-g", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+			want: true,
+		},
+	}
+	for _, tc := range tcs {
+		t.Run(tc.desc, func(t *testing.T) {
+			c := NewCommand()
+			// Keep the test output quiet
+			c.SilenceUsage = true
+			c.SilenceErrors = true
+			// Disable execute behavior
+			c.RunE = func(*cobra.Command, []string) error {
+				return nil
+			}
+			c.SetArgs(tc.args)
+
+			err := c.Execute()
+			if err != nil {
+				t.Fatalf("want error = nil, got = %v", err)
+			}
+
+			if got := c.conf.GcloudAuth; got != tc.want {
+				t.Fatalf("want = %v, got = %v", tc.want, got)
 			}
 		})
 	}
