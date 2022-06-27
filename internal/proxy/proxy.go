@@ -19,6 +19,10 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"os"
+	"path/filepath"
+	"regexp"
+	"strings"
 	"sync"
 	"time"
 
@@ -36,6 +40,10 @@ type InstanceConnConfig struct {
 	Addr string
 	// Port is the port on which to bind a listener for the instance.
 	Port int
+	// UnixSocket is the directory where a Unix socket will be created,
+	// connected to the Cloud SQL instance. If set, takes precedence over Addr
+	// and Port.
+	UnixSocket string
 }
 
 // Config contains all the configuration provided by the caller.
@@ -56,6 +64,10 @@ type Config struct {
 	// Port is the initial port to bind to. Subsequent instances bind to
 	// increments from this value.
 	Port int
+
+	// UnixSocket is the directory where Unix sockets will be created,
+	// connected to any Instances. If set, takes precedence over Addr and Port.
+	UnixSocket string
 
 	// Instances are configuration for individual instances. Instance
 	// configuration takes precedence over global configuration.
@@ -87,6 +99,28 @@ func (c *portConfig) nextPort() int {
 	return p
 }
 
+var (
+	// Instance URI is in the format:
+	// '/projects/<PROJECT>/locations/<REGION>/clusters/<CLUSTER>/instances/<INSTANCE>'
+	// Additionally, we have to support legacy "domain-scoped" projects (e.g. "google.com:PROJECT")
+	instURIRegex = regexp.MustCompile("projects/([^:]+(:[^:]+)?)/locations/([^:]+)/clusters/([^:]+)/instances/([^:]+)")
+)
+
+// UnixSocketDir returns a shorted instance connection name to prevent exceeding
+// the Unix socket length.
+func UnixSocketDir(dir, inst string) (string, error) {
+	m := instURIRegex.FindSubmatch([]byte(inst))
+	if m == nil {
+		return "", fmt.Errorf("invalid instance name: %v", inst)
+	}
+	project := string(m[1])
+	region := string(m[3])
+	cluster := string(m[4])
+	name := string(m[5])
+	shortName := strings.Join([]string{project, region, cluster, name}, ".")
+	return filepath.Join(dir, shortName), nil
+}
+
 // Client represents the state of the current instantiation of the proxy.
 type Client struct {
 	cmd    *cobra.Command
@@ -98,31 +132,79 @@ type Client struct {
 
 // NewClient completes the initial setup required to get the proxy to a "steady" state.
 func NewClient(ctx context.Context, d alloydb.Dialer, cmd *cobra.Command, conf *Config) (*Client, error) {
-	var mnts []*socketMount
 	pc := newPortConfig(conf.Port)
+	var mnts []*socketMount
 	for _, inst := range conf.Instances {
+		var (
+			// network is one of "tcp" or "unix"
+			network string
+			// address is either a TCP host port, or a Unix socket
+			address string
+		)
+		// IF
+		//   a global Unix socket directory is NOT set AND
+		//   an instance-level Unix socket is NOT set
+		//   (e.g.,  I didn't set a Unix socket globally or for this instance)
+		// OR
+		//   an instance-level TCP address or port IS set
+		//   (e.g., I'm overriding any global settings to use TCP for this
+		//   instance)
+		// use a TCP listener.
+		// Otherwise, use a Unix socket.
+		if (conf.UnixSocket == "" && inst.UnixSocket == "") ||
+			(inst.Addr != "" || inst.Port != 0) {
+			network = "tcp"
+
+			a := conf.Addr
+			if inst.Addr != "" {
+				a = inst.Addr
+			}
+
+			var np int
+			switch {
+			case inst.Port != 0:
+				np = inst.Port
+			case conf.Port != 0:
+				np = pc.nextPort()
+			default:
+				np = pc.nextPort()
+			}
+
+			address = net.JoinHostPort(a, fmt.Sprint(np))
+		} else {
+			network = "unix"
+
+			dir := conf.UnixSocket
+			if dir == "" {
+				dir = inst.UnixSocket
+			}
+			ud, err := UnixSocketDir(dir, inst.Name)
+			if err != nil {
+				return nil, err
+			}
+			// Create the parent directory that will hold the socket.
+			if _, err := os.Stat(ud); err != nil {
+				if err = os.Mkdir(ud, 0777); err != nil {
+					return nil, err
+				}
+			}
+			// use the Postgres-specific socket name
+			address = filepath.Join(ud, ".s.PGSQL.5432")
+		}
+
 		m := &socketMount{inst: inst.Name}
-		a := conf.Addr
-		if inst.Addr != "" {
-			a = inst.Addr
-		}
-		var np int
-		switch {
-		case inst.Port != 0:
-			np = inst.Port
-		default: // use next increment from conf.Port
-			np = pc.nextPort()
-		}
-		addr, err := m.listen(ctx, "tcp", net.JoinHostPort(a, fmt.Sprint(np)))
+		addr, err := m.listen(ctx, network, address)
 		if err != nil {
 			for _, m := range mnts {
 				m.close()
 			}
 			return nil, fmt.Errorf("[%v] Unable to mount socket: %v", inst.Name, err)
 		}
+
 		cmd.Printf("[%s] Listening on %s\n", inst.Name, addr.String())
 		mnts = append(mnts, m)
 	}
+
 	return &Client{mnts: mnts, cmd: cmd, dialer: d}, nil
 }
 
@@ -202,9 +284,9 @@ type socketMount struct {
 }
 
 // listen causes a socketMount to create a Listener at the specified network address.
-func (s *socketMount) listen(ctx context.Context, network string, host string) (net.Addr, error) {
+func (s *socketMount) listen(ctx context.Context, network string, address string) (net.Addr, error) {
 	lc := net.ListenConfig{KeepAlive: 30 * time.Second}
-	l, err := lc.Listen(ctx, network, host)
+	l, err := lc.Listen(ctx, network, address)
 	if err != nil {
 		return nil, err
 	}

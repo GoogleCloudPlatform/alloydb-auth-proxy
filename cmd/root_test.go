@@ -143,16 +143,39 @@ func TestNewCommandArguments(t *testing.T) {
 		},
 		{
 			desc: "using the gcloud auth flag",
-			args: []string{"--gcloud-auth", "proj:region:inst"},
+			args: []string{"--gcloud-auth", "/projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
 				GcloudAuth: true,
 			}),
 		},
 		{
 			desc: "using the (short) gcloud auth flag",
-			args: []string{"-g", "proj:region:inst"},
+			args: []string{"-g", "/projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
 				GcloudAuth: true,
+			}),
+		},
+		{
+			desc: "using the unix socket flag",
+			args: []string{"--unix-socket", "/path/to/dir/", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+			want: withDefaults(&proxy.Config{
+				UnixSocket: "/path/to/dir/",
+			}),
+		},
+		{
+			desc: "using the (short) unix socket flag",
+			args: []string{"-u", "/path/to/dir/", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+			want: withDefaults(&proxy.Config{
+				UnixSocket: "/path/to/dir/",
+			}),
+		},
+		{
+			desc: "using the unix socket query param",
+			args: []string{"/projects/proj/locations/region/clusters/clust/instances/inst?unix-socket=/path/to/dir/"},
+			want: withDefaults(&proxy.Config{
+				Instances: []proxy.InstanceConnConfig{{
+					UnixSocket: "/path/to/dir/",
+				}},
 			}),
 		},
 	}
@@ -240,6 +263,26 @@ func TestNewCommandWithErrors(t *testing.T) {
 			args: []string{
 				"--gcloud-auth",
 				"--credential-file", "/path/to/file", "proj:region:inst"},
+		},
+		{
+			desc: "when the unix socket query param contains multiple values",
+			args: []string{"/projects/proj/locations/region/clusters/clust/instances/inst?unix-socket=/one&unix-socket=/two"},
+		},
+		{
+			desc: "using the unix socket flag with addr",
+			args: []string{"-u", "/path/to/dir/", "-a", "127.0.0.1", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+		},
+		{
+			desc: "using the unix socket flag with port",
+			args: []string{"-u", "/path/to/dir/", "-p", "5432", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+		},
+		{
+			desc: "using the unix socket and addr query params",
+			args: []string{"/projects/proj/locations/region/clusters/clust/instances/inst?unix-socket=/path&address=127.0.0.1"},
+		},
+		{
+			desc: "using the unix socket and port query params",
+			args: []string{"/projects/proj/locations/region/clusters/clust/instances/inst?unix-socket=/path&port=5000"},
 		},
 	}
 

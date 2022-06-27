@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v0.2.0...v0.3.0) (2022-05-31)
+
+
+### Features
+
+* add support for unix sockets ([#44](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/44)) ([783db6a](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/783db6aba3d408fa57d7b86db895fae1f97583c9))
+
 ## [0.2.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v0.1.0...v0.2.0) (2022-05-19)
 
 
