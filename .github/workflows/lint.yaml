@@ -21,7 +21,7 @@ on:
 jobs:
   lint:
     if: "${{ github.event.action != 'labeled' || github.event.label.name == 'tests: run' }}"
-    name: lint
+    name: run lint
     runs-on: ubuntu-latest
     steps:
       - name: Setup Go
