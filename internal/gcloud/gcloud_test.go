@@ -18,7 +18,6 @@ import (
 	"testing"
 
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/gcloud"
-	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/testutil"
 )
 
 func TestGcloud(t *testing.T) {

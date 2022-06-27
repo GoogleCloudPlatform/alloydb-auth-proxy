@@ -25,7 +25,6 @@ import (
 
 	"cloud.google.com/go/alloydbconn"
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/proxy"
-	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/testutil"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/spf13/cobra"
