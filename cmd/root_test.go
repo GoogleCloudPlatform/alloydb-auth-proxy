@@ -32,9 +32,6 @@ import (
 )
 
 func TestNewCommandArguments(t *testing.T) {
-	cleanup := testutil.ConfigureGcloud(t)
-	defer cleanup()
-
 	withDefaults := func(c *proxy.Config) *proxy.Config {
 		if c.Addr == "" {
 			c.Addr = "127.0.0.1"
