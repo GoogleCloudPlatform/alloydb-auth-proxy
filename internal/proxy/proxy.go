@@ -29,7 +29,6 @@ import (
 	"cloud.google.com/go/alloydbconn"
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/alloydb"
 	"github.com/spf13/cobra"
-	"golang.org/x/oauth2"
 )
 
 // InstanceConnConfig holds the configuration for an individual instance
@@ -55,6 +54,10 @@ type Config struct {
 	// CredentialsFile is the path to a service account key.
 	CredentialsFile string
 
+	// GcloudAuth set whether to use Gcloud's config helper to retrieve a
+	// token for authentication.
+	GcloudAuth bool
+
 	// Addr is the address on which to bind all instances.
 	Addr string
 
@@ -73,21 +76,10 @@ type Config struct {
 	// Dialer specifies the dialer to use when connecting to AlloyDB
 	// instances.
 	Dialer alloydb.Dialer
-}
 
-func (c *Config) DialerOpts() []alloydbconn.Option {
-	var opts []alloydbconn.Option
-	switch {
-	case c.Token != "":
-		opts = append(opts, alloydbconn.WithTokenSource(
-			oauth2.StaticTokenSource(&oauth2.Token{AccessToken: c.Token}),
-		))
-	case c.CredentialsFile != "":
-		opts = append(opts, alloydbconn.WithCredentialsFile(
-			c.CredentialsFile,
-		))
-	}
-	return opts
+	// DialerOpts specifies the opts to use when creating a new dialer. This
+	// value is ignored when a Dialer has been set.
+	DialerOpts []alloydbconn.Option
 }
 
 type portConfig struct {
