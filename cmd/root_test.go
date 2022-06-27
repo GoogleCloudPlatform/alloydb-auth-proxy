@@ -179,8 +179,53 @@ func TestNewCommandArguments(t *testing.T) {
 				t.Fatalf("want error = nil, got = %v", err)
 			}
 
-			if got := c.conf; !cmp.Equal(tc.want, got, cmpopts.IgnoreUnexported(proxy.Config{})) {
+			opts := cmpopts.IgnoreFields(proxy.Config{}, "DialerOpts")
+			if got := c.conf; !cmp.Equal(tc.want, got, opts) {
 				t.Fatalf("want = %#v\ngot = %#v\ndiff = %v", tc.want, got, cmp.Diff(tc.want, got))
+			}
+		})
+	}
+}
+
+func TestNewCommandWithGcloudAuth(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping Gcloud auth test")
+	}
+	tcs := []struct {
+		desc string
+		args []string
+		want bool
+	}{
+		{
+			desc: "using the gcloud auth flag",
+			args: []string{"--gcloud-auth", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+			want: true,
+		},
+		{
+			desc: "using the (short) gcloud auth flag",
+			args: []string{"-g", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+			want: true,
+		},
+	}
+	for _, tc := range tcs {
+		t.Run(tc.desc, func(t *testing.T) {
+			c := NewCommand()
+			// Keep the test output quiet
+			c.SilenceUsage = true
+			c.SilenceErrors = true
+			// Disable execute behavior
+			c.RunE = func(*cobra.Command, []string) error {
+				return nil
+			}
+			c.SetArgs(tc.args)
+
+			err := c.Execute()
+			if err != nil {
+				t.Fatalf("want error = nil, got = %v", err)
+			}
+
+			if got := c.conf.GcloudAuth; got != tc.want {
+				t.Fatalf("want = %v, got = %v", tc.want, got)
 			}
 		})
 	}
@@ -228,10 +273,22 @@ func TestNewCommandWithErrors(t *testing.T) {
 			args: []string{"/projects/proj/locations/region/clusters/clust/instances/inst?port=hi"},
 		},
 		{
-			desc: "when both token and credentials file is set",
+			desc: "when both token and credentials file are set",
 			args: []string{
 				"--token", "my-token",
 				"--credentials-file", "/path/to/file", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+		},
+		{
+			desc: "when both token and gcloud auth are set",
+			args: []string{
+				"--token", "my-token",
+				"--gcloud-auth", "proj:region:inst"},
+		},
+		{
+			desc: "when both gcloud auth and credentials file are set",
+			args: []string{
+				"--gcloud-auth",
+				"--credential-file", "/path/to/file", "proj:region:inst"},
 		},
 		{
 			desc: "when the unix socket query param contains multiple values",
