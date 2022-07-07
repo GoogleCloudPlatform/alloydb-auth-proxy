@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	cloud.google.com/go/alloydbconn v0.1.1
-	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
+	contrib.go.opencensus.io/exporter/prometheus v0.4.1
 	github.com/google/go-cmp v0.5.8
 	github.com/lib/pq v1.10.5 // indirect
 	github.com/spf13/cobra v1.5.0
