@@ -362,7 +362,7 @@ func (*spyDialer) Close() error {
 }
 
 func TestCommandWithCustomDialer(t *testing.T) {
-	want := "/projects/my-project/locations/my-region/clusters/my-cluster/instances/my-instance"
+	want := "projects/my-project/locations/my-region/clusters/my-cluster/instances/my-instance"
 	s := &spyDialer{}
 	c := NewCommand(WithDialer(s))
 	// Keep the test output quiet
