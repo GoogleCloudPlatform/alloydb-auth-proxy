@@ -24,6 +24,7 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"cloud.google.com/go/alloydbconn"
@@ -43,7 +44,7 @@ type InstanceConnConfig struct {
 	// Port is the port on which to bind a listener for the instance.
 	Port int
 	// UnixSocket is the directory where a Unix socket will be created,
-	// connected to the Cloud SQL instance. If set, takes precedence over Addr
+	// connected to the AlloyDB instance. If set, takes precedence over Addr
 	// and Port.
 	UnixSocket string
 }
@@ -78,6 +79,11 @@ type Config struct {
 	// Instances are configuration for individual instances. Instance
 	// configuration takes precedence over global configuration.
 	Instances []InstanceConnConfig
+
+	// MaxConnections are the maximum number of connections the Client may
+	// establish to the AlloyDB server side proxy before refusing additional
+	// connections. A zero-value indicates no limit.
+	MaxConnections uint64
 
 	// Dialer specifies the dialer to use when connecting to AlloyDB
 	// instances.
@@ -150,8 +156,17 @@ func UnixSocketDir(dir, inst string) (string, error) {
 	return filepath.Join(dir, shortName), nil
 }
 
-// Client represents the state of the current instantiation of the proxy.
+// Client proxies connections from a local client to the remote server side
+// proxy for multiple AlloyDB instances.
 type Client struct {
+	// connCount tracks the number of all open connections from the Client to
+	// all AlloyDB instances.
+	connCount uint64
+
+	// maxConns is the maximum number of allowed connections tracked by
+	// connCount. If not set, there is no limit.
+	maxConns uint64
+
 	cmd    *cobra.Command
 	dialer alloydb.Dialer
 
@@ -194,10 +209,17 @@ func NewClient(ctx context.Context, cmd *cobra.Command, conf *Config) (*Client, 
 		mnts = append(mnts, m)
 	}
 
-	return &Client{mnts: mnts, cmd: cmd, dialer: d}, nil
+	c := &Client{
+		mnts:     mnts,
+		cmd:      cmd,
+		dialer:   d,
+		maxConns: conf.MaxConnections,
+	}
+	return c, nil
 }
 
-// Serve listens on the mounted ports and beging proxying the connections to the instances.
+// Serve starts proxying connections for all configured instances using the
+// associated socket.
 func (c *Client) Serve(ctx context.Context) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
@@ -273,6 +295,19 @@ func (c *Client) serveSocketMount(ctx context.Context, s *socketMount) error {
 		// handle the connection in a separate goroutine
 		go func() {
 			c.cmd.Printf("[%s] accepted connection from %s\n", s.inst, cConn.RemoteAddr())
+
+			// A client has established a connection to the local socket. Before
+			// we initiate a connection to the AlloyDB backend, increment the
+			// connection counter. If the total number of connections exceeds
+			// the maximum, refuse to connect and close the client connection.
+			count := atomic.AddUint64(&c.connCount, 1)
+			defer atomic.AddUint64(&c.connCount, ^uint64(0))
+
+			if c.maxConns > 0 && count > c.maxConns {
+				c.cmd.Printf("max connections (%v) exceeded, refusing new connection\n", c.maxConns)
+				_ = cConn.Close()
+				return
+			}
 
 			// give a max of 30 seconds to connect to the instance
 			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
