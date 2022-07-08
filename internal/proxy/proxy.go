@@ -50,7 +50,8 @@ type InstanceConnConfig struct {
 
 // Config contains all the configuration provided by the caller.
 type Config struct {
-	// UserAgent is the user agent to use when connecting to the cloudsql instance
+	// UserAgent is the user agent to use when sending requests to the Admin
+	// API.
 	UserAgent string
 
 	// Token is the Bearer token used for authorization.
