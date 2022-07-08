@@ -28,7 +28,9 @@ import (
 
 	"cloud.google.com/go/alloydbconn"
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/alloydb"
+	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/gcloud"
 	"github.com/spf13/cobra"
+	"golang.org/x/oauth2"
 )
 
 // InstanceConnConfig holds the configuration for an individual instance
@@ -48,6 +50,10 @@ type InstanceConnConfig struct {
 
 // Config contains all the configuration provided by the caller.
 type Config struct {
+	// UserAgent is the user agent to use when sending requests to the Admin
+	// API.
+	UserAgent string
+
 	// Token is the Bearer token used for authorization.
 	Token string
 
@@ -76,10 +82,33 @@ type Config struct {
 	// Dialer specifies the dialer to use when connecting to AlloyDB
 	// instances.
 	Dialer alloydb.Dialer
+}
 
-	// DialerOpts specifies the opts to use when creating a new dialer. This
-	// value is ignored when a Dialer has been set.
-	DialerOpts []alloydbconn.Option
+// DialerOptions builds appropriate list of options from the Config
+// values for use by alloydbconn.NewClient()
+func (c *Config) DialerOptions() ([]alloydbconn.Option, error) {
+	opts := []alloydbconn.Option{
+		alloydbconn.WithUserAgent(c.UserAgent),
+	}
+	switch {
+	case c.Token != "":
+		opts = append(opts, alloydbconn.WithTokenSource(
+			oauth2.StaticTokenSource(&oauth2.Token{AccessToken: c.Token}),
+		))
+	case c.CredentialsFile != "":
+		opts = append(opts, alloydbconn.WithCredentialsFile(
+			c.CredentialsFile,
+		))
+	case c.GcloudAuth:
+		ts, err := gcloud.TokenSource()
+		if err != nil {
+			return nil, err
+		}
+		opts = append(opts, alloydbconn.WithTokenSource(ts))
+	default:
+	}
+
+	return opts, nil
 }
 
 type portConfig struct {
@@ -131,7 +160,22 @@ type Client struct {
 }
 
 // NewClient completes the initial setup required to get the proxy to a "steady" state.
-func NewClient(ctx context.Context, d alloydb.Dialer, cmd *cobra.Command, conf *Config) (*Client, error) {
+func NewClient(ctx context.Context, cmd *cobra.Command, conf *Config) (*Client, error) {
+	// Check if the caller has configured a dialer.
+	// Otherwise, initialize a new one.
+	d := conf.Dialer
+	if d == nil {
+		var err error
+		dialerOpts, err := conf.DialerOptions()
+		if err != nil {
+			return nil, fmt.Errorf("error initializing dialer: %v", err)
+		}
+		d, err = alloydbconn.NewDialer(ctx, dialerOpts...)
+		if err != nil {
+			return nil, fmt.Errorf("error initializing dialer: %v", err)
+		}
+	}
+
 	pc := newPortConfig(conf.Port)
 	var mnts []*socketMount
 	for _, inst := range conf.Instances {

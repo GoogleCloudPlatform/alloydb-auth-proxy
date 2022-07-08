@@ -29,15 +29,12 @@ import (
 	"syscall"
 	"time"
 
-	"cloud.google.com/go/alloydbconn"
 	"contrib.go.opencensus.io/exporter/prometheus"
 	"contrib.go.opencensus.io/exporter/stackdriver"
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/alloydb"
-	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/gcloud"
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/proxy"
 	"github.com/spf13/cobra"
 	"go.opencensus.io/trace"
-	"golang.org/x/oauth2"
 )
 
 var (
@@ -171,6 +168,9 @@ func parseConfig(cmd *cobra.Command, conf *proxy.Config, args []string) error {
 	if len(args) == 0 {
 		return newBadCommandError("missing instance uri (e.g., /projects/$PROJECTS/locations/$LOCTION/clusters/$CLUSTER/instances/$INSTANCES)")
 	}
+
+	conf.UserAgent = userAgent
+
 	userHasSet := func(f string) bool {
 		return cmd.PersistentFlags().Lookup(f).Changed
 	}
@@ -195,31 +195,6 @@ func parseConfig(cmd *cobra.Command, conf *proxy.Config, args []string) error {
 	if conf.CredentialsFile != "" && conf.GcloudAuth {
 		return newBadCommandError("cannot specify --credentials-file and --gcloud-auth flags at the same time")
 	}
-	opts := []alloydbconn.Option{
-		alloydbconn.WithUserAgent(userAgent),
-	}
-	switch {
-	case conf.Token != "":
-		cmd.Printf("Authorizing with the -token flag\n")
-		opts = append(opts, alloydbconn.WithTokenSource(
-			oauth2.StaticTokenSource(&oauth2.Token{AccessToken: conf.Token}),
-		))
-	case conf.CredentialsFile != "":
-		cmd.Printf("Authorizing with the credentials file at %q\n", conf.CredentialsFile)
-		opts = append(opts, alloydbconn.WithCredentialsFile(
-			conf.CredentialsFile,
-		))
-	case conf.GcloudAuth:
-		cmd.Println("Authorizing with gcloud user credentials")
-		ts, err := gcloud.TokenSource()
-		if err != nil {
-			return err
-		}
-		opts = append(opts, alloydbconn.WithTokenSource(ts))
-	default:
-		cmd.Println("Authorizing with Application Default Credentials")
-	}
-	conf.DialerOpts = opts
 
 	if userHasSet("http-port") && !userHasSet("prometheus-namespace") {
 		return newBadCommandError("cannot specify --http-port without --prometheus-namespace")
@@ -394,18 +369,7 @@ func runSignalWrapper(cmd *Command) error {
 	startCh := make(chan *proxy.Client)
 	go func() {
 		defer close(startCh)
-		// Check if the caller has configured a dialer.
-		// Otherwise, initialize a new one.
-		d := cmd.conf.Dialer
-		if d == nil {
-			var err error
-			d, err = alloydbconn.NewDialer(ctx, cmd.conf.DialerOpts...)
-			if err != nil {
-				shutdownCh <- fmt.Errorf("error initializing dialer: %v", err)
-				return
-			}
-		}
-		p, err := proxy.NewClient(ctx, d, cmd.Command, cmd.conf)
+		p, err := proxy.NewClient(ctx, cmd.Command, cmd.conf)
 		if err != nil {
 			shutdownCh <- fmt.Errorf("unable to start: %v", err)
 			return
