@@ -163,6 +163,13 @@ func TestNewCommandArguments(t *testing.T) {
 				}},
 			}),
 		},
+		{
+			desc: "using the max connections flag",
+			args: []string{"--max-connections", "1", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+			want: withDefaults(&proxy.Config{
+				MaxConnections: 1,
+			}),
+		},
 	}
 
 	for _, tc := range tcs {

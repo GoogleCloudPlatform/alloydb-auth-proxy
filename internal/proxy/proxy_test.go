@@ -17,10 +17,12 @@ package proxy_test
 import (
 	"context"
 	"errors"
+	"io"
 	"io/ioutil"
 	"net"
 	"os"
 	"path/filepath"
+	"sync"
 	"testing"
 	"time"
 
@@ -29,8 +31,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type fakeDialer struct{}
-
 type testCase struct {
 	desc          string
 	in            *proxy.Config
@@ -38,12 +38,26 @@ type testCase struct {
 	wantUnixAddrs []string
 }
 
-func (fakeDialer) Dial(ctx context.Context, inst string, opts ...alloydbconn.DialOption) (net.Conn, error) {
-	conn, _ := net.Pipe()
-	return conn, nil
+type fakeDialer struct {
+	mu        sync.Mutex
+	dialCount int
 }
 
-func (fakeDialer) Close() error {
+func (f *fakeDialer) Dial(ctx context.Context, inst string, opts ...alloydbconn.DialOption) (net.Conn, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.dialCount++
+	c1, _ := net.Pipe()
+	return c1, nil
+}
+
+func (f *fakeDialer) dialAttempts() int {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	return f.dialCount
+}
+
+func (*fakeDialer) Close() error {
 	return nil
 }
 
@@ -196,7 +210,7 @@ func TestClientInitialization(t *testing.T) {
 
 	for _, tc := range tcs {
 		t.Run(tc.desc, func(t *testing.T) {
-			tc.in.Dialer = fakeDialer{}
+			tc.in.Dialer = &fakeDialer{}
 			c, err := proxy.NewClient(ctx, &cobra.Command{}, tc.in)
 			if err != nil {
 				t.Fatalf("want error = nil, got = %v", err)
@@ -227,6 +241,51 @@ func TestClientInitialization(t *testing.T) {
 	}
 }
 
+func TestClientLimitsMaxConnections(t *testing.T) {
+	d := &fakeDialer{}
+	in := &proxy.Config{
+		Addr: "127.0.0.1",
+		Port: 5000,
+		Instances: []proxy.InstanceConnConfig{
+			{Name: "proj:region:pg"},
+		},
+		MaxConnections: 1,
+		Dialer:         d,
+	}
+	c, err := proxy.NewClient(context.Background(), &cobra.Command{}, in)
+	if err != nil {
+		t.Fatalf("proxy.NewClient error: %v", err)
+	}
+	defer c.Close()
+	go c.Serve(context.Background())
+
+	conn1, err1 := net.Dial("tcp", "127.0.0.1:5000")
+	if err1 != nil {
+		t.Fatalf("net.Dial error: %v", err1)
+	}
+	defer conn1.Close()
+
+	conn2, err2 := net.Dial("tcp", "127.0.0.1:5000")
+	if err2 != nil {
+		t.Fatalf("net.Dial error: %v", err1)
+	}
+	defer conn2.Close()
+
+	// try to read to check if the connection is closed
+	// wait only a second for the result (since nothing is writing to the
+	// socket)
+	conn2.SetReadDeadline(time.Now().Add(time.Second))
+	_, rErr := conn2.Read(make([]byte, 1))
+	if rErr != io.EOF {
+		t.Fatalf("conn.Read should return io.EOF, got = %v", rErr)
+	}
+
+	want := 1
+	if got := d.dialAttempts(); got != want {
+		t.Fatalf("dial attempts did not match expected, want = %v, got = %v", want, got)
+	}
+}
+
 func TestClientClosesCleanly(t *testing.T) {
 	in := &proxy.Config{
 		Addr: "127.0.0.1",
@@ -234,7 +293,7 @@ func TestClientClosesCleanly(t *testing.T) {
 		Instances: []proxy.InstanceConnConfig{
 			{Name: "proj:reg:inst"},
 		},
-		Dialer: fakeDialer{},
+		Dialer: &fakeDialer{},
 	}
 	c, err := proxy.NewClient(context.Background(), &cobra.Command{}, in)
 	if err != nil {
@@ -261,7 +320,7 @@ func TestClosesWithError(t *testing.T) {
 		Instances: []proxy.InstanceConnConfig{
 			{Name: "proj:reg:inst"},
 		},
-		Dialer: errorDialer{},
+		Dialer: &errorDialer{},
 	}
 	c, err := proxy.NewClient(context.Background(), &cobra.Command{}, in)
 	if err != nil {
@@ -315,7 +374,7 @@ func TestClientInitializationWorksRepeatedly(t *testing.T) {
 		Instances: []proxy.InstanceConnConfig{
 			{Name: "/projects/proj/locations/region/clusters/clust/instances/inst1"},
 		},
-		Dialer: fakeDialer{},
+		Dialer: &fakeDialer{},
 	}
 	c, err := proxy.NewClient(ctx, &cobra.Command{}, in)
 	if err != nil {
