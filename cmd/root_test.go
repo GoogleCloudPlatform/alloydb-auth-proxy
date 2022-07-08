@@ -27,12 +27,14 @@ import (
 	"cloud.google.com/go/alloydbconn"
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/proxy"
 	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/spf13/cobra"
 )
 
 func TestNewCommandArguments(t *testing.T) {
 	withDefaults := func(c *proxy.Config) *proxy.Config {
+		if c.UserAgent == "" {
+			c.UserAgent = userAgent
+		}
 		if c.Addr == "" {
 			c.Addr = "127.0.0.1"
 		}
@@ -180,8 +182,7 @@ func TestNewCommandArguments(t *testing.T) {
 				t.Fatalf("want error = nil, got = %v", err)
 			}
 
-			opts := cmpopts.IgnoreFields(proxy.Config{}, "DialerOpts")
-			if got := c.conf; !cmp.Equal(tc.want, got, opts) {
+			if got := c.conf; !cmp.Equal(tc.want, got) {
 				t.Fatalf("want = %#v\ngot = %#v\ndiff = %v", tc.want, got, cmp.Diff(tc.want, got))
 			}
 		})
