@@ -161,10 +161,6 @@ func TestNewCommandArguments(t *testing.T) {
 				}},
 			}),
 		},
-		{
-			desc: "enabling a Prometheus port without a namespace",
-			args: []string{"--htto-port", "1111", "proj:region:inst"},
-		},
 	}
 
 	for _, tc := range tcs {
@@ -315,6 +311,10 @@ func TestNewCommandWithErrors(t *testing.T) {
 			desc: "using the unix socket and port query params",
 			args: []string{"/projects/proj/locations/region/clusters/clust/instances/inst?unix-socket=/path&port=5000"},
 		},
+		{
+			desc: "enabling a Prometheus port without a namespace",
+			args: []string{"--http-port", "1111", "proj:region:inst"},
+		},
 	}
 
 	for _, tc := range tcs {
@@ -372,11 +372,7 @@ func TestCommandWithCustomDialer(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	go func() {
-		if err := c.ExecuteContext(ctx); !errors.As(err, &errSigInt) {
-			t.Fatalf("want errSigInt, got = %v", err)
-		}
-	}()
+	go c.ExecuteContext(ctx)
 
 	// try will run f count times, returning early if f succeeds, or failing
 	// when count has been exceeded.
