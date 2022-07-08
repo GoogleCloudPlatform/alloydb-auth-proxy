@@ -217,10 +217,7 @@ func TestClientInitialization(t *testing.T) {
 			}
 			defer c.Close()
 			for _, addr := range tc.wantTCPAddrs {
-				conn, err := net.Dial("tcp", addr)
-				if err != nil {
-					t.Fatalf("want error = nil, got = %v", err)
-				}
+				conn := tryTCPDial(t, addr)
 				err = conn.Close()
 				if err != nil {
 					t.Logf("failed to close connection: %v", err)
@@ -239,6 +236,25 @@ func TestClientInitialization(t *testing.T) {
 			}
 		})
 	}
+}
+
+func tryTCPDial(t *testing.T, addr string) net.Conn {
+	attempts := 10
+	var (
+		conn net.Conn
+		err  error
+	)
+	for i := 0; i < attempts; i++ {
+		conn, err = net.Dial("tcp", addr)
+		if err != nil {
+			time.Sleep(100 * time.Millisecond)
+			continue
+		}
+		return conn
+	}
+
+	t.Fatalf("failed to dial in %v attempts: %v", attempts, err)
+	return nil
 }
 
 func TestClientLimitsMaxConnections(t *testing.T) {
