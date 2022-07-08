@@ -12,7 +12,7 @@ require (
 	go.opencensus.io v0.23.0
 	golang.org/x/net v0.0.0-20220517181318-183a9ca12b87 // indirect
 	golang.org/x/oauth2 v0.0.0-20220622183110-fd043fe589d2
-	golang.org/x/sys v0.0.0-20220704084225-05e143d24a9e
+	golang.org/x/sys v0.0.0-20220708085239-5a0f0661e09d
 	golang.org/x/time v0.0.0-20220411224347-583f2d630306 // indirect
 	google.golang.org/api v0.80.0 // indirect
 	google.golang.org/genproto v0.0.0-20220519153652-3a47de7e79bd // indirect
