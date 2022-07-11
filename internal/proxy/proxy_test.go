@@ -143,15 +143,15 @@ func TestClientInitialization(t *testing.T) {
 			desc: "with incrementing automatic port selection",
 			in: &proxy.Config{
 				Addr: "127.0.0.1",
-				Port: 5432, // default port
+				Port: 6000,
 				Instances: []proxy.InstanceConnConfig{
 					{Name: inst1},
 					{Name: inst2},
 				},
 			},
 			wantTCPAddrs: []string{
-				"127.0.0.1:5432",
-				"127.0.0.1:5433",
+				"127.0.0.1:6000",
+				"127.0.0.1:6001",
 			},
 		},
 		{
