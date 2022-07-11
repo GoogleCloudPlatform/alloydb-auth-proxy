@@ -65,7 +65,7 @@ type errorDialer struct {
 	fakeDialer
 }
 
-func (errorDialer) Close() error {
+func (*errorDialer) Close() error {
 	return errors.New("errorDialer returns error on Close")
 }
 
@@ -143,15 +143,15 @@ func TestClientInitialization(t *testing.T) {
 			desc: "with incrementing automatic port selection",
 			in: &proxy.Config{
 				Addr: "127.0.0.1",
-				Port: 5432, // default port
+				Port: 6000,
 				Instances: []proxy.InstanceConnConfig{
 					{Name: inst1},
 					{Name: inst2},
 				},
 			},
 			wantTCPAddrs: []string{
-				"127.0.0.1:5432",
-				"127.0.0.1:5433",
+				"127.0.0.1:6000",
+				"127.0.0.1:6001",
 			},
 		},
 		{
@@ -238,25 +238,6 @@ func TestClientInitialization(t *testing.T) {
 	}
 }
 
-func tryTCPDial(t *testing.T, addr string) net.Conn {
-	attempts := 10
-	var (
-		conn net.Conn
-		err  error
-	)
-	for i := 0; i < attempts; i++ {
-		conn, err = net.Dial("tcp", addr)
-		if err != nil {
-			time.Sleep(100 * time.Millisecond)
-			continue
-		}
-		return conn
-	}
-
-	t.Fatalf("failed to dial in %v attempts: %v", attempts, err)
-	return nil
-}
-
 func TestClientLimitsMaxConnections(t *testing.T) {
 	d := &fakeDialer{}
 	in := &proxy.Config{
@@ -291,14 +272,89 @@ func TestClientLimitsMaxConnections(t *testing.T) {
 	// wait only a second for the result (since nothing is writing to the
 	// socket)
 	conn2.SetReadDeadline(time.Now().Add(time.Second))
-	_, rErr := conn2.Read(make([]byte, 1))
-	if rErr != io.EOF {
-		t.Fatalf("conn.Read should return io.EOF, got = %v", rErr)
+
+	wantEOF := func(t *testing.T, c net.Conn) {
+		var got error
+		for i := 0; i < 10; i++ {
+			_, got = c.Read(make([]byte, 1))
+			if got == io.EOF {
+				return
+			}
+			time.Sleep(100 * time.Millisecond)
+		}
+		t.Fatalf("conn.Read should return io.EOF, got = %v", got)
 	}
+
+	wantEOF(t, conn2)
 
 	want := 1
 	if got := d.dialAttempts(); got != want {
 		t.Fatalf("dial attempts did not match expected, want = %v, got = %v", want, got)
+	}
+}
+
+func tryTCPDial(t *testing.T, addr string) net.Conn {
+	attempts := 10
+	var (
+		conn net.Conn
+		err  error
+	)
+	for i := 0; i < attempts; i++ {
+		conn, err = net.Dial("tcp", addr)
+		if err != nil {
+			time.Sleep(100 * time.Millisecond)
+			continue
+		}
+		return conn
+	}
+
+	t.Fatalf("failed to dial in %v attempts: %v", attempts, err)
+	return nil
+}
+
+func TestClientCloseWaitsForActiveConnections(t *testing.T) {
+	in := &proxy.Config{
+		Addr: "127.0.0.1",
+		Port: 5000,
+		Instances: []proxy.InstanceConnConfig{
+			{Name: "proj:region:pg"},
+		},
+		Dialer: &fakeDialer{},
+	}
+	c, err := proxy.NewClient(context.Background(), &cobra.Command{}, in)
+	if err != nil {
+		t.Fatalf("proxy.NewClient error: %v", err)
+	}
+	go c.Serve(context.Background())
+
+	conn := tryTCPDial(t, "127.0.0.1:5000")
+	_ = conn.Close()
+
+	if err := c.Close(); err != nil {
+		t.Fatalf("c.Close error: %v", err)
+	}
+
+	in.WaitOnClose = time.Second
+	in.Port = 5001
+	c, err = proxy.NewClient(context.Background(), &cobra.Command{}, in)
+	if err != nil {
+		t.Fatalf("proxy.NewClient error: %v", err)
+	}
+	go c.Serve(context.Background())
+
+	var open []net.Conn
+	for i := 0; i < 5; i++ {
+		conn = tryTCPDial(t, "127.0.0.1:5001")
+		open = append(open, conn)
+	}
+	defer func() {
+		for _, o := range open {
+			o.Close()
+		}
+	}()
+
+	if err := c.Close(); err == nil {
+		t.Fatal("c.Close should error, got = nil")
 	}
 }
 
@@ -316,12 +372,8 @@ func TestClientClosesCleanly(t *testing.T) {
 		t.Fatalf("proxy.NewClient error want = nil, got = %v", err)
 	}
 	go c.Serve(context.Background())
-	time.Sleep(time.Second) // allow the socket to start listening
 
-	conn, dErr := net.Dial("tcp", "127.0.0.1:5000")
-	if dErr != nil {
-		t.Fatalf("net.Dial error = %v", dErr)
-	}
+	conn := tryTCPDial(t, "127.0.0.1:5000")
 	_ = conn.Close()
 
 	if err := c.Close(); err != nil {
@@ -343,7 +395,9 @@ func TestClosesWithError(t *testing.T) {
 		t.Fatalf("proxy.NewClient error want = nil, got = %v", err)
 	}
 	go c.Serve(context.Background())
-	time.Sleep(time.Second) // allow the socket to start listening
+
+	conn := tryTCPDial(t, "127.0.0.1:5000")
+	defer conn.Close()
 
 	if err = c.Close(); err == nil {
 		t.Fatal("c.Close() should error, got nil")
