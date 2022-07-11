@@ -170,6 +170,13 @@ func TestNewCommandArguments(t *testing.T) {
 				MaxConnections: 1,
 			}),
 		},
+		{
+			desc: "using wait after signterm flag",
+			args: []string{"--max-sigterm-delay", "10s", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+			want: withDefaults(&proxy.Config{
+				WaitOnClose: 10 * time.Second,
+			}),
+		},
 	}
 
 	for _, tc := range tcs {
