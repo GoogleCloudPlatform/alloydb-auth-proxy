@@ -74,6 +74,9 @@ type Config struct {
 	// UnixSocket is the directory where Unix sockets will be created,
 	// connected to any Instances. If set, takes precedence over Addr and Port.
 	UnixSocket string
+	
+	// Host is the API endpoint.
+	Host string
 
 	// Instances are configuration for individual instances. Instance
 	// configuration takes precedence over global configuration.
@@ -217,7 +220,7 @@ func NewClient(ctx context.Context, d alloydb.Dialer, l alloydb.Logger, conf *Co
 			return nil, fmt.Errorf("[%v] Unable to mount socket: %v", inst.Name, err)
 		}
 
-		l.Infof("[%s] Listening on %s\n", inst.Name, m.Addr())
+		l.Infof("[%s] Listening on %s at host %s\n", inst.Name, m.Addr(), conf.Host)
 		mnts = append(mnts, m)
 	}
 
