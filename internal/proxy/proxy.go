@@ -30,7 +30,6 @@ import (
 	"cloud.google.com/go/alloydbconn"
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/alloydb"
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/gcloud"
-	"github.com/spf13/cobra"
 	"golang.org/x/oauth2"
 )
 
@@ -90,33 +89,37 @@ type Config struct {
 	// regardless of any open connections.
 	WaitOnClose time.Duration
 
-	// Dialer specifies the dialer to use when connecting to AlloyDB
-	// instances.
-	Dialer alloydb.Dialer
+	// StructuredLogs sets all output to use JSON in the LogEntry format.
+	// See https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry
+	StructuredLogs bool
 }
 
 // DialerOptions builds appropriate list of options from the Config
 // values for use by alloydbconn.NewClient()
-func (c *Config) DialerOptions() ([]alloydbconn.Option, error) {
+func (c *Config) DialerOptions(l alloydb.Logger) ([]alloydbconn.Option, error) {
 	opts := []alloydbconn.Option{
 		alloydbconn.WithUserAgent(c.UserAgent),
 	}
 	switch {
 	case c.Token != "":
+		l.Infof("Authorizing with the -token flag")
 		opts = append(opts, alloydbconn.WithTokenSource(
 			oauth2.StaticTokenSource(&oauth2.Token{AccessToken: c.Token}),
 		))
 	case c.CredentialsFile != "":
+		l.Infof("Authorizing with the credentials file at %q", c.CredentialsFile)
 		opts = append(opts, alloydbconn.WithCredentialsFile(
 			c.CredentialsFile,
 		))
 	case c.GcloudAuth:
+		l.Infof("Authorizing with gcloud user credentials")
 		ts, err := gcloud.TokenSource()
 		if err != nil {
 			return nil, err
 		}
 		opts = append(opts, alloydbconn.WithTokenSource(ts))
 	default:
+		l.Infof("Authorizing with Application Default Credentials")
 	}
 
 	return opts, nil
@@ -172,7 +175,6 @@ type Client struct {
 	// connCount. If not set, there is no limit.
 	maxConns uint64
 
-	cmd    *cobra.Command
 	dialer alloydb.Dialer
 
 	// mnts is a list of all mounted sockets for this client
@@ -181,16 +183,17 @@ type Client struct {
 	// waitOnClose is the maximum duration to wait for open connections to close
 	// when shutting down.
 	waitOnClose time.Duration
+
+	logger alloydb.Logger
 }
 
 // NewClient completes the initial setup required to get the proxy to a "steady" state.
-func NewClient(ctx context.Context, cmd *cobra.Command, conf *Config) (*Client, error) {
+func NewClient(ctx context.Context, d alloydb.Dialer, l alloydb.Logger, conf *Config) (*Client, error) {
 	// Check if the caller has configured a dialer.
 	// Otherwise, initialize a new one.
-	d := conf.Dialer
 	if d == nil {
 		var err error
-		dialerOpts, err := conf.DialerOptions()
+		dialerOpts, err := conf.DialerOptions(l)
 		if err != nil {
 			return nil, fmt.Errorf("error initializing dialer: %v", err)
 		}
@@ -208,19 +211,19 @@ func NewClient(ctx context.Context, cmd *cobra.Command, conf *Config) (*Client, 
 			for _, m := range mnts {
 				mErr := m.Close()
 				if mErr != nil {
-					cmd.PrintErrf("failed to close mount: %v", mErr)
+					l.Errorf("failed to close mount: %v", mErr)
 				}
 			}
 			return nil, fmt.Errorf("[%v] Unable to mount socket: %v", inst.Name, err)
 		}
 
-		cmd.Printf("[%s] Listening on %s\n", inst.Name, m.Addr())
+		l.Infof("[%s] Listening on %s\n", inst.Name, m.Addr())
 		mnts = append(mnts, m)
 	}
 
 	c := &Client{
 		mnts:        mnts,
-		cmd:         cmd,
+		logger:      l,
 		dialer:      d,
 		maxConns:    conf.MaxConnections,
 		waitOnClose: conf.WaitOnClose,
@@ -319,7 +322,7 @@ func (c *Client) serveSocketMount(ctx context.Context, s *socketMount) error {
 		cConn, err := s.Accept()
 		if err != nil {
 			if nerr, ok := err.(net.Error); ok && nerr.Temporary() {
-				c.cmd.PrintErrf("[%s] Error accepting connection: %v\n", s.inst, err)
+				c.logger.Errorf("[%s] Error accepting connection: %v", s.inst, err)
 				// For transient errors, wait a small amount of time to see if it resolves itself
 				time.Sleep(10 * time.Millisecond)
 				continue
@@ -328,7 +331,7 @@ func (c *Client) serveSocketMount(ctx context.Context, s *socketMount) error {
 		}
 		// handle the connection in a separate goroutine
 		go func() {
-			c.cmd.Printf("[%s] accepted connection from %s\n", s.inst, cConn.RemoteAddr())
+			c.logger.Infof("[%s] accepted connection from %s\n", s.inst, cConn.RemoteAddr())
 
 			// A client has established a connection to the local socket. Before
 			// we initiate a connection to the AlloyDB backend, increment the
@@ -338,7 +341,7 @@ func (c *Client) serveSocketMount(ctx context.Context, s *socketMount) error {
 			defer atomic.AddUint64(&c.connCount, ^uint64(0))
 
 			if c.maxConns > 0 && count > c.maxConns {
-				c.cmd.Printf("max connections (%v) exceeded, refusing new connection\n", c.maxConns)
+				c.logger.Infof("max connections (%v) exceeded, refusing new connection", c.maxConns)
 				_ = cConn.Close()
 				return
 			}
@@ -349,7 +352,7 @@ func (c *Client) serveSocketMount(ctx context.Context, s *socketMount) error {
 
 			sConn, err := c.dialer.Dial(ctx, s.inst)
 			if err != nil {
-				c.cmd.Printf("[%s] failed to connect to instance: %v\n", s.inst, err)
+				c.logger.Errorf("[%s] failed to connect to instance: %v\n", s.inst, err)
 				cConn.Close()
 				return
 			}
@@ -451,9 +454,9 @@ func (c *Client) proxyConn(inst string, client, server net.Conn) {
 			client.Close()
 			server.Close()
 			if isErr {
-				c.cmd.PrintErrln(errDesc)
+				c.logger.Errorf(errDesc)
 			} else {
-				c.cmd.Println(errDesc)
+				c.logger.Infof(errDesc)
 			}
 		})
 	}

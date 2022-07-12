@@ -177,6 +177,13 @@ func TestNewCommandArguments(t *testing.T) {
 				WaitOnClose: 10 * time.Second,
 			}),
 		},
+		{
+			desc: "enabling structured logging",
+			args: []string{"--structured-logs", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+			want: withDefaults(&proxy.Config{
+				StructuredLogs: true,
+			}),
+		},
 	}
 
 	for _, tc := range tcs {

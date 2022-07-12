@@ -26,6 +26,7 @@ import (
 	"strings"
 
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/cmd"
+	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/log"
 )
 
 // proxyExec represents an execution of the AlloyDB proxy.
@@ -42,8 +43,6 @@ type proxyExec struct {
 // StartProxy returns a proxyExec representing a running instance of the proxy.
 func StartProxy(ctx context.Context, args ...string) (*proxyExec, error) {
 	ctx, cancel := context.WithCancel(ctx)
-	cmd := cmd.NewCommand()
-	cmd.SetArgs(args)
 
 	// Open a pipe for tracking the output from the cmd
 	pr, pw, err := os.Pipe()
@@ -52,6 +51,8 @@ func StartProxy(ctx context.Context, args ...string) (*proxyExec, error) {
 		return nil, fmt.Errorf("unable to open stdout pipe: %w", err)
 	}
 	// defer pw.Close()
+	cmd := cmd.NewCommand(cmd.WithLogger(log.NewStdLogger(pw, pw)))
+	cmd.SetArgs(args)
 	cmd.SetOut(pw)
 	cmd.SetErr(pw)
 

@@ -27,8 +27,8 @@ import (
 	"time"
 
 	"cloud.google.com/go/alloydbconn"
+	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/log"
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/proxy"
-	"github.com/spf13/cobra"
 )
 
 type testCase struct {
@@ -210,8 +210,8 @@ func TestClientInitialization(t *testing.T) {
 
 	for _, tc := range tcs {
 		t.Run(tc.desc, func(t *testing.T) {
-			tc.in.Dialer = &fakeDialer{}
-			c, err := proxy.NewClient(ctx, &cobra.Command{}, tc.in)
+			logger := log.NewStdLogger(os.Stdout, os.Stdout)
+			c, err := proxy.NewClient(ctx, &fakeDialer{}, logger, tc.in)
 			if err != nil {
 				t.Fatalf("want error = nil, got = %v", err)
 			}
@@ -247,9 +247,9 @@ func TestClientLimitsMaxConnections(t *testing.T) {
 			{Name: "proj:region:pg"},
 		},
 		MaxConnections: 1,
-		Dialer:         d,
 	}
-	c, err := proxy.NewClient(context.Background(), &cobra.Command{}, in)
+	logger := log.NewStdLogger(os.Stdout, os.Stdout)
+	c, err := proxy.NewClient(context.Background(), d, logger, in)
 	if err != nil {
 		t.Fatalf("proxy.NewClient error: %v", err)
 	}
@@ -313,15 +313,16 @@ func tryTCPDial(t *testing.T, addr string) net.Conn {
 }
 
 func TestClientCloseWaitsForActiveConnections(t *testing.T) {
+	logger := log.NewStdLogger(os.Stdout, os.Stdout)
 	in := &proxy.Config{
 		Addr: "127.0.0.1",
 		Port: 5000,
 		Instances: []proxy.InstanceConnConfig{
 			{Name: "proj:region:pg"},
 		},
-		Dialer: &fakeDialer{},
 	}
-	c, err := proxy.NewClient(context.Background(), &cobra.Command{}, in)
+
+	c, err := proxy.NewClient(context.Background(), &fakeDialer{}, logger, in)
 	if err != nil {
 		t.Fatalf("proxy.NewClient error: %v", err)
 	}
@@ -336,7 +337,7 @@ func TestClientCloseWaitsForActiveConnections(t *testing.T) {
 
 	in.WaitOnClose = time.Second
 	in.Port = 5001
-	c, err = proxy.NewClient(context.Background(), &cobra.Command{}, in)
+	c, err = proxy.NewClient(context.Background(), &fakeDialer{}, logger, in)
 	if err != nil {
 		t.Fatalf("proxy.NewClient error: %v", err)
 	}
@@ -365,9 +366,9 @@ func TestClientClosesCleanly(t *testing.T) {
 		Instances: []proxy.InstanceConnConfig{
 			{Name: "proj:reg:inst"},
 		},
-		Dialer: &fakeDialer{},
 	}
-	c, err := proxy.NewClient(context.Background(), &cobra.Command{}, in)
+	logger := log.NewStdLogger(os.Stdout, os.Stdout)
+	c, err := proxy.NewClient(context.Background(), &fakeDialer{}, logger, in)
 	if err != nil {
 		t.Fatalf("proxy.NewClient error want = nil, got = %v", err)
 	}
@@ -388,9 +389,9 @@ func TestClosesWithError(t *testing.T) {
 		Instances: []proxy.InstanceConnConfig{
 			{Name: "proj:reg:inst"},
 		},
-		Dialer: &errorDialer{},
 	}
-	c, err := proxy.NewClient(context.Background(), &cobra.Command{}, in)
+	logger := log.NewStdLogger(os.Stdout, os.Stdout)
+	c, err := proxy.NewClient(context.Background(), &errorDialer{}, logger, in)
 	if err != nil {
 		t.Fatalf("proxy.NewClient error want = nil, got = %v", err)
 	}
@@ -444,15 +445,15 @@ func TestClientInitializationWorksRepeatedly(t *testing.T) {
 		Instances: []proxy.InstanceConnConfig{
 			{Name: "/projects/proj/locations/region/clusters/clust/instances/inst1"},
 		},
-		Dialer: &fakeDialer{},
 	}
-	c, err := proxy.NewClient(ctx, &cobra.Command{}, in)
+	logger := log.NewStdLogger(os.Stdout, os.Stdout)
+	c, err := proxy.NewClient(ctx, &fakeDialer{}, logger, in)
 	if err != nil {
 		t.Fatalf("want error = nil, got = %v", err)
 	}
 	c.Close()
 
-	c, err = proxy.NewClient(ctx, &cobra.Command{}, in)
+	c, err = proxy.NewClient(ctx, &fakeDialer{}, logger, in)
 	if err != nil {
 		t.Fatalf("want error = nil, got = %v", err)
 	}
