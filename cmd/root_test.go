@@ -47,6 +47,9 @@ func TestNewCommandArguments(t *testing.T) {
 		if i := &c.Instances[0]; i.Name == "" {
 			i.Name = "/projects/proj/locations/region/clusters/clust/instances/inst"
 		}
+		if c.Host == "" {
+			c.Host = "https://alloydb.googleapis.com/v1beta"
+		}
 		return c
 	}
 	tcs := []struct {
@@ -182,6 +185,13 @@ func TestNewCommandArguments(t *testing.T) {
 			args: []string{"--structured-logs", "/projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
 				StructuredLogs: true,
+			}),
+		},
+		{
+			desc: "using the host flag",
+			args: []string{"--host", "https://test.googleapis.com/", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+			want: withDefaults(&proxy.Config{
+				Host: "https://test.googleapis.com/",
 			}),
 		},
 	}
