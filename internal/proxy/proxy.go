@@ -102,7 +102,7 @@ type Config struct {
 func (c *Config) DialerOptions(l alloydb.Logger) ([]alloydbconn.Option, error) {
 	opts := []alloydbconn.Option{
 		alloydbconn.WithUserAgent(c.UserAgent),
-		alloydbconn.WithAdminAPIEndpoint(conf.Host),
+		alloydbconn.WithAdminAPIEndpoint(c.Host),
 	}
 	switch {
 	case c.Token != "":
