@@ -75,7 +75,7 @@ type Config struct {
 	// connected to any Instances. If set, takes precedence over Addr and Port.
 	UnixSocket string
 
-	// Host is the URL of the AlloyDB Admin API.
+	// APIEndpointURL is the URL of the AlloyDB Admin API.
 	APIEndpointURL string
 
 	// Instances are configuration for individual instances. Instance

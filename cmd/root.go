@@ -169,7 +169,7 @@ When this flag is not set, there is no limit.`)
 to close after receiving a TERM signal. The proxy will shut
 down when the number of open connections reaches 0 or when
 the maximum time has passed. Defaults to 0s.`)
-	cmd.PersistentFlags().StringVar(&c.conf.APIEndpointURL, "admin-api-endpoint", "https://alloydb.googleapis.com/v1beta",
+	cmd.PersistentFlags().StringVar(&c.conf.APIEndpointURL, "alloydbadmin-api-endpoint", "https://alloydb.googleapis.com/v1beta",
 		"When set, the proxy uses this host as the base API path.")
 
 	cmd.PersistentFlags().StringVar(&c.telemetryProject, "telemetry-project", "",
@@ -231,7 +231,7 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 	if userHasSet("admin-api-endpoint") {
 		_, err := url.Parse(conf.APIEndpointURL)
 		if err != nil {
-			return newBadCommandError(fmt.Sprintf("provided value for --admin-api-endpoint is not a valid url, %v", conf.APIEndpointURL))
+			return newBadCommandError(fmt.Sprintf("provided value for --alloydbadmin-api-endpoint is not a valid url, %v", conf.APIEndpointURL))
 		}
 
 		// Remove trailing '/' if included
