@@ -47,8 +47,8 @@ func TestNewCommandArguments(t *testing.T) {
 		if i := &c.Instances[0]; i.Name == "" {
 			i.Name = "/projects/proj/locations/region/clusters/clust/instances/inst"
 		}
-		if c.Host == "" {
-			c.Host = "https://alloydb.googleapis.com/v1beta"
+		if c.APIEndpointURL == "" {
+			c.APIEndpointURL = "https://alloydb.googleapis.com/v1beta"
 		}
 		return c
 	}
@@ -188,17 +188,17 @@ func TestNewCommandArguments(t *testing.T) {
 			}),
 		},
 		{
-			desc: "using the host flag with the trailing slash",
-			args: []string{"--host", "https://test.googleapis.com/", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+			desc: "using the admin-api-endpoint flag with the trailing slash",
+			args: []string{"--admin-api-endpoint", "https://test.googleapis.com/", "/projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
-				Host: "https://test.googleapis.com/",
+				APIEndpointURL: "https://test.googleapis.com",
 			}),
 		},
 		{
-			desc: "using the host flag without the trailing slash",
-			args: []string{"--host", "https://test.googleapis.com", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+			desc: "using the admin-api-endpoint flag without the trailing slash",
+			args: []string{"--admin-api-endpoint", "https://test.googleapis.com", "/projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
-				Host: "https://test.googleapis.com/",
+				APIEndpointURL: "https://test.googleapis.com",
 			}),
 		},
 	}

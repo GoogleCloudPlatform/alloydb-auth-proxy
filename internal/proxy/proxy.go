@@ -75,8 +75,8 @@ type Config struct {
 	// connected to any Instances. If set, takes precedence over Addr and Port.
 	UnixSocket string
 
-	// Host is the API endpoint.
-	Host string
+	// Host is the URL of the AlloyDB Admin API.
+	APIEndpointURL string
 
 	// Instances are configuration for individual instances. Instance
 	// configuration takes precedence over global configuration.
@@ -104,10 +104,8 @@ func (c *Config) DialerOptions(l alloydb.Logger) ([]alloydbconn.Option, error) {
 		alloydbconn.WithUserAgent(c.UserAgent),
 	}
 
-	if c.Host != "" {
-		l.Infof("Using API Endpoint %v", c.Host)
-		opts = append(opts, alloydbconn.WithAdminAPIEndpoint(c.Host))
-	}
+	l.Infof("Using API Endpoint %v", c.APIEndpointURL)
+	opts = append(opts, alloydbconn.WithAdminAPIEndpoint(c.APIEndpointURL))
 	switch {
 	case c.Token != "":
 		l.Infof("Authorizing with the -token flag")

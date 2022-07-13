@@ -482,13 +482,16 @@ func (s *spyHandler) wasCalled() bool {
 }
 
 func TestClientInitializationWithCustomHost(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping client initialization test that requires valid credentials")
+	}
 	spy := &spyHandler{done: make(chan struct{})}
 	s := httptest.NewServer(spy)
 	in := &proxy.Config{
 		Instances: []proxy.InstanceConnConfig{
 			{Name: "projects/proj/locations/region/clusters/clust/instances/inst1"},
 		},
-		Host: s.URL,
+		APIEndpointURL: s.URL,
 		Port: 7000,
 	}
 	logger := log.NewStdLogger(os.Stdout, os.Stdout)
