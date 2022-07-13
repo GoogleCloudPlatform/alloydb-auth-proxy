@@ -188,8 +188,15 @@ func TestNewCommandArguments(t *testing.T) {
 			}),
 		},
 		{
-			desc: "using the host flag",
+			desc: "using the host flag with the trailing slash",
 			args: []string{"--host", "https://test.googleapis.com/", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+			want: withDefaults(&proxy.Config{
+				Host: "https://test.googleapis.com/",
+			}),
+		},
+		{
+			desc: "using the host flag without the trailing slash",
+			args: []string{"--host", "https://test.googleapis.com", "/projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
 				Host: "https://test.googleapis.com/",
 			}),
@@ -346,6 +353,10 @@ func TestNewCommandWithErrors(t *testing.T) {
 		{
 			desc: "enabling a Prometheus port without a namespace",
 			args: []string{"--http-port", "1111", "proj:region:inst"},
+		},
+		{
+			desc: "using an invalid url for host flag",
+			args: []string{"--host", "https://invalid:url[/]", "proj:region:inst"},
 		},
 	}
 

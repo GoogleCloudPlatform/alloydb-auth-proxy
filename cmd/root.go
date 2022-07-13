@@ -228,7 +228,17 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 	if conf.CredentialsFile != "" && conf.GcloudAuth {
 		return newBadCommandError("cannot specify --credentials-file and --gcloud-auth flags at the same time")
 	}
-	// TODO - include check for bad url formats for host/api-endpoint
+	if userHasSet("host") && conf.Host != "" {
+		_, err := url.Parse(conf.Host)
+		if err != nil {
+			return newBadCommandError(fmt.Sprintf("provided value for --host is not a valid url, %v", conf.Host))
+		}
+
+		// Add tailing '/' if omitted
+		if !strings.HasSuffix(conf.Host, "/") {
+			conf.Host = conf.Host + "/"
+		}
+	}
 
 	if userHasSet("http-port") && !userHasSet("prometheus-namespace") {
 		return newBadCommandError("cannot specify --http-port without --prometheus-namespace")
