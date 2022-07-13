@@ -74,7 +74,7 @@ type Config struct {
 	// UnixSocket is the directory where Unix sockets will be created,
 	// connected to any Instances. If set, takes precedence over Addr and Port.
 	UnixSocket string
-	
+
 	// Host is the API endpoint.
 	Host string
 
@@ -102,7 +102,11 @@ type Config struct {
 func (c *Config) DialerOptions(l alloydb.Logger) ([]alloydbconn.Option, error) {
 	opts := []alloydbconn.Option{
 		alloydbconn.WithUserAgent(c.UserAgent),
-		alloydbconn.WithAdminAPIEndpoint(c.Host),
+	}
+
+	if c.Host != "" {
+		l.Infof("Using API Endpoint %v", c.Host)
+		opts = append(opts, alloydbconn.WithAdminAPIEndpoint(c.Host))
 	}
 	switch {
 	case c.Token != "":
@@ -221,7 +225,7 @@ func NewClient(ctx context.Context, d alloydb.Dialer, l alloydb.Logger, conf *Co
 			return nil, fmt.Errorf("[%v] Unable to mount socket: %v", inst.Name, err)
 		}
 
-		l.Infof("[%s] Listening on %s at host %s\n", inst.Name, m.Addr(), conf.Host)
+		l.Infof("[%s] Listening on %s", inst.Name, m.Addr())
 		mnts = append(mnts, m)
 	}
 

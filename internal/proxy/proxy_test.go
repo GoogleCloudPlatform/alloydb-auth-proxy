@@ -20,6 +20,8 @@ import (
 	"io"
 	"io/ioutil"
 	"net"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"sync"
@@ -458,4 +460,65 @@ func TestClientInitializationWorksRepeatedly(t *testing.T) {
 		t.Fatalf("want error = nil, got = %v", err)
 	}
 	c.Close()
+}
+
+type spyHandler struct {
+	once sync.Once
+	done chan struct{}
+}
+
+func (s *spyHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+	s.once.Do(func() { close(s.done) })
+	res.WriteHeader(http.StatusNotImplemented)
+}
+
+func (s *spyHandler) wasCalled() bool {
+	select {
+	case <-s.done:
+		return true
+	default:
+		return false
+	}
+}
+
+func TestClientInitializationWithCustomHost(t *testing.T) {
+	spy := &spyHandler{done: make(chan struct{})}
+	s := httptest.NewServer(spy)
+	in := &proxy.Config{
+		Instances: []proxy.InstanceConnConfig{
+			{Name: "projects/proj/locations/region/clusters/clust/instances/inst1"},
+		},
+		Host: s.URL,
+		Port: 7000,
+	}
+	logger := log.NewStdLogger(os.Stdout, os.Stdout)
+	c, err := proxy.NewClient(context.Background(), nil, logger, in)
+	if err != nil {
+		t.Fatalf("want error = nil, got = %v", err)
+	}
+	defer c.Close()
+
+	go c.Serve(context.Background())
+
+	conn := tryTCPDial(t, "localhost:7000")
+	defer conn.Close()
+
+	spyWasCalled := func(t *testing.T) {
+		var attempts int
+		for {
+			if attempts > 10 {
+				t.Fatal("expected spy API Handler to have been called, but it was not")
+				return
+			}
+			if !spy.wasCalled() {
+				t.Logf("spy API Handler was not called after %v attempts", attempts)
+				attempts++
+				time.Sleep(100 * time.Millisecond)
+				continue
+			}
+			return
+		}
+	}
+
+	spyWasCalled(t)
 }
