@@ -199,7 +199,7 @@ the maximum time has passed. Defaults to 0s.`)
 func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 	// If no instance connection names were provided, error.
 	if len(args) == 0 {
-		return newBadCommandError("missing instance uri (e.g., /projects/$PROJECTS/locations/$LOCTION/clusters/$CLUSTER/instances/$INSTANCES)")
+		return newBadCommandError("missing instance uri (e.g., projects/$PROJECTS/locations/$LOCTION/clusters/$CLUSTER/instances/$INSTANCES)")
 	}
 
 	userHasSet := func(f string) bool {

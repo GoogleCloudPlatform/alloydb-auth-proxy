@@ -85,8 +85,8 @@ func TestClientInitialization(t *testing.T) {
 	ctx := context.Background()
 	testDir, cleanup := createTempDir(t)
 	defer cleanup()
-	inst1 := "/projects/proj/locations/region/clusters/clust/instances/inst1"
-	inst2 := "/projects/proj/locations/region/clusters/clust/instances/inst2"
+	inst1 := "projects/proj/locations/region/clusters/clust/instances/inst1"
+	inst2 := "projects/proj/locations/region/clusters/clust/instances/inst2"
 	wantUnix := "proj.region.clust.inst1"
 
 	tcs := []testCase{
@@ -443,7 +443,7 @@ func TestClientInitializationWorksRepeatedly(t *testing.T) {
 	in := &proxy.Config{
 		UnixSocket: testDir,
 		Instances: []proxy.InstanceConnConfig{
-			{Name: "/projects/proj/locations/region/clusters/clust/instances/inst1"},
+			{Name: "projects/proj/locations/region/clusters/clust/instances/inst1"},
 		},
 	}
 	logger := log.NewStdLogger(os.Stdout, os.Stdout)
