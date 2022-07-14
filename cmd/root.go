@@ -228,7 +228,7 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 	if conf.CredentialsFile != "" && conf.GcloudAuth {
 		return newBadCommandError("cannot specify --credentials-file and --gcloud-auth flags at the same time")
 	}
-	if userHasSet("admin-api-endpoint") {
+	if userHasSet("alloydbadmin-api-endpoint") {
 		_, err := url.Parse(conf.APIEndpointURL)
 		if err != nil {
 			return newBadCommandError(fmt.Sprintf("provided value for --alloydbadmin-api-endpoint is not a valid url, %v", conf.APIEndpointURL))
@@ -238,6 +238,7 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 		if strings.HasSuffix(conf.APIEndpointURL, "/") {
 			conf.APIEndpointURL = strings.TrimSuffix(conf.APIEndpointURL, "/")
 		}
+		cmd.logger.Infof("Using API Endpoint %v", conf.APIEndpointURL)
 	}
 
 	if userHasSet("http-port") && !userHasSet("prometheus-namespace") {
