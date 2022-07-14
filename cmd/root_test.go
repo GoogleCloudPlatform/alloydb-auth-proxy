@@ -47,6 +47,9 @@ func TestNewCommandArguments(t *testing.T) {
 		if i := &c.Instances[0]; i.Name == "" {
 			i.Name = "/projects/proj/locations/region/clusters/clust/instances/inst"
 		}
+		if c.APIEndpointURL == "" {
+			c.APIEndpointURL = "https://alloydb.googleapis.com/v1beta"
+		}
 		return c
 	}
 	tcs := []struct {
@@ -182,6 +185,20 @@ func TestNewCommandArguments(t *testing.T) {
 			args: []string{"--structured-logs", "/projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
 				StructuredLogs: true,
+			}),
+		},
+		{
+			desc: "using the alloydbadmin-api-endpoint flag with the trailing slash",
+			args: []string{"--alloydbadmin-api-endpoint", "https://test.googleapis.com/", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+			want: withDefaults(&proxy.Config{
+				APIEndpointURL: "https://test.googleapis.com",
+			}),
+		},
+		{
+			desc: "using the alloydbadmin-api-endpoint flag without the trailing slash",
+			args: []string{"--alloydbadmin-api-endpoint", "https://test.googleapis.com", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+			want: withDefaults(&proxy.Config{
+				APIEndpointURL: "https://test.googleapis.com",
 			}),
 		},
 	}
@@ -336,6 +353,10 @@ func TestNewCommandWithErrors(t *testing.T) {
 		{
 			desc: "enabling a Prometheus port without a namespace",
 			args: []string{"--http-port", "1111", "proj:region:inst"},
+		},
+		{
+			desc: "using an invalid url for host flag",
+			args: []string{"--host", "https://invalid:url[/]", "proj:region:inst"},
 		},
 	}
 
