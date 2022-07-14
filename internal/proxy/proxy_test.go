@@ -492,7 +492,7 @@ func TestClientInitializationWithCustomHost(t *testing.T) {
 			{Name: "projects/proj/locations/region/clusters/clust/instances/inst1"},
 		},
 		APIEndpointURL: s.URL,
-		Port: 7000,
+		Port:           7000,
 	}
 	logger := log.NewStdLogger(os.Stdout, os.Stdout)
 	c, err := proxy.NewClient(context.Background(), nil, logger, in)
