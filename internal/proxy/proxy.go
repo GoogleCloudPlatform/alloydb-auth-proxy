@@ -75,6 +75,9 @@ type Config struct {
 	// connected to any Instances. If set, takes precedence over Addr and Port.
 	UnixSocket string
 
+	// APIEndpointURL is the URL of the AlloyDB Admin API.
+	APIEndpointURL string
+
 	// Instances are configuration for individual instances. Instance
 	// configuration takes precedence over global configuration.
 	Instances []InstanceConnConfig
@@ -100,6 +103,7 @@ func (c *Config) DialerOptions(l alloydb.Logger) ([]alloydbconn.Option, error) {
 	opts := []alloydbconn.Option{
 		alloydbconn.WithUserAgent(c.UserAgent),
 	}
+	opts = append(opts, alloydbconn.WithAdminAPIEndpoint(c.APIEndpointURL))
 	switch {
 	case c.Token != "":
 		l.Infof("Authorizing with the -token flag")
@@ -217,7 +221,7 @@ func NewClient(ctx context.Context, d alloydb.Dialer, l alloydb.Logger, conf *Co
 			return nil, fmt.Errorf("[%v] Unable to mount socket: %v", inst.Name, err)
 		}
 
-		l.Infof("[%s] Listening on %s\n", inst.Name, m.Addr())
+		l.Infof("[%s] Listening on %s", inst.Name, m.Addr())
 		mnts = append(mnts, m)
 	}
 
