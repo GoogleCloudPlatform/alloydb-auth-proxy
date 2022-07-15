@@ -189,14 +189,14 @@ func TestNewCommandArguments(t *testing.T) {
 		},
 		{
 			desc: "using the alloydbadmin-api-endpoint flag with the trailing slash",
-			args: []string{"--alloydbadmin-api-endpoint", "https://test.googleapis.com/", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+			args: []string{"--alloydbadmin-api-endpoint", "https://test.googleapis.com/", "projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
 				APIEndpointURL: "https://test.googleapis.com",
 			}),
 		},
 		{
 			desc: "using the alloydbadmin-api-endpoint flag without the trailing slash",
-			args: []string{"--alloydbadmin-api-endpoint", "https://test.googleapis.com", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+			args: []string{"--alloydbadmin-api-endpoint", "https://test.googleapis.com", "projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
 				APIEndpointURL: "https://test.googleapis.com",
 			}),
