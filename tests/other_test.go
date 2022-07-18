@@ -26,10 +26,7 @@ import (
 
 func TestVersion(t *testing.T) {
 	ctx := context.Background()
-	// throw error
-	if true {
-		panic("THROWING ERROR FOR FLAKYBOT TO CATCH")
-	}
+
 	data, err := os.ReadFile("../cmd/version.txt")
 	if err != nil {
 		t.Fatalf("failed to read version.txt: %v", err)
