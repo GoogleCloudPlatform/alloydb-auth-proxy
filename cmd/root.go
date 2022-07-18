@@ -169,6 +169,8 @@ When this flag is not set, there is no limit.`)
 to close after receiving a TERM signal. The proxy will shut
 down when the number of open connections reaches 0 or when
 the maximum time has passed. Defaults to 0s.`)
+	cmd.PersistentFlags().StringVar(&c.conf.APIEndpointURL, "alloydbadmin-api-endpoint", "https://alloydb.googleapis.com/v1beta",
+		"When set, the proxy uses this host as the base API path.")
 
 	cmd.PersistentFlags().StringVar(&c.telemetryProject, "telemetry-project", "",
 		"Enable Cloud Monitoring and Cloud Trace integration with the provided project ID.")
@@ -225,6 +227,18 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 	}
 	if conf.CredentialsFile != "" && conf.GcloudAuth {
 		return newBadCommandError("cannot specify --credentials-file and --gcloud-auth flags at the same time")
+	}
+	if userHasSet("alloydbadmin-api-endpoint") {
+		_, err := url.Parse(conf.APIEndpointURL)
+		if err != nil {
+			return newBadCommandError(fmt.Sprintf("provided value for --alloydbadmin-api-endpoint is not a valid url, %v", conf.APIEndpointURL))
+		}
+
+		// Remove trailing '/' if included
+		if strings.HasSuffix(conf.APIEndpointURL, "/") {
+			conf.APIEndpointURL = strings.TrimSuffix(conf.APIEndpointURL, "/")
+		}
+		cmd.logger.Infof("Using API Endpoint %v", conf.APIEndpointURL)
 	}
 
 	if userHasSet("http-port") && !userHasSet("prometheus-namespace") {
