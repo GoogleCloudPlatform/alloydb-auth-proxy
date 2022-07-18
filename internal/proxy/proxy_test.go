@@ -392,6 +392,10 @@ func TestClosesWithError(t *testing.T) {
 			{Name: "proj:reg:inst"},
 		},
 	}
+	// throw error
+	if true {
+		panic("THROWING ERROR FOR FLAKYBOT TO CATCH")
+	}
 	logger := log.NewStdLogger(os.Stdout, os.Stdout)
 	c, err := proxy.NewClient(context.Background(), &errorDialer{}, logger, in)
 	if err != nil {
