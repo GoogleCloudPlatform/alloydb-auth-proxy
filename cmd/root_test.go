@@ -45,7 +45,7 @@ func TestNewCommandArguments(t *testing.T) {
 			c.Instances = []proxy.InstanceConnConfig{{}}
 		}
 		if i := &c.Instances[0]; i.Name == "" {
-			i.Name = "/projects/proj/locations/region/clusters/clust/instances/inst"
+			i.Name = "projects/proj/locations/region/clusters/clust/instances/inst"
 		}
 		if c.APIEndpointURL == "" {
 			c.APIEndpointURL = "https://alloydb.googleapis.com/v1beta"
@@ -59,56 +59,56 @@ func TestNewCommandArguments(t *testing.T) {
 	}{
 		{
 			desc: "basic invocation with defaults",
-			args: []string{"/projects/proj/locations/region/clusters/clust/instances/inst"},
+			args: []string{"projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
 				Addr:      "127.0.0.1",
-				Instances: []proxy.InstanceConnConfig{{Name: "/projects/proj/locations/region/clusters/clust/instances/inst"}},
+				Instances: []proxy.InstanceConnConfig{{Name: "projects/proj/locations/region/clusters/clust/instances/inst"}},
 			}),
 		},
 		{
 			desc: "using the address flag",
-			args: []string{"--address", "0.0.0.0", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+			args: []string{"--address", "0.0.0.0", "projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
 				Addr:      "0.0.0.0",
-				Instances: []proxy.InstanceConnConfig{{Name: "/projects/proj/locations/region/clusters/clust/instances/inst"}},
+				Instances: []proxy.InstanceConnConfig{{Name: "projects/proj/locations/region/clusters/clust/instances/inst"}},
 			}),
 		},
 		{
 			desc: "using the address (short) flag",
-			args: []string{"-a", "0.0.0.0", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+			args: []string{"-a", "0.0.0.0", "projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
 				Addr:      "0.0.0.0",
-				Instances: []proxy.InstanceConnConfig{{Name: "/projects/proj/locations/region/clusters/clust/instances/inst"}},
+				Instances: []proxy.InstanceConnConfig{{Name: "projects/proj/locations/region/clusters/clust/instances/inst"}},
 			}),
 		},
 		{
 			desc: "using the address query param",
-			args: []string{"/projects/proj/locations/region/clusters/clust/instances/inst?address=0.0.0.0"},
+			args: []string{"projects/proj/locations/region/clusters/clust/instances/inst?address=0.0.0.0"},
 			want: withDefaults(&proxy.Config{
 				Addr: "127.0.0.1",
 				Instances: []proxy.InstanceConnConfig{{
 					Addr: "0.0.0.0",
-					Name: "/projects/proj/locations/region/clusters/clust/instances/inst",
+					Name: "projects/proj/locations/region/clusters/clust/instances/inst",
 				}},
 			}),
 		},
 		{
 			desc: "using the port flag",
-			args: []string{"--port", "6000", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+			args: []string{"--port", "6000", "projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
 				Port: 6000,
 			}),
 		},
 		{
 			desc: "using the port (short) flag",
-			args: []string{"-p", "6000", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+			args: []string{"-p", "6000", "projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
 				Port: 6000,
 			}),
 		},
 		{
 			desc: "using the port query param",
-			args: []string{"/projects/proj/locations/region/clusters/clust/instances/inst?port=6000"},
+			args: []string{"projects/proj/locations/region/clusters/clust/instances/inst?port=6000"},
 			want: withDefaults(&proxy.Config{
 				Instances: []proxy.InstanceConnConfig{{
 					Port: 6000,
@@ -117,49 +117,49 @@ func TestNewCommandArguments(t *testing.T) {
 		},
 		{
 			desc: "using the token flag",
-			args: []string{"--token", "MYCOOLTOKEN", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+			args: []string{"--token", "MYCOOLTOKEN", "projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
 				Token: "MYCOOLTOKEN",
 			}),
 		},
 		{
 			desc: "using the token (short) flag",
-			args: []string{"-t", "MYCOOLTOKEN", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+			args: []string{"-t", "MYCOOLTOKEN", "projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
 				Token: "MYCOOLTOKEN",
 			}),
 		},
 		{
 			desc: "using the credentiale file flag",
-			args: []string{"--credentials-file", "/path/to/file", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+			args: []string{"--credentials-file", "/path/to/file", "projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
 				CredentialsFile: "/path/to/file",
 			}),
 		},
 		{
 			desc: "using the (short) credentiale file flag",
-			args: []string{"-c", "/path/to/file", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+			args: []string{"-c", "/path/to/file", "projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
 				CredentialsFile: "/path/to/file",
 			}),
 		},
 		{
 			desc: "using the unix socket flag",
-			args: []string{"--unix-socket", "/path/to/dir/", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+			args: []string{"--unix-socket", "/path/to/dir/", "projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
 				UnixSocket: "/path/to/dir/",
 			}),
 		},
 		{
 			desc: "using the (short) unix socket flag",
-			args: []string{"-u", "/path/to/dir/", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+			args: []string{"-u", "/path/to/dir/", "projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
 				UnixSocket: "/path/to/dir/",
 			}),
 		},
 		{
 			desc: "using the unix socket query param",
-			args: []string{"/projects/proj/locations/region/clusters/clust/instances/inst?unix-socket=/path/to/dir/"},
+			args: []string{"projects/proj/locations/region/clusters/clust/instances/inst?unix-socket=/path/to/dir/"},
 			want: withDefaults(&proxy.Config{
 				Instances: []proxy.InstanceConnConfig{{
 					UnixSocket: "/path/to/dir/",
@@ -168,35 +168,35 @@ func TestNewCommandArguments(t *testing.T) {
 		},
 		{
 			desc: "using the max connections flag",
-			args: []string{"--max-connections", "1", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+			args: []string{"--max-connections", "1", "projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
 				MaxConnections: 1,
 			}),
 		},
 		{
 			desc: "using wait after signterm flag",
-			args: []string{"--max-sigterm-delay", "10s", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+			args: []string{"--max-sigterm-delay", "10s", "projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
 				WaitOnClose: 10 * time.Second,
 			}),
 		},
 		{
 			desc: "enabling structured logging",
-			args: []string{"--structured-logs", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+			args: []string{"--structured-logs", "projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
 				StructuredLogs: true,
 			}),
 		},
 		{
 			desc: "using the alloydbadmin-api-endpoint flag with the trailing slash",
-			args: []string{"--alloydbadmin-api-endpoint", "https://test.googleapis.com/", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+			args: []string{"--alloydbadmin-api-endpoint", "https://test.googleapis.com/", "projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
 				APIEndpointURL: "https://test.googleapis.com",
 			}),
 		},
 		{
 			desc: "using the alloydbadmin-api-endpoint flag without the trailing slash",
-			args: []string{"--alloydbadmin-api-endpoint", "https://test.googleapis.com", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+			args: []string{"--alloydbadmin-api-endpoint", "https://test.googleapis.com", "projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
 				APIEndpointURL: "https://test.googleapis.com",
 			}),
@@ -238,12 +238,12 @@ func TestNewCommandWithGcloudAuth(t *testing.T) {
 	}{
 		{
 			desc: "using the gcloud auth flag",
-			args: []string{"--gcloud-auth", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+			args: []string{"--gcloud-auth", "projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: true,
 		},
 		{
 			desc: "using the (short) gcloud auth flag",
-			args: []string{"-g", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+			args: []string{"-g", "projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: true,
 		},
 	}
@@ -282,41 +282,41 @@ func TestNewCommandWithErrors(t *testing.T) {
 		},
 		{
 			desc: "when the query string is bogus",
-			args: []string{"/projects/proj/locations/region/clusters/clust/instances/inst?%=foo"},
+			args: []string{"projects/proj/locations/region/clusters/clust/instances/inst?%=foo"},
 		},
 		{
 			desc: "when the address query param is empty",
-			args: []string{"/projects/proj/locations/region/clusters/clust/instances/inst?address="},
+			args: []string{"projects/proj/locations/region/clusters/clust/instances/inst?address="},
 		},
 		{
 			desc: "using the address flag with a bad IP address",
-			args: []string{"--address", "bogus", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+			args: []string{"--address", "bogus", "projects/proj/locations/region/clusters/clust/instances/inst"},
 		},
 		{
 			desc: "when the address query param is not an IP address",
-			args: []string{"/projects/proj/locations/region/clusters/clust/instances/inst?address=世界"},
+			args: []string{"projects/proj/locations/region/clusters/clust/instances/inst?address=世界"},
 		},
 		{
 			desc: "when the address query param contains multiple values",
-			args: []string{"/projects/proj/locations/region/clusters/clust/instances/inst?address=0.0.0.0&address=1.1.1.1&address=2.2.2.2"},
+			args: []string{"projects/proj/locations/region/clusters/clust/instances/inst?address=0.0.0.0&address=1.1.1.1&address=2.2.2.2"},
 		},
 		{
 			desc: "when the query string is invalid",
-			args: []string{"/projects/proj/locations/region/clusters/clust/instances/inst?address=1.1.1.1?foo=2.2.2.2"},
+			args: []string{"projects/proj/locations/region/clusters/clust/instances/inst?address=1.1.1.1?foo=2.2.2.2"},
 		},
 		{
 			desc: "when the port query param contains multiple values",
-			args: []string{"/projects/proj/locations/region/clusters/clust/instances/inst?port=1&port=2"},
+			args: []string{"projects/proj/locations/region/clusters/clust/instances/inst?port=1&port=2"},
 		},
 		{
 			desc: "when the port query param is not a number",
-			args: []string{"/projects/proj/locations/region/clusters/clust/instances/inst?port=hi"},
+			args: []string{"projects/proj/locations/region/clusters/clust/instances/inst?port=hi"},
 		},
 		{
 			desc: "when both token and credentials file are set",
 			args: []string{
 				"--token", "my-token",
-				"--credentials-file", "/path/to/file", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+				"--credentials-file", "/path/to/file", "projects/proj/locations/region/clusters/clust/instances/inst"},
 		},
 		{
 			desc: "when both token and gcloud auth are set",
@@ -332,23 +332,23 @@ func TestNewCommandWithErrors(t *testing.T) {
 		},
 		{
 			desc: "when the unix socket query param contains multiple values",
-			args: []string{"/projects/proj/locations/region/clusters/clust/instances/inst?unix-socket=/one&unix-socket=/two"},
+			args: []string{"projects/proj/locations/region/clusters/clust/instances/inst?unix-socket=/one&unix-socket=/two"},
 		},
 		{
 			desc: "using the unix socket flag with addr",
-			args: []string{"-u", "/path/to/dir/", "-a", "127.0.0.1", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+			args: []string{"-u", "/path/to/dir/", "-a", "127.0.0.1", "projects/proj/locations/region/clusters/clust/instances/inst"},
 		},
 		{
 			desc: "using the unix socket flag with port",
-			args: []string{"-u", "/path/to/dir/", "-p", "5432", "/projects/proj/locations/region/clusters/clust/instances/inst"},
+			args: []string{"-u", "/path/to/dir/", "-p", "5432", "projects/proj/locations/region/clusters/clust/instances/inst"},
 		},
 		{
 			desc: "using the unix socket and addr query params",
-			args: []string{"/projects/proj/locations/region/clusters/clust/instances/inst?unix-socket=/path&address=127.0.0.1"},
+			args: []string{"projects/proj/locations/region/clusters/clust/instances/inst?unix-socket=/path&address=127.0.0.1"},
 		},
 		{
 			desc: "using the unix socket and port query params",
-			args: []string{"/projects/proj/locations/region/clusters/clust/instances/inst?unix-socket=/path&port=5000"},
+			args: []string{"projects/proj/locations/region/clusters/clust/instances/inst?unix-socket=/path&port=5000"},
 		},
 		{
 			desc: "enabling a Prometheus port without a namespace",
