@@ -45,7 +45,7 @@ tag_latest() {
     for registry in "gcr.io" "us.gcr.io" "eu.gcr.io" "asia.gcr.io"
     do
         local base_image="$registry/alloydb-connectors/alloydb-auth-proxy"
-        cmd="gcloud container images add-tag '$base_image:$new_version' '$base_image:latest'"
+        cmd="gcloud container images add-tag --quiet '$base_image:$new_version' '$base_image:latest'"
         if [ "$dry_run" != true ]
         then
             eval "$cmd"
