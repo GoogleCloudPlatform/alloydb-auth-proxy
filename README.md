@@ -271,7 +271,7 @@ and from a AlloyDB instance. The `ALL_PROXY` environment variable supports
 `socks5h` protocol.
 
 The `HTTPS_PROXY` (or `HTTP_PROXY`) specifies the proxy for all HTTP(S) traffic
-to the SQL Admin API. Specifying `HTTPS_PROXY` or `HTTP_PROXY` is only necessary
+to the AlloyDB Admin API. Specifying `HTTPS_PROXY` or `HTTP_PROXY` is only necessary
 when you want to proxy this traffic. Otherwise, it is optional. See
 [`http.ProxyFromEnvironment`](https://pkg.go.dev/net/http@go1.17.3#ProxyFromEnvironment)
 for possible values.
