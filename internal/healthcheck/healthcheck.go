@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package healthcheck tests and communicates the health of the Cloud SQL Auth proxy.
+// Package healthcheck tests and communicates the health of the AlloyDB Auth
+// proxy.
 package healthcheck
 
 import (

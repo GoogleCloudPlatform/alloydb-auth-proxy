@@ -335,7 +335,7 @@ func runSignalWrapper(cmd *Command) error {
 	defer cancel()
 
 	// Configure collectors before the proxy has started to ensure we are
-	// collecting metrics before *ANY* Cloud SQL Admin API calls are made.
+	// collecting metrics before *ANY* AlloyDB Admin API calls are made.
 	enableMetrics := !cmd.disableMetrics
 	enableTraces := !cmd.disableTraces
 	if cmd.telemetryProject != "" && (enableMetrics || enableTraces) {
@@ -434,9 +434,7 @@ func runSignalWrapper(cmd *Command) error {
 		notify = hc.NotifyStarted
 	}
 
-	// Start the HTTP server if anything requiring HTTP is specified, including:
-	// Prometheus, health-check
-	// enabled.
+	// Start the HTTP server if anything requiring HTTP is specified.
 	if needsHTTPServer {
 		server := &http.Server{
 			Addr:    fmt.Sprintf("localhost:%s", cmd.httpPort),
