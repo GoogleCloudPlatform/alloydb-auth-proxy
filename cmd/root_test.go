@@ -351,10 +351,6 @@ func TestNewCommandWithErrors(t *testing.T) {
 			args: []string{"projects/proj/locations/region/clusters/clust/instances/inst?unix-socket=/path&port=5000"},
 		},
 		{
-			desc: "enabling a Prometheus port without a namespace",
-			args: []string{"--http-port", "1111", "proj:region:inst"},
-		},
-		{
 			desc: "using an invalid url for host flag",
 			args: []string{"--host", "https://invalid:url[/]", "proj:region:inst"},
 		},
