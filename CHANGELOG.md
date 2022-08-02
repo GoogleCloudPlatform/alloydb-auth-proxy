@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.5.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v0.4.0...v0.5.0) (2022-08-02)
+
+
+### Features
+
+* add support for health-check flag ([#85](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/85)) ([e0b95b9](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/e0b95b9a0a6c841190950f36eee61b58abb6e66c))
+
+
+### Bug Fixes
+
+* make Prometheus namespace optional ([#87](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/87)) ([0090b97](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/0090b977341fd1e7fb3afb58dbe202e6b2863146))
+
 ## [0.4.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v0.3.0...v0.4.0) (2022-07-19)
 
 
