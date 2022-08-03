@@ -32,6 +32,7 @@ import (
 	"contrib.go.opencensus.io/exporter/prometheus"
 	"contrib.go.opencensus.io/exporter/stackdriver"
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/alloydb"
+	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/healthcheck"
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/log"
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/proxy"
 	"github.com/spf13/cobra"
@@ -87,7 +88,9 @@ type Command struct {
 	disableMetrics             bool
 	telemetryProject           string
 	telemetryPrefix            string
+	prometheus                 bool
 	prometheusNamespace        string
+	healthCheck                bool
 	httpPort                   string
 }
 
@@ -182,10 +185,16 @@ the maximum time has passed. Defaults to 0s.`)
 		"Disable Cloud Monitoring integration (used with telemetry-project)")
 	cmd.PersistentFlags().StringVar(&c.telemetryPrefix, "telemetry-prefix", "",
 		"Prefix to use for Cloud Monitoring metrics.")
+	cmd.PersistentFlags().BoolVar(&c.prometheus, "prometheus", false,
+		"Enable Prometheus HTTP endpoint /metrics")
 	cmd.PersistentFlags().StringVar(&c.prometheusNamespace, "prometheus-namespace", "",
-		"Enable Prometheus for metric collection using the provided namespace")
+		"Use the provided Prometheus namespace for metrics")
 	cmd.PersistentFlags().StringVar(&c.httpPort, "http-port", "9090",
 		"Port for the Prometheus server to use")
+	cmd.PersistentFlags().BoolVar(&c.healthCheck, "health-check", false,
+		`Enables HTTP endpoints /startup, /liveness, and /readiness
+that report on the proxy's health. Endpoints are available on localhost
+only. Uses the port specified by the http-port flag.`)
 
 	// Global and per instance flags
 	cmd.PersistentFlags().StringVarP(&c.conf.Addr, "address", "a", "127.0.0.1",
@@ -241,18 +250,18 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 		cmd.logger.Infof("Using API Endpoint %v", conf.APIEndpointURL)
 	}
 
-	if userHasSet("http-port") && !userHasSet("prometheus-namespace") {
-		return newBadCommandError("cannot specify --http-port without --prometheus-namespace")
+	if userHasSet("http-port") && !userHasSet("prometheus") && !userHasSet("health-check") {
+		cmd.logger.Infof("Ignoring --http-port because --prometheus or --health-check was not set")
 	}
 
 	if !userHasSet("telemetry-project") && userHasSet("telemetry-prefix") {
-		cmd.logger.Infof("Ignoring telementry-prefix as telemetry-project was not set")
+		cmd.logger.Infof("Ignoring --telementry-prefix as --telemetry-project was not set")
 	}
 	if !userHasSet("telemetry-project") && userHasSet("disable-metrics") {
-		cmd.logger.Infof("Ignoring disable-metrics as telemetry-project was not set")
+		cmd.logger.Infof("Ignoring --disable-metrics as --telemetry-project was not set")
 	}
 	if !userHasSet("telemetry-project") && userHasSet("disable-traces") {
-		cmd.logger.Infof("Ignoring disable-traces as telemetry-project was not set")
+		cmd.logger.Infof("Ignoring --disable-traces as --telemetry-project was not set")
 	}
 
 	var ics []proxy.InstanceConnConfig
@@ -328,9 +337,8 @@ func runSignalWrapper(cmd *Command) error {
 	ctx, cancel := context.WithCancel(cmd.Context())
 	defer cancel()
 
-	// Configure Cloud Trace and/or Cloud Monitoring based on command
-	// invocation. If a project has not been enabled, no traces or metrics are
-	// enabled.
+	// Configure collectors before the proxy has started to ensure we are
+	// collecting metrics before *ANY* AlloyDB Admin API calls are made.
 	enableMetrics := !cmd.disableMetrics
 	enableTraces := !cmd.disableTraces
 	if cmd.telemetryProject != "" && (enableMetrics || enableTraces) {
@@ -358,40 +366,22 @@ func runSignalWrapper(cmd *Command) error {
 		}()
 	}
 
-	shutdownCh := make(chan error)
-
-	if cmd.prometheusNamespace != "" {
+	var (
+		needsHTTPServer bool
+		mux             = http.NewServeMux()
+	)
+	if cmd.prometheus {
+		needsHTTPServer = true
 		e, err := prometheus.NewExporter(prometheus.Options{
 			Namespace: cmd.prometheusNamespace,
 		})
 		if err != nil {
 			return err
 		}
-		mux := http.NewServeMux()
 		mux.Handle("/metrics", e)
-		addr := fmt.Sprintf("localhost:%s", cmd.httpPort)
-		server := &http.Server{Addr: addr, Handler: mux}
-		go func() {
-			select {
-			case <-ctx.Done():
-				// Give the HTTP server a second to shutdown cleanly.
-				ctx2, _ := context.WithTimeout(context.Background(), time.Second)
-				if err := server.Shutdown(ctx2); err != nil {
-					cmd.logger.Errorf("failed to shutdown Prometheus HTTP server: %v\n", err)
-				}
-			}
-		}()
-		go func() {
-			err := server.ListenAndServe()
-			if err == http.ErrServerClosed {
-				return
-			}
-			if err != nil {
-				shutdownCh <- fmt.Errorf("failed to start prometheus HTTP server: %v", err)
-			}
-		}()
 	}
 
+	shutdownCh := make(chan error)
 	// watch for sigterm / sigint signals
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGTERM, syscall.SIGINT)
@@ -429,18 +419,55 @@ func runSignalWrapper(cmd *Command) error {
 		cmd.logger.Errorf("The proxy has encountered a terminal error: %v", err)
 		return err
 	case p = <-startCh:
+		cmd.logger.Infof("The proxy has started successfully and is ready for new connections!")
 	}
-	cmd.logger.Infof("The proxy has started successfully and is ready for new connections!")
-	defer p.Close()
 	defer func() {
 		if cErr := p.Close(); cErr != nil {
 			cmd.logger.Errorf("error during shutdown: %v", cErr)
 		}
 	}()
 
-	go func() {
-		shutdownCh <- p.Serve(ctx)
-	}()
+	notify := func() {}
+	if cmd.healthCheck {
+		needsHTTPServer = true
+		hc := healthcheck.NewCheck(p, cmd.logger)
+		mux.HandleFunc("/startup", hc.HandleStartup)
+		mux.HandleFunc("/readiness", hc.HandleReadiness)
+		mux.HandleFunc("/liveness", hc.HandleLiveness)
+		notify = hc.NotifyStarted
+	}
+
+	// Start the HTTP server if anything requiring HTTP is specified.
+	if needsHTTPServer {
+		server := &http.Server{
+			Addr:    fmt.Sprintf("localhost:%s", cmd.httpPort),
+			Handler: mux,
+		}
+		// Start the HTTP server.
+		go func() {
+			err := server.ListenAndServe()
+			if err == http.ErrServerClosed {
+				return
+			}
+			if err != nil {
+				shutdownCh <- fmt.Errorf("failed to start HTTP server: %v", err)
+			}
+		}()
+		// Handle shutdown of the HTTP server gracefully.
+		go func() {
+			select {
+			case <-ctx.Done():
+				// Give the HTTP server a second to shutdown cleanly.
+				ctx2, cancel := context.WithTimeout(context.Background(), time.Second)
+				defer cancel()
+				if err := server.Shutdown(ctx2); err != nil {
+					cmd.logger.Errorf("failed to shutdown Prometheus HTTP server: %v\n", err)
+				}
+			}
+		}()
+	}
+
+	go func() { shutdownCh <- p.Serve(ctx, notify) }()
 
 	err := <-shutdownCh
 	switch {
