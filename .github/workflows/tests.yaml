@@ -85,11 +85,17 @@ jobs:
           ALLOYDB_USER: 'postgres'
           ALLOYDB_PASS: '${{ steps.secrets.outputs.ALLOYDB_CLUSTER_PASS }}'
           ALLOYDB_CONNECTION_NAME: '${{ steps.secrets.outputs.ALLOYDB_CONN_NAME }}'
+        # specifying bash shell ensures a failure in a piped process isn't lost by using `set -eo pipefail`
+        shell: bash
+        run: |
+          go test -v -race -cover ./tests | tee test_results.txt
+      
+      - name: Convert test output to XML
+        if: ${{ (github.event_name == 'schedule' || github.event_name == 'push') && always() }}
         run: |
           go install github.com/jstemmer/go-junit-report/v2@latest
-          go test -v -race -cover ./tests | tee test_results.txt
           go-junit-report -in test_results.txt -set-exit-code -out integration_sponge_log.xml
-      
+
       - name: FlakyBot
         # only run flakybot on periodic (schedule) and continuous (push) events
         if: ${{ (github.event_name == 'schedule' || github.event_name == 'push') && always() }}
@@ -147,9 +153,15 @@ jobs:
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
 
       - name: Run tests
+        # specifying bash shell ensures a failure in a piped process isn't lost by using `set -eo pipefail`
+        shell: bash
+        run: |
+          go test -race -v -cover -short ./... | tee test_results.txt
+
+      - name: Convert test output to XML
+        if: ${{ (github.event_name == 'schedule' || github.event_name == 'push') && always() }}
         run: |
           go install github.com/jstemmer/go-junit-report/v2@latest
-          go test -race -v -cover -short ./... | tee test_results.txt
           go-junit-report -in test_results.txt -set-exit-code -out unit_sponge_log.xml
 
       - name: FlakyBot (Linux)
