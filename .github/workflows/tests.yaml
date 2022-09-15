@@ -157,6 +157,11 @@ jobs:
           workload_identity_provider: ${{ secrets.PROVIDER_NAME }}
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
 
+      - name: Enable fuse config (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo sed -i 's/#user_allow_other/user_allow_other/g' /etc/fuse.conf
+
       - name: Run tests
         # specifying bash shell ensures a failure in a piped process isn't lost by using `set -eo pipefail`
         shell: bash
