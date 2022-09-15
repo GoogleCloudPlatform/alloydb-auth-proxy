@@ -79,11 +79,6 @@ jobs:
             ALLOYDB_CONN_NAME:${{ secrets.GOOGLE_CLOUD_PROJECT }}/ALLOYDB_CONN_NAME
             ALLOYDB_CLUSTER_PASS:${{ secrets.GOOGLE_CLOUD_PROJECT }}/ALLOYDB_CLUSTER_PASS
 
-      - name: Enable fuse config (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          sed -i 's/#user_allow_other/user_allow_other/g' /etc/fuse.conf
-
       - name: Run tests
         env:
           ALLOYDB_DB: 'postgres'
