@@ -25,7 +25,7 @@ on:
 
 jobs:
   integration:
-    # run job on proper workflow event triggers (skip job for pull_request event from forks and only run pull_request_target for "tests: run" label)  
+    # run job on proper workflow event triggers (skip job for pull_request event from forks and only run pull_request_target for "tests: run" label)
     if: "${{ (github.event.action != 'labeled' && github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name) || github.event.label.name == 'tests: run' }}"
     runs-on: [self-hosted, linux, x64]
     name: "integration tests (linux)"
@@ -79,6 +79,11 @@ jobs:
             ALLOYDB_CONN_NAME:${{ secrets.GOOGLE_CLOUD_PROJECT }}/ALLOYDB_CONN_NAME
             ALLOYDB_CLUSTER_PASS:${{ secrets.GOOGLE_CLOUD_PROJECT }}/ALLOYDB_CLUSTER_PASS
 
+      - name: Enable fuse config (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo sed -i 's/#user_allow_other/user_allow_other/g' /etc/fuse.conf
+
       - name: Run tests
         env:
           ALLOYDB_DB: 'postgres'
@@ -89,7 +94,7 @@ jobs:
         shell: bash
         run: |
           go test -v -race -cover ./tests | tee test_results.txt
-      
+
       - name: Convert test output to XML
         if: ${{ (github.event_name == 'schedule' || github.event_name == 'push') && always() }}
         run: |
@@ -105,7 +110,7 @@ jobs:
           ./flakybot --repo ${{github.repository}} --commit_hash ${{github.sha}} --build_url https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
 
   unit:
-    # run job on proper workflow event triggers (skip job for pull_request event from forks and only run pull_request_target for "tests: run" label)  
+    # run job on proper workflow event triggers (skip job for pull_request event from forks and only run pull_request_target for "tests: run" label)
     if: "${{ (github.event.action != 'labeled' && github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name) || github.event.label.name == 'tests: run' }}"
     name: "unit tests"
     runs-on: ${{ matrix.os }}
@@ -171,7 +176,7 @@ jobs:
           curl https://github.com/googleapis/repo-automation-bots/releases/download/flakybot-1.1.0/flakybot -o flakybot -s -L
           chmod +x ./flakybot
           ./flakybot --repo ${{github.repository}} --commit_hash ${{github.sha}} --build_url https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
-        
+
       - name: FlakyBot (Windows)
         # only run flakybot on periodic (schedule) and continuous (push) events
         if: ${{ (github.event_name == 'schedule' || github.event_name == 'push') && runner.os == 'Windows' && always() }}
