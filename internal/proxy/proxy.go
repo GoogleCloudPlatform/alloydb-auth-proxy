@@ -25,14 +25,11 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
-	"syscall"
 	"time"
 
 	"cloud.google.com/go/alloydbconn"
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/alloydb"
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/gcloud"
-	"github.com/hanwen/go-fuse/v2/fs"
-	"github.com/hanwen/go-fuse/v2/fuse"
 	"golang.org/x/oauth2"
 )
 
@@ -158,11 +155,6 @@ func (c *portConfig) nextPort() int {
 	return p
 }
 
-type socketSymlink struct {
-	socket  *socketMount
-	symlink *symlink
-}
-
 var (
 	// Instance URI is in the format:
 	// 'projects/<PROJECT>/locations/<REGION>/clusters/<CLUSTER>/instances/<INSTANCE>'
@@ -227,22 +219,7 @@ type Client struct {
 
 	logger alloydb.Logger
 
-	// fuseDir specifies the directory where a FUSE server is mounted. The value
-	// is empty if FUSE is not enabled. The directory holds symlinks to Unix
-	// domain sockets in the fuseTmpDir.
-	fuseDir     string
-	fuseTempDir string
-	// fuseMu protects access to fuseSockets.
-	fuseMu sync.Mutex
-	// fuseSockets is a map of instance connection name to socketMount and
-	// symlink.
-	fuseSockets  map[string]socketSymlink
-	fuseServerMu sync.Mutex
-	fuseServer   *fuse.Server
-	fuseWg       sync.WaitGroup
-
-	// Inode adds support for FUSE operations.
-	fs.Inode
+	fuseMount
 }
 
 // NewClient completes the initial setup required to get the proxy to a "steady" state.
@@ -268,13 +245,7 @@ func NewClient(ctx context.Context, d alloydb.Dialer, l alloydb.Logger, conf *Co
 	}
 
 	if conf.FUSEDir != "" {
-		if err := os.MkdirAll(conf.FUSETempDir, 0777); err != nil {
-			return nil, err
-		}
-		c.fuseDir = conf.FUSEDir
-		c.fuseTempDir = conf.FUSETempDir
-		c.fuseSockets = map[string]socketSymlink{}
-		return c, nil
+		return configureFUSE(c, conf)
 	}
 
 	var mnts []*socketMount
@@ -300,81 +271,6 @@ func NewClient(ctx context.Context, d alloydb.Dialer, l alloydb.Logger, conf *Co
 	return c, nil
 }
 
-// Readdir returns a list of all active Unix sockets in addition to the README.
-func (c *Client) Readdir(ctx context.Context) (fs.DirStream, syscall.Errno) {
-	entries := []fuse.DirEntry{
-		{Name: "README", Mode: 0555 | fuse.S_IFREG},
-	}
-	var active []string
-	c.fuseMu.Lock()
-	for k := range c.fuseSockets {
-		active = append(active, k)
-	}
-	c.fuseMu.Unlock()
-
-	for _, a := range active {
-		entries = append(entries, fuse.DirEntry{
-			Name: a,
-			Mode: 0777 | syscall.S_IFSOCK,
-		})
-	}
-	return fs.NewListDirStream(entries), fs.OK
-}
-
-// Lookup implements the fs.NodeLookuper interface and returns an index node
-// (inode) for a symlink that points to a Unix domain socket. The Unix domain
-// socket is connected to the requested Cloud SQL instance. Lookup returns a
-// symlink (instead of the socket itself) so that multiple callers all use the
-// same Unix socket.
-func (c *Client) Lookup(ctx context.Context, instance string, out *fuse.EntryOut) (*fs.Inode, syscall.Errno) {
-	if instance == "README" {
-		return c.NewInode(ctx, &readme{}, fs.StableAttr{}), fs.OK
-	}
-
-	instanceURI, err := toFullURI(instance)
-	if err != nil {
-		return nil, syscall.ENOENT
-	}
-
-	c.fuseMu.Lock()
-	defer c.fuseMu.Unlock()
-	if l, ok := c.fuseSockets[instance]; ok {
-		return l.symlink.EmbeddedInode(), fs.OK
-	}
-
-	s, err := newSocketMount(
-		ctx, &Config{UnixSocket: c.fuseTempDir},
-		nil, InstanceConnConfig{Name: instanceURI},
-	)
-	if err != nil {
-		c.logger.Errorf("could not create socket for %q: %v", instance, err)
-		return nil, syscall.ENOENT
-	}
-
-	c.fuseWg.Add(1)
-	go func() {
-		defer c.fuseWg.Done()
-		sErr := c.serveSocketMount(ctx, s)
-		if sErr != nil {
-			c.fuseMu.Lock()
-			delete(c.fuseSockets, instance)
-			c.fuseMu.Unlock()
-		}
-	}()
-
-	// Return a symlink that points to the actual Unix socket within the
-	// temporary directory. For Postgres, return a symlink that points to the
-	// directory which holds the ".s.PGSQL.5432" Unix socket.
-	sl := &symlink{path: filepath.Join(c.fuseTempDir, instance)}
-	c.fuseSockets[instance] = socketSymlink{
-		socket:  s,
-		symlink: sl,
-	}
-	return c.NewInode(ctx, sl, fs.StableAttr{
-		Mode: 0777 | fuse.S_IFLNK},
-	), fs.OK
-}
-
 // CheckConnections dials each registered instance and reports any errors that
 // may have occurred.
 func (c *Client) CheckConnections(ctx context.Context) error {
@@ -385,12 +281,7 @@ func (c *Client) CheckConnections(ctx context.Context) error {
 	)
 
 	if c.fuseDir != "" {
-		mnts = []*socketMount{}
-		c.fuseMu.Lock()
-		for _, m := range c.fuseSockets {
-			mnts = append(mnts, m.socket)
-		}
-		c.fuseMu.Unlock()
+		mnts = c.fuseMounts()
 	}
 	for _, m := range mnts {
 		wg.Add(1)
@@ -437,18 +328,7 @@ func (c *Client) Serve(ctx context.Context, notify func()) error {
 	defer cancel()
 
 	if c.fuseDir != "" {
-		srv, err := fs.Mount(c.fuseDir, c, &fs.Options{
-			MountOptions: fuse.MountOptions{AllowOther: true},
-		})
-		if err != nil {
-			return fmt.Errorf("FUSE mount failed: %q: %v", c.fuseDir, err)
-		}
-		c.fuseServerMu.Lock()
-		c.fuseServer = srv
-		c.fuseServerMu.Unlock()
-		notify()
-		<-ctx.Done()
-		return ctx.Err()
+		return c.serveFuse(ctx, notify)
 	}
 
 	exitCh := make(chan error)
@@ -492,21 +372,13 @@ func (m MultiErr) Error() string {
 func (c *Client) Close() error {
 	mnts := c.mnts
 
-	c.fuseServerMu.Lock()
-	hasFuseServer := c.fuseServer != nil
-	c.fuseServerMu.Unlock()
-
 	var mErr MultiErr
-	if hasFuseServer {
-		if err := c.fuseServer.Unmount(); err != nil {
+
+	if c.fuseDir != "" {
+		if err := c.unmountFUSE(); err != nil {
 			mErr = append(mErr, err)
 		}
-		mnts = []*socketMount{}
-		c.fuseMu.Lock()
-		for _, m := range c.fuseSockets {
-			mnts = append(mnts, m.socket)
-		}
-		c.fuseMu.Unlock()
+		mnts = c.fuseMounts()
 	}
 
 	// First, close all open socket listeners to prevent additional connections.
@@ -516,8 +388,8 @@ func (c *Client) Close() error {
 			mErr = append(mErr, err)
 		}
 	}
-	if hasFuseServer {
-		c.fuseWg.Wait()
+	if c.fuseDir != "" {
+		c.waitForFUSEMounts()
 	}
 	// Next, close the dialer to prevent any additional refreshes.
 	cErr := c.dialer.Close()
