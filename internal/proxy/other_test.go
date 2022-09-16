@@ -28,3 +28,44 @@ func TestClientUsesSyncAtomicAlignment(t *testing.T) {
 		t.Errorf("Client.connCount is not 64-bit aligned: want 0, got %v", a)
 	}
 }
+
+func TestToFullURI(t *testing.T) {
+	tcs := []struct {
+		desc    string
+		in      string
+		want    string
+		wantErr bool
+	}{
+		{
+			desc: "properly formatted short name",
+			in:   "myproj.reg.clust.inst",
+			want: "projects/myproj/locations/reg/clusters/clust/instances/inst",
+		},
+		{
+			desc:    "invalid name",
+			in:      ".Trash",
+			wantErr: true,
+		},
+		{
+			desc:    "full URI",
+			in:      "projects/myproj/locations/reg/clusters/clust/instances/inst",
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range tcs {
+		t.Run(tc.desc, func(t *testing.T) {
+			got, gotErr := toFullURI(tc.in)
+			if tc.wantErr {
+				if gotErr == nil {
+					t.Fatal("want err != nil, got err == nil")
+				}
+				return
+			}
+			if got != tc.want {
+				t.Fatalf("want = %v, got = %v", tc.want, got)
+			}
+
+		})
+	}
+}
