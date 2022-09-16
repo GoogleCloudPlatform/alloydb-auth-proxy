@@ -111,7 +111,8 @@ func (c *Client) Lookup(ctx context.Context, instance string, out *fuse.EntryOut
 		return c.NewInode(ctx, &readme{}, fs.StableAttr{}), fs.OK
 	}
 
-	if _, err := parseConnName(instance); err != nil {
+	instanceURI, err := toFullURI(instance)
+	if err != nil {
 		return nil, syscall.ENOENT
 	}
 
@@ -121,15 +122,9 @@ func (c *Client) Lookup(ctx context.Context, instance string, out *fuse.EntryOut
 		return l.symlink.EmbeddedInode(), fs.OK
 	}
 
-	version, err := c.dialer.EngineVersion(ctx, instance)
-	if err != nil {
-		c.logger.Errorf("could not resolve version for %q: %v", instance, err)
-		return nil, syscall.ENOENT
-	}
-
 	s, err := newSocketMount(
 		ctx, &Config{UnixSocket: c.fuseTempDir},
-		nil, InstanceConnConfig{Name: instance}, version,
+		nil, InstanceConnConfig{Name: instanceURI},
 	)
 	if err != nil {
 		c.logger.Errorf("could not create socket for %q: %v", instance, err)
