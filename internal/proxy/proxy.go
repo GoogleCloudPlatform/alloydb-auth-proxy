@@ -159,23 +159,30 @@ var (
 	// Instance URI is in the format:
 	// 'projects/<PROJECT>/locations/<REGION>/clusters/<CLUSTER>/instances/<INSTANCE>'
 	// Additionally, we have to support legacy "domain-scoped" projects (e.g. "google.com:PROJECT")
-	instURIRegex = regexp.MustCompile("projects/([^:]+(:[^:]+)?)/locations/([^:]+)/clusters/([^:]+)/instances/([^:]+)")
+	instURIRegex = regexp.MustCompile("projects/([^:]+(?::[^:]+)?)/locations/(.+)/clusters/(.+)/instances/(.+)")
 	// unixRegex is the expected format for a Unix socket
 	// e.g. project.region.cluster.instance
-	unixRegex = regexp.MustCompile(`([^:]+)\.([^:]+)\.([^:]+)\.([^:]+)`)
+	unixRegex = regexp.MustCompile(`([^:]+(?:-[^:]+)?)\.(.+)\.(.+)\.(.+)`)
 )
 
 // UnixSocketDir returns a shorted instance connection name to prevent
 // exceeding the Unix socket length, e.g., project.region.cluster.instance
 func UnixSocketDir(dir, inst string) (string, error) {
+	inst = strings.ToLower(inst)
 	m := instURIRegex.FindSubmatch([]byte(inst))
 	if m == nil {
 		return "", fmt.Errorf("invalid instance name: %v", inst)
 	}
 	project := string(m[1])
-	region := string(m[3])
-	cluster := string(m[4])
-	name := string(m[5])
+	// Colons are not allowed on Windows, but are present in legacy project
+	// names (e.g., google.com:myproj). Replace any colon with an underscore to
+	// support Windows. Underscores are not allowed in project names. So use an
+	// underscore to have a Windows-friendly delimitor that can serve as a
+	// marker to recover the legacy project name when necessary (e.g., FUSE).
+	project = strings.ReplaceAll(project, ":", "_")
+	region := string(m[2])
+	cluster := string(m[3])
+	name := string(m[4])
 	shortName := strings.Join([]string{project, region, cluster, name}, ".")
 	return filepath.Join(dir, shortName), nil
 }
@@ -188,11 +195,15 @@ func toFullURI(short string) (string, error) {
 		return "", fmt.Errorf("invalid short name: %v", short)
 	}
 	project := string(m[1])
+	// Adjust short name for legacy projects. Google Cloud projects cannot have
+	// underscores in them. When there's an underscore in the short name, it's a
+	// marker for a colon. So replace the underscore with the original colon.
+	project = strings.ReplaceAll(project, "_", ":")
 	region := string(m[2])
 	cluster := string(m[3])
 	name := string(m[4])
 	return fmt.Sprintf(
-		"projects/%v/locations/%v/clusters/%v/instances/%v",
+		"projects/%s/locations/%s/clusters/%s/instances/%s",
 		project, region, cluster, name,
 	), nil
 }

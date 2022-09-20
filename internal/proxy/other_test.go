@@ -29,6 +29,55 @@ func TestClientUsesSyncAtomicAlignment(t *testing.T) {
 	}
 }
 
+func TestUnixSocketDir(t *testing.T) {
+	tcs := []struct {
+		desc    string
+		in      string
+		want    string
+		wantErr bool
+	}{
+		{
+			desc: "good input",
+			in:   "projects/proj/locations/reg/clusters/clust/instances/inst",
+			want: "proj.reg.clust.inst",
+		},
+		{
+			desc: "irregular casing",
+			in:   "projects/PROJ/locations/REG/clusters/CLUST/instances/INST",
+			want: "proj.reg.clust.inst",
+		},
+		{
+			desc: "legacy domain project",
+			in:   "projects/google.com:proj/locations/reg/clusters/clust/instances/inst",
+			want: "google.com_proj.reg.clust.inst",
+		},
+		{
+			in:      "projects/myproj/locations/reg/clusters/clust/instances/",
+			wantErr: true,
+		},
+		{
+			in:      "projects/google.com:bad:PROJECT/locations/reg/clusters/clust/instances/inst",
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range tcs {
+		t.Run(tc.desc, func(t *testing.T) {
+			got, gotErr := UnixSocketDir("", tc.in)
+			if tc.wantErr {
+				if gotErr == nil {
+					t.Fatal("want err != nil, got err == nil")
+				}
+				return
+			}
+			if got != tc.want {
+				t.Fatalf("want = %v, got = %v", tc.want, got)
+			}
+
+		})
+	}
+}
+
 func TestToFullURI(t *testing.T) {
 	tcs := []struct {
 		desc    string
@@ -40,6 +89,11 @@ func TestToFullURI(t *testing.T) {
 			desc: "properly formatted short name",
 			in:   "myproj.reg.clust.inst",
 			want: "projects/myproj/locations/reg/clusters/clust/instances/inst",
+		},
+		{
+			desc: "legacy project name",
+			in:   "google.com_myproj.reg.clust.inst",
+			want: "projects/google.com:myproj/locations/reg/clusters/clust/instances/inst",
 		},
 		{
 			desc:    "invalid name",
