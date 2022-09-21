@@ -30,3 +30,4 @@ FROM gcr.io/distroless/static:nonroot
 COPY --from=build --chown=nonroot /go/src/alloydb-auth-proxy/alloydb-auth-proxy /alloydb-auth-proxy
 # set the uid as an integer for compatibility with runAsNonRoot in Kubernetes
 USER 65532
+ENTRYPOINT ["/alloydb-auth-proxy"]
