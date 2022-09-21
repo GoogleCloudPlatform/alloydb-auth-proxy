@@ -36,7 +36,7 @@ import (
 // InstanceConnConfig holds the configuration for an individual instance
 // connection.
 type InstanceConnConfig struct {
-	// Name is the instance connection name.
+	// Name is the instance URI.
 	Name string
 	// Addr is the address on which to bind a listener for the instance.
 	Addr string
@@ -74,6 +74,15 @@ type Config struct {
 	// UnixSocket is the directory where Unix sockets will be created,
 	// connected to any Instances. If set, takes precedence over Addr and Port.
 	UnixSocket string
+
+	// FUSEDir enables a file system in user space at the provided path that
+	// connects to the requested instance only when a client requests it.
+	FUSEDir string
+
+	// FUSETempDir sets the temporary directory where the FUSE mount will place
+	// Unix domain sockets connected to Cloud SQL instances. The temp directory
+	// is not accessed directly.
+	FUSETempDir string
 
 	// APIEndpointURL is the URL of the AlloyDB Admin API.
 	APIEndpointURL string
@@ -150,22 +159,53 @@ var (
 	// Instance URI is in the format:
 	// 'projects/<PROJECT>/locations/<REGION>/clusters/<CLUSTER>/instances/<INSTANCE>'
 	// Additionally, we have to support legacy "domain-scoped" projects (e.g. "google.com:PROJECT")
-	instURIRegex = regexp.MustCompile("projects/([^:]+(:[^:]+)?)/locations/([^:]+)/clusters/([^:]+)/instances/([^:]+)")
+	instURIRegex = regexp.MustCompile("projects/([^:]+(?::[^:]+)?)/locations/(.+)/clusters/(.+)/instances/(.+)")
+	// unixRegex is the expected format for a Unix socket
+	// e.g. project.region.cluster.instance
+	unixRegex = regexp.MustCompile(`([^:]+(?:-[^:]+)?)\.(.+)\.(.+)\.(.+)`)
 )
 
-// UnixSocketDir returns a shorted instance connection name to prevent exceeding
-// the Unix socket length.
+// UnixSocketDir returns a shorted instance connection name to prevent
+// exceeding the Unix socket length, e.g., project.region.cluster.instance
 func UnixSocketDir(dir, inst string) (string, error) {
+	inst = strings.ToLower(inst)
 	m := instURIRegex.FindSubmatch([]byte(inst))
 	if m == nil {
 		return "", fmt.Errorf("invalid instance name: %v", inst)
 	}
 	project := string(m[1])
-	region := string(m[3])
-	cluster := string(m[4])
-	name := string(m[5])
+	// Colons are not allowed on Windows, but are present in legacy project
+	// names (e.g., google.com:myproj). Replace any colon with an underscore to
+	// support Windows. Underscores are not allowed in project names. So use an
+	// underscore to have a Windows-friendly delimitor that can serve as a
+	// marker to recover the legacy project name when necessary (e.g., FUSE).
+	project = strings.ReplaceAll(project, ":", "_")
+	region := string(m[2])
+	cluster := string(m[3])
+	name := string(m[4])
 	shortName := strings.Join([]string{project, region, cluster, name}, ".")
 	return filepath.Join(dir, shortName), nil
+}
+
+// toFullURI converts a shortened Unix socket name (e.g.,
+// project.region.cluster.instance) into a full instance URI.
+func toFullURI(short string) (string, error) {
+	m := unixRegex.FindSubmatch([]byte(short))
+	if m == nil {
+		return "", fmt.Errorf("invalid short name: %v", short)
+	}
+	project := string(m[1])
+	// Adjust short name for legacy projects. Google Cloud projects cannot have
+	// underscores in them. When there's an underscore in the short name, it's a
+	// marker for a colon. So replace the underscore with the original colon.
+	project = strings.ReplaceAll(project, "_", ":")
+	region := string(m[2])
+	cluster := string(m[3])
+	name := string(m[4])
+	return fmt.Sprintf(
+		"projects/%s/locations/%s/clusters/%s/instances/%s",
+		project, region, cluster, name,
+	), nil
 }
 
 // Client proxies connections from a local client to the remote server side
@@ -189,6 +229,8 @@ type Client struct {
 	waitOnClose time.Duration
 
 	logger alloydb.Logger
+
+	fuseMount
 }
 
 // NewClient completes the initial setup required to get the proxy to a "steady" state.
@@ -204,6 +246,17 @@ func NewClient(ctx context.Context, d alloydb.Dialer, l alloydb.Logger, conf *Co
 		if err != nil {
 			return nil, fmt.Errorf("error initializing dialer: %v", err)
 		}
+	}
+
+	c := &Client{
+		logger:      l,
+		dialer:      d,
+		maxConns:    conf.MaxConnections,
+		waitOnClose: conf.WaitOnClose,
+	}
+
+	if conf.FUSEDir != "" {
+		return configureFUSE(c, conf)
 	}
 
 	var mnts []*socketMount
@@ -224,13 +277,8 @@ func NewClient(ctx context.Context, d alloydb.Dialer, l alloydb.Logger, conf *Co
 		mnts = append(mnts, m)
 	}
 
-	c := &Client{
-		mnts:        mnts,
-		logger:      l,
-		dialer:      d,
-		maxConns:    conf.MaxConnections,
-		waitOnClose: conf.WaitOnClose,
-	}
+	c.mnts = mnts
+
 	return c, nil
 }
 
@@ -240,8 +288,13 @@ func (c *Client) CheckConnections(ctx context.Context) error {
 	var (
 		wg    sync.WaitGroup
 		errCh = make(chan error, len(c.mnts))
+		mnts  = c.mnts
 	)
-	for _, m := range c.mnts {
+
+	if c.fuseDir != "" {
+		mnts = c.fuseMounts()
+	}
+	for _, m := range mnts {
 		wg.Add(1)
 		go func(inst string) {
 			defer wg.Done()
@@ -284,6 +337,11 @@ func (c *Client) ConnCount() (uint64, uint64) {
 func (c *Client) Serve(ctx context.Context, notify func()) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
+
+	if c.fuseDir != "" {
+		return c.serveFuse(ctx, notify)
+	}
+
 	exitCh := make(chan error)
 	for _, m := range c.mnts {
 		go func(mnt *socketMount) {
@@ -323,13 +381,26 @@ func (m MultiErr) Error() string {
 }
 
 func (c *Client) Close() error {
+	mnts := c.mnts
+
 	var mErr MultiErr
+
+	if c.fuseDir != "" {
+		if err := c.unmountFUSE(); err != nil {
+			mErr = append(mErr, err)
+		}
+		mnts = c.fuseMounts()
+	}
+
 	// First, close all open socket listeners to prevent additional connections.
-	for _, m := range c.mnts {
+	for _, m := range mnts {
 		err := m.Close()
 		if err != nil {
 			mErr = append(mErr, err)
 		}
+	}
+	if c.fuseDir != "" {
+		c.waitForFUSEMounts()
 	}
 	// Next, close the dialer to prevent any additional refreshes.
 	cErr := c.dialer.Close()

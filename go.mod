@@ -5,13 +5,14 @@ go 1.18
 require (
 	cloud.google.com/go/alloydbconn v0.2.2
 	contrib.go.opencensus.io/exporter/prometheus v0.4.2
-	contrib.go.opencensus.io/exporter/stackdriver v0.13.13
-	github.com/google/go-cmp v0.5.8
+	contrib.go.opencensus.io/exporter/stackdriver v0.13.14
+	github.com/google/go-cmp v0.5.9
+	github.com/hanwen/go-fuse/v2 v2.1.0
 	github.com/spf13/cobra v1.5.0
 	go.opencensus.io v0.23.0
 	go.uber.org/zap v1.23.0
-	golang.org/x/oauth2 v0.0.0-20220822191816-0ebed06d0094
-	golang.org/x/sys v0.0.0-20220907062415-87db552b00fd
+	golang.org/x/oauth2 v0.0.0-20220909003341-f21342109be1
+	golang.org/x/sys v0.0.0-20220919091848-fb04ddd9f9c8
 )
 
 require (

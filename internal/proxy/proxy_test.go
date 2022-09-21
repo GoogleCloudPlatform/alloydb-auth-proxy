@@ -33,6 +33,8 @@ import (
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/proxy"
 )
 
+var testLogger = log.NewStdLogger(os.Stdout, os.Stdout)
+
 type testCase struct {
 	desc          string
 	in            *proxy.Config
@@ -43,12 +45,14 @@ type testCase struct {
 type fakeDialer struct {
 	mu        sync.Mutex
 	dialCount int
+	instances []string
 }
 
 func (f *fakeDialer) Dial(ctx context.Context, inst string, opts ...alloydbconn.DialOption) (net.Conn, error) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	f.dialCount++
+	f.instances = append(f.instances, inst)
 	c1, _ := net.Pipe()
 	return c1, nil
 }
@@ -57,6 +61,12 @@ func (f *fakeDialer) dialAttempts() int {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	return f.dialCount
+}
+
+func (f *fakeDialer) dialedInstances() []string {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	return append([]string{}, f.instances...)
 }
 
 func (*fakeDialer) Close() error {
@@ -216,8 +226,7 @@ func TestClientInitialization(t *testing.T) {
 
 	for _, tc := range tcs {
 		t.Run(tc.desc, func(t *testing.T) {
-			logger := log.NewStdLogger(os.Stdout, os.Stdout)
-			c, err := proxy.NewClient(ctx, &fakeDialer{}, logger, tc.in)
+			c, err := proxy.NewClient(ctx, &fakeDialer{}, testLogger, tc.in)
 			if err != nil {
 				t.Fatalf("want error = nil, got = %v", err)
 			}
@@ -260,8 +269,7 @@ func TestClientLimitsMaxConnections(t *testing.T) {
 		},
 		MaxConnections: 1,
 	}
-	logger := log.NewStdLogger(os.Stdout, os.Stdout)
-	c, err := proxy.NewClient(context.Background(), d, logger, in)
+	c, err := proxy.NewClient(context.Background(), d, testLogger, in)
 	if err != nil {
 		t.Fatalf("proxy.NewClient error: %v", err)
 	}
@@ -323,7 +331,6 @@ func tryTCPDial(t *testing.T, addr string) net.Conn {
 }
 
 func TestClientCloseWaitsForActiveConnections(t *testing.T) {
-	logger := log.NewStdLogger(os.Stdout, os.Stdout)
 	in := &proxy.Config{
 		Addr: "127.0.0.1",
 		Port: 5000,
@@ -332,7 +339,7 @@ func TestClientCloseWaitsForActiveConnections(t *testing.T) {
 		},
 	}
 
-	c, err := proxy.NewClient(context.Background(), &fakeDialer{}, logger, in)
+	c, err := proxy.NewClient(context.Background(), &fakeDialer{}, testLogger, in)
 	if err != nil {
 		t.Fatalf("proxy.NewClient error: %v", err)
 	}
@@ -347,7 +354,7 @@ func TestClientCloseWaitsForActiveConnections(t *testing.T) {
 
 	in.WaitOnClose = time.Second
 	in.Port = 5001
-	c, err = proxy.NewClient(context.Background(), &fakeDialer{}, logger, in)
+	c, err = proxy.NewClient(context.Background(), &fakeDialer{}, testLogger, in)
 	if err != nil {
 		t.Fatalf("proxy.NewClient error: %v", err)
 	}
@@ -377,8 +384,7 @@ func TestClientClosesCleanly(t *testing.T) {
 			{Name: "proj:reg:inst"},
 		},
 	}
-	logger := log.NewStdLogger(os.Stdout, os.Stdout)
-	c, err := proxy.NewClient(context.Background(), &fakeDialer{}, logger, in)
+	c, err := proxy.NewClient(context.Background(), &fakeDialer{}, testLogger, in)
 	if err != nil {
 		t.Fatalf("proxy.NewClient error want = nil, got = %v", err)
 	}
@@ -400,8 +406,7 @@ func TestClosesWithError(t *testing.T) {
 			{Name: "proj:reg:inst"},
 		},
 	}
-	logger := log.NewStdLogger(os.Stdout, os.Stdout)
-	c, err := proxy.NewClient(context.Background(), &errorDialer{}, logger, in)
+	c, err := proxy.NewClient(context.Background(), &errorDialer{}, testLogger, in)
 	if err != nil {
 		t.Fatalf("proxy.NewClient error want = nil, got = %v", err)
 	}
@@ -456,14 +461,13 @@ func TestClientInitializationWorksRepeatedly(t *testing.T) {
 			{Name: "projects/proj/locations/region/clusters/clust/instances/inst1"},
 		},
 	}
-	logger := log.NewStdLogger(os.Stdout, os.Stdout)
-	c, err := proxy.NewClient(ctx, &fakeDialer{}, logger, in)
+	c, err := proxy.NewClient(ctx, &fakeDialer{}, testLogger, in)
 	if err != nil {
 		t.Fatalf("want error = nil, got = %v", err)
 	}
 	c.Close()
 
-	c, err = proxy.NewClient(ctx, &fakeDialer{}, logger, in)
+	c, err = proxy.NewClient(ctx, &fakeDialer{}, testLogger, in)
 	if err != nil {
 		t.Fatalf("want error = nil, got = %v", err)
 	}
@@ -502,8 +506,7 @@ func TestClientInitializationWithCustomHost(t *testing.T) {
 		APIEndpointURL: s.URL,
 		Port:           7000,
 	}
-	logger := log.NewStdLogger(os.Stdout, os.Stdout)
-	c, err := proxy.NewClient(context.Background(), nil, logger, in)
+	c, err := proxy.NewClient(context.Background(), nil, testLogger, in)
 	if err != nil {
 		t.Fatalf("want error = nil, got = %v", err)
 	}
@@ -541,8 +544,7 @@ func TestClientNotifiesCallerOnServe(t *testing.T) {
 			{Name: "proj:region:pg"},
 		},
 	}
-	logger := log.NewStdLogger(os.Stdout, os.Stdout)
-	c, err := proxy.NewClient(ctx, &fakeDialer{}, logger, in)
+	c, err := proxy.NewClient(ctx, &fakeDialer{}, testLogger, in)
 	if err != nil {
 		t.Fatalf("want error = nil, got = %v", err)
 	}
@@ -566,7 +568,6 @@ func TestClientNotifiesCallerOnServe(t *testing.T) {
 }
 
 func TestClientConnCount(t *testing.T) {
-	logger := log.NewStdLogger(os.Stdout, os.Stdout)
 	in := &proxy.Config{
 		Addr: "127.0.0.1",
 		Port: 5000,
@@ -576,7 +577,7 @@ func TestClientConnCount(t *testing.T) {
 		MaxConnections: 10,
 	}
 
-	c, err := proxy.NewClient(context.Background(), &fakeDialer{}, logger, in)
+	c, err := proxy.NewClient(context.Background(), &fakeDialer{}, testLogger, in)
 	if err != nil {
 		t.Fatalf("proxy.NewClient error: %v", err)
 	}
@@ -609,7 +610,6 @@ func TestClientConnCount(t *testing.T) {
 }
 
 func TestCheckConnections(t *testing.T) {
-	logger := log.NewStdLogger(os.Stdout, os.Stdout)
 	in := &proxy.Config{
 		Addr: "127.0.0.1",
 		Port: 5000,
@@ -618,7 +618,7 @@ func TestCheckConnections(t *testing.T) {
 		},
 	}
 	d := &fakeDialer{}
-	c, err := proxy.NewClient(context.Background(), d, logger, in)
+	c, err := proxy.NewClient(context.Background(), d, testLogger, in)
 	if err != nil {
 		t.Fatalf("proxy.NewClient error: %v", err)
 	}
@@ -642,7 +642,7 @@ func TestCheckConnections(t *testing.T) {
 		},
 	}
 	ed := &errorDialer{}
-	c, err = proxy.NewClient(context.Background(), ed, logger, in)
+	c, err = proxy.NewClient(context.Background(), ed, testLogger, in)
 	if err != nil {
 		t.Fatalf("proxy.NewClient error: %v", err)
 	}
