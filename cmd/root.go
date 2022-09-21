@@ -24,6 +24,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"syscall"
@@ -91,6 +92,7 @@ type Command struct {
 	prometheus                 bool
 	prometheusNamespace        string
 	healthCheck                bool
+	httpAddress                string
 	httpPort                   string
 }
 
@@ -174,6 +176,11 @@ down when the number of open connections reaches 0 or when
 the maximum time has passed. Defaults to 0s.`)
 	cmd.PersistentFlags().StringVar(&c.conf.APIEndpointURL, "alloydbadmin-api-endpoint", "https://alloydb.googleapis.com/v1beta",
 		"When set, the proxy uses this host as the base API path.")
+	cmd.PersistentFlags().StringVar(&c.conf.FUSEDir, "fuse", "",
+		"Mount a directory at the path using FUSE to access Cloud SQL instances.")
+	cmd.PersistentFlags().StringVar(&c.conf.FUSETempDir, "fuse-tmp-dir",
+		filepath.Join(os.TempDir(), "csql-tmp"),
+		"Temp dir for Unix sockets created with FUSE")
 
 	cmd.PersistentFlags().StringVar(&c.telemetryProject, "telemetry-project", "",
 		"Enable Cloud Monitoring and Cloud Trace integration with the provided project ID.")
@@ -189,6 +196,8 @@ the maximum time has passed. Defaults to 0s.`)
 		"Enable Prometheus HTTP endpoint /metrics")
 	cmd.PersistentFlags().StringVar(&c.prometheusNamespace, "prometheus-namespace", "",
 		"Use the provided Prometheus namespace for metrics")
+	cmd.PersistentFlags().StringVar(&c.httpAddress, "http-address", "localhost",
+		"Address for Prometheus and health check server")
 	cmd.PersistentFlags().StringVar(&c.httpPort, "http-port", "9090",
 		"Port for the Prometheus server to use")
 	cmd.PersistentFlags().BoolVar(&c.healthCheck, "health-check", false,
@@ -208,9 +217,22 @@ only. Uses the port specified by the http-port flag.`)
 }
 
 func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
-	// If no instance connection names were provided, error.
-	if len(args) == 0 {
+	// If no instance connection names were provided AND FUSE isn't enabled,
+	// error.
+	if len(args) == 0 && conf.FUSEDir == "" {
 		return newBadCommandError("missing instance uri (e.g., projects/$PROJECTS/locations/$LOCTION/clusters/$CLUSTER/instances/$INSTANCES)")
+	}
+
+	if conf.FUSEDir != "" {
+		if err := proxy.SupportsFUSE(); err != nil {
+			return newBadCommandError(
+				fmt.Sprintf("--fuse is not supported: %v", err),
+			)
+		}
+	}
+
+	if len(args) == 0 && conf.FUSEDir == "" && conf.FUSETempDir != "" {
+		return newBadCommandError("cannot specify --fuse-tmp-dir without --fuse")
 	}
 
 	userHasSet := func(f string) bool {
@@ -440,7 +462,7 @@ func runSignalWrapper(cmd *Command) error {
 	// Start the HTTP server if anything requiring HTTP is specified.
 	if needsHTTPServer {
 		server := &http.Server{
-			Addr:    fmt.Sprintf("localhost:%s", cmd.httpPort),
+			Addr:    fmt.Sprintf("%s:%s", cmd.httpAddress, cmd.httpPort),
 			Handler: mux,
 		}
 		// Start the HTTP server.

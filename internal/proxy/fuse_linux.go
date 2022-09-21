@@ -15,16 +15,19 @@
 package proxy
 
 import (
-	"testing"
-	"unsafe"
+	"errors"
+	"os/exec"
 )
 
-func TestClientUsesSyncAtomicAlignment(t *testing.T) {
-	// The sync/atomic pkg has a bug that requires the developer to guarantee
-	// 64-bit alignment when using 64-bit functions on 32-bit systems.
-	c := &Client{}
-
-	if a := unsafe.Offsetof(c.connCount); a%64 != 0 {
-		t.Errorf("Client.connCount is not 64-bit aligned: want 0, got %v", a)
+// SupportsFUSE checks if the fusermount binary is present in the PATH or a well
+// known location.
+func SupportsFUSE() error {
+	// This code follows the same strategy found in hanwen/go-fuse.
+	// See https://github.com/hanwen/go-fuse/blob/0f728ba15b38579efefc3dc47821882ca18ffea7/fuse/mount_linux.go#L184-L198.
+	if _, err := exec.LookPath("fusermount"); err != nil {
+		if _, err := exec.LookPath("/bin/fusermount"); err != nil {
+			return errors.New("fusermount binary not found in PATH or /bin")
+		}
 	}
+	return nil
 }
