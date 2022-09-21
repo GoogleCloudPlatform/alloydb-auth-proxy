@@ -552,8 +552,7 @@ func newSocketMount(ctx context.Context, conf *Config, pc *portConfig, inst Inst
 	if network == "unix" {
 		// Best effort. If this call fails, group and other won't have write
 		// access.
-		err := os.Chmod(address, 0777)
-		fmt.Println(err)
+		_ = os.Chmod(address, 0777)
 	}
 
 	m := &socketMount{inst: inst.Name, listener: ln}
