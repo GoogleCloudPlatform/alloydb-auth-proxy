@@ -38,4 +38,4 @@ RUN addgroup -g 65532 -S nonroot && adduser -u 65532 -S nonroot -G nonroot
 USER 65532
 
 COPY --from=build --chown=nonroot /go/src/alloydb-auth-proxy/alloydb-auth-proxy /alloydb-auth-proxy
-ENTRYPOINT ["/alloydb-db-auth-proxy"]
+ENTRYPOINT ["/alloydb-auth-proxy"]
