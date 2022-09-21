@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"os"
+	"path/filepath"
 	"sync"
 	"testing"
 	"time"
@@ -41,11 +43,16 @@ func TestNewCommandArguments(t *testing.T) {
 		if c.Port == 0 {
 			c.Port = 5432
 		}
-		if c.Instances == nil {
-			c.Instances = []proxy.InstanceConnConfig{{}}
+		if c.FUSEDir == "" {
+			if c.Instances == nil {
+				c.Instances = []proxy.InstanceConnConfig{{}}
+			}
+			if i := &c.Instances[0]; i.Name == "" {
+				i.Name = "projects/proj/locations/region/clusters/clust/instances/inst"
+			}
 		}
-		if i := &c.Instances[0]; i.Name == "" {
-			i.Name = "projects/proj/locations/region/clusters/clust/instances/inst"
+		if c.FUSETempDir == "" {
+			c.FUSETempDir = filepath.Join(os.TempDir(), "csql-tmp")
 		}
 		if c.APIEndpointURL == "" {
 			c.APIEndpointURL = "https://alloydb.googleapis.com/v1beta"
@@ -353,6 +360,10 @@ func TestNewCommandWithErrors(t *testing.T) {
 		{
 			desc: "using an invalid url for host flag",
 			args: []string{"--host", "https://invalid:url[/]", "proj:region:inst"},
+		},
+		{
+			desc: "using fuse-tmp-dir without fuse",
+			args: []string{"--fuse-tmp-dir", "/mydir"},
 		},
 	}
 
