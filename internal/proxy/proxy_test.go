@@ -48,7 +48,7 @@ type fakeDialer struct {
 	instances []string
 }
 
-func (f *fakeDialer) Dial(ctx context.Context, inst string, opts ...alloydbconn.DialOption) (net.Conn, error) {
+func (f *fakeDialer) Dial(_ context.Context, inst string, _ ...alloydbconn.DialOption) (net.Conn, error) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	f.dialCount++
@@ -77,7 +77,7 @@ type errorDialer struct {
 	fakeDialer
 }
 
-func (*errorDialer) Dial(ctx context.Context, inst string, opts ...alloydbconn.DialOption) (net.Conn, error) {
+func (*errorDialer) Dial(_ context.Context, _ string, _ ...alloydbconn.DialOption) (net.Conn, error) {
 	return nil, errors.New("errorDialer returns error on Dial")
 }
 
@@ -464,7 +464,7 @@ type spyHandler struct {
 	done chan struct{}
 }
 
-func (s *spyHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+func (s *spyHandler) ServeHTTP(res http.ResponseWriter, _ *http.Request) {
 	s.once.Do(func() { close(s.done) })
 	res.WriteHeader(http.StatusNotImplemented)
 }

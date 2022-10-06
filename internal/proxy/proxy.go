@@ -380,6 +380,8 @@ func (m MultiErr) Error() string {
 	return strings.Join(errs, ", ")
 }
 
+// Close stops the dialer, closes any open FUSE mounts and any open listeners,
+// and optionally waits for all connections to close before exiting.
 func (c *Client) Close() error {
 	mnts := c.mnts
 
@@ -437,7 +439,7 @@ func (c *Client) Close() error {
 
 // serveSocketMount persistently listens to the socketMounts listener and proxies connections to a
 // given AlloyDB instance.
-func (c *Client) serveSocketMount(ctx context.Context, s *socketMount) error {
+func (c *Client) serveSocketMount(_ context.Context, s *socketMount) error {
 	for {
 		cConn, err := s.Accept()
 		if err != nil {
