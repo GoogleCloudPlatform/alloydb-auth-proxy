@@ -138,6 +138,7 @@ currently supported:
 * `$VERSION-alpine` - uses [`alpine:3`](https://hub.docker.com/_/alpine) as a
   base image
 * `$VERSION-buster` - uses [`debian:buster`](https://hub.docker.com/_/debian) as
+* `$VERSION-bullseye` - uses [`debian:bullseye`](https://hub.docker.com/_/debian) as
   a base image
 
 We recommend using the latest version of the proxy and updating the version
