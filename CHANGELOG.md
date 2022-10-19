@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.6.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v0.5.1...v0.6.0) (2022-10-18)
+
+
+### Features
+
+* add bullseye container ([#147](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/147)) ([e9f70c6](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/e9f70c622f5a0c2d1dde462f8ea44ef6e643fecb))
+* add support for FUSE ([#135](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/135)) ([e383f58](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/e383f582e9d193e381be407796b7663f9f6adf92)), closes [#132](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/132)
+* bump to Go 1.19 ([#140](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/140)) ([773b0b7](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/773b0b79db1f999071ed00c4aee9eeb5af630e0f))
+
+
+### Bug Fixes
+
+* add entrypoint to Dockerfiles ([#128](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/128)) ([1d03b71](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/1d03b71dd83a01ed4b84376b50345e4afacc0e25))
+* add support for legacy project names in FUSE ([#137](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/137)) ([b137ae0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/b137ae02ceb0775f7f87122f8f8e1a9d6a84f113))
+* allow group and other access to Unix socket ([#136](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/136)) ([5649176](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/564917604c09a2d06f6a917bf8d5a57754dc91f6))
+* support configuration of HTTP server address ([#1365](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/1365)) ([#131](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/131)) ([bd88339](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/bd88339a242e9550b7e601b347b4500892112730))
+
 ## [0.5.1](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v0.5.0...v0.5.1) (2022-09-07)
 
 
