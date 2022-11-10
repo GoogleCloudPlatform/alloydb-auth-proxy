@@ -69,7 +69,7 @@ jobs:
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
 
       - name: 'Set up Cloud SDK'
-        uses: 'google-github-actions/setup-gcloud@v1.0.0'
+        uses: 'google-github-actions/setup-gcloud@v1.0.1'
 
       - name: Get Secrets
         id: 'secrets'
