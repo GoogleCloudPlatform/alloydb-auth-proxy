@@ -63,7 +63,7 @@ tag_latest() {
     do
         local base_image="$registry/alloydb-connectors/alloydb-auth-proxy"
         echo "Tagging $new_version as latest in $registry"
-        gcloud container images add-tag --quiet '$base_image:$new_version' '$base_image:latest'
+        gcloud container images add-tag --quiet "$base_image:$new_version" "$base_image:latest"
     done
 }
 
