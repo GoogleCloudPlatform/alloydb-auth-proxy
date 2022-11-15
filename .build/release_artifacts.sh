@@ -56,3 +56,15 @@ for f in $(gsutil ls "gs://alloydb-auth-proxy/v$VERSION/alloydb-auth-proxy*"); d
     sha=$(gsutil cat $f | sha256sum --binary | head -c 64)
     echo "| [$file](https://storage.googleapis.com/alloydb-auth-proxy/v$VERSION/$file) | $sha |"
 done
+
+tag_latest() {
+    local new_version=$1
+    for registry in "gcr.io" "us.gcr.io" "eu.gcr.io" "asia.gcr.io"
+    do
+        local base_image="$registry/alloydb-connectors/alloydb-auth-proxy"
+        echo "Tagging $new_version as latest in $registry"
+        gcloud container images add-tag --quiet '$base_image:$new_version' '$base_image:latest'
+    done
+}
+
+tag_latest "$VERSION"
