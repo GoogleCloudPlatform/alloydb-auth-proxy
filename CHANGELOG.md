@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.2](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v0.6.1...v0.6.2) (2022-11-30)
+
+
+### Bug Fixes
+
+* limit ephemeral certificates to 1 hour ([#180](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/180)) ([21932fc](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/21932fc96a1cde8c729087f5b2eec0a955938294))
+
 ## [0.6.1](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v0.6.0...v0.6.1) (2022-11-15)
 
 
