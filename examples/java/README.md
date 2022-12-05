@@ -74,25 +74,24 @@ mvn clean package com.google.cloud.tools:jib-maven-plugin:2.8.0:build \
     --update-env-vars DB_NAME=[MY_DB]
   ```
 
-  Replace environment variables with the correct values for your AlloyDB
-  instance configuration.
+  Replace environment variables with the correct values for your AlloyDB instance configuration.
 
   Take note of the URL output at the end of the deployment process.
 
   It is recommended to use the [Secret Manager integration](https://cloud.google.com/run/docs/configuring/secrets) for Cloud Run instead
-  of using environment variables for the SQL configuration. The service injects the SQL credentials from
+  of using environment variables for the SQL configuration. The service injects the Alloy credentials from
   Secret Manager at runtime via an environment variable.
 
   Create secrets via the command line:
   ```sh
-  echo -n "my-awesome-project:us-central1:my-cloud-sql-instance" | \
-      gcloud secrets versions add INSTANCE_CONNECTION_NAME_SECRET --data-file=-
+  echo -n "projects/<PROJECT>/locations/<REGION>/clusters/<CLUSTER>/instances/<INSTANCE>" | \
+      gcloud secrets versions add ALLOYDB_CONNECTION_NAME_SECRET --data-file=-
   ```
 
   Deploy the service to Cloud Run specifying the env var name and secret name:
   ```sh
-  gcloud beta run deploy SERVICE --image gcr.io/[YOUR_PROJECT_ID]/run-sql \
-      --update-secrets ALLOYDB_CONNECTION_NAME=[ALLOYDB_CONNECTION_NAME]:latest,\
+  gcloud beta run deploy SERVICE --image gcr.io/[YOUR_PROJECT_ID]/run-alloydb \
+      --update-secrets ALLOYDB_CONNECTION_NAME=[ALLOYDB_CONNECTION_NAME_SECRET]:latest,\
         DB_USER=[DB_USER_SECRET]:latest, \
         DB_PASS=[DB_PASS_SECRET]:latest, \
         DB_NAME=[DB_NAME_SECRET]:latest
