@@ -17,7 +17,7 @@
 set -e
 
 # build the proxy and run it in the background listening on 127.0.0.1:5432
-go build ../..
+go build
 ./alloydb-auth-proxy "${ALLOYDB_CONNECTION_NAME}" &
 export DB_HOST="127.0.0.1"
 export DB_PORT=5432
