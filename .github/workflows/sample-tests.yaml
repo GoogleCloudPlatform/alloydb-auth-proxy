@@ -47,6 +47,9 @@ jobs:
     needs: changes
     if: ${{ needs.changes.outputs.java == 'true' || github.event_name == 'schedule' }}
     runs-on: [self-hosted, linux, x64]
+    permissions:
+      contents: 'read'
+      id-token: 'write'
     steps:
       - name: Setup Go
         uses: actions/setup-go@v3
