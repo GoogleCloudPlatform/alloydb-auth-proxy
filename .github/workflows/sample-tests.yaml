@@ -42,7 +42,7 @@ jobs:
             - 'examples/java/**'
   java-sample:
     needs: changes
-    if: ${{ needs.changes.outputs.java == 'true' }}
+    if: ${{ contains(needs.changes.outputs, 'java') }}
     runs-on: [self-hosted, linux, x64]
     steps:
       - name: Setup Go
