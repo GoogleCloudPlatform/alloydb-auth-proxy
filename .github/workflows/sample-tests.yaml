@@ -17,10 +17,14 @@ on:
   push:
     branches:
       - main
+  pull_request_target:
+    types: [labeled]
 
 jobs:
-  # JOB to run change detection
+  # job to run change detection
   changes:
+    # run job on proper workflow event triggers (skip job for pull_request event from forks and only run pull_request_target for "tests: run" label)
+    if: "${{ (github.event.action != 'labeled' && github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name) || github.event.label.name == 'tests: run' }}"
     runs-on: ubuntu-latest
     # Required permissions
     permissions:
@@ -29,7 +33,7 @@ jobs:
     outputs:
       backend: ${{ steps.filter.outputs.java }}
     steps:
-    # For pull requests it's not necessary to checkout the code
+    - uses: actions/checkout@v3
     - uses: dorny/paths-filter@v2
       id: filter
       with:
@@ -47,6 +51,12 @@ jobs:
           go-version: "1.18"
       - name: Checkout code
         uses: actions/checkout@v3
+      - name: 'Authenticate to Google Cloud'
+        id: 'auth'
+        uses: 'google-github-actions/auth@v1.0.0'
+        with:
+          workload_identity_provider: ${{ secrets.PROVIDER_NAME }}
+          service_account: ${{ secrets.SERVICE_ACCOUNT }}
       - name: Get Secrets
         id: 'secrets'
         uses: 'google-github-actions/get-secretmanager-secrets@v0'
