@@ -21,6 +21,7 @@ go build
 ./alloydb-auth-proxy "${ALLOYDB_CONNECTION_NAME}" &
 export DB_HOST="127.0.0.1"
 export DB_PORT=5432
+ps
 PROXY_PID="$(pgrep alloydb-auth-proxy)"
 trap 'kill ${PROXY_PID}' 1 2 3 6 15
 
