@@ -14,7 +14,7 @@
 # limitations under the License.
 
 # `-e` enables the script to automatically fail when a command fails
-set -e
+set -ex
 
 # build the proxy and run it in the background listening on 127.0.0.1:5432
 go build
