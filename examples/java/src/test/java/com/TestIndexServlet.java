@@ -81,9 +81,9 @@ public class TestIndexServlet {
     HikariConfig config = new HikariConfig();
 
     config.setJdbcUrl(String.format("jdbc:postgresql://%s:%s/%s", 
-      System.getenv("DB_HOST"), 
-      System.getenv("DB_PORT"), 
-      System.getenv("DB_NAME")
+        System.getenv("DB_HOST"), 
+        System.getenv("DB_PORT"), 
+        System.getenv("DB_NAME")
     ));
     config.setUsername(System.getenv("DB_USER")); // e.g. "root", "mysql"
     config.setPassword(System.getenv("DB_PASS")); // e.g. "my-password"
