@@ -162,6 +162,8 @@ without having to manage any client SSL certificates.`,
 		"Bearer token used for authorization.")
 	cmd.PersistentFlags().StringVarP(&c.conf.CredentialsFile, "credentials-file", "c", "",
 		"Path to a service account key to use for authentication.")
+	cmd.PersistentFlags().StringVarP(&c.conf.CredentialsJSON, "json-credentials", "j", "",
+		"Use service account key JSON as a source of IAM credentials.")
 	cmd.PersistentFlags().BoolVarP(&c.conf.GcloudAuth, "gcloud-auth", "g", false,
 		"Use gcloud's user configuration to retrieve a token for authentication.")
 	cmd.PersistentFlags().BoolVarP(&c.conf.StructuredLogs, "structured-logs", "l", false,
@@ -259,6 +261,16 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 	if conf.CredentialsFile != "" && conf.GcloudAuth {
 		return newBadCommandError("cannot specify --credentials-file and --gcloud-auth flags at the same time")
 	}
+	if conf.CredentialsJSON != "" && conf.Token != "" {
+		return newBadCommandError("cannot specify --json-credentials and --token flags at the same time")
+	}
+	if conf.CredentialsJSON != "" && conf.CredentialsFile != "" {
+		return newBadCommandError("cannot specify --json-credentials and --credentials-file flags at the same time")
+	}
+	if conf.CredentialsJSON != "" && conf.GcloudAuth {
+		return newBadCommandError("cannot specify --json-credentials and --gcloud-auth flags at the same time")
+	}
+
 	if userHasSet("alloydbadmin-api-endpoint") {
 		_, err := url.Parse(conf.APIEndpointURL)
 		if err != nil {

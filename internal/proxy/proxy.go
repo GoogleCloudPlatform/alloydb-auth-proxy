@@ -60,6 +60,9 @@ type Config struct {
 	// CredentialsFile is the path to a service account key.
 	CredentialsFile string
 
+	// CredentialsJSON is a JSON representation of the service account key.
+	CredentialsJSON string
+
 	// GcloudAuth set whether to use Gcloud's config helper to retrieve a
 	// token for authentication.
 	GcloudAuth bool
@@ -131,6 +134,11 @@ func (c *Config) DialerOptions(l alloydb.Logger) ([]alloydbconn.Option, error) {
 			return nil, err
 		}
 		opts = append(opts, alloydbconn.WithTokenSource(ts))
+	case c.CredentialsJSON != "":
+		l.Infof("Authorizing with JSON credentials environment variable")
+		opts = append(opts, alloydbconn.WithCredentialsJSON(
+			[]byte(c.CredentialsJSON),
+		))
 	default:
 		l.Infof("Authorizing with Application Default Credentials")
 	}
