@@ -36,6 +36,22 @@ jobs:
     outputs:
       java: ${{ steps.filter.outputs.java }}
     steps:
+    - name: Remove PR label
+      if: "${{ github.event.action == 'labeled' && github.event.label.name == 'tests: run' }}"
+      uses: actions/github-script@v6
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          try {
+            await github.rest.issues.removeLabel({
+              name: 'tests: run',
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number
+            });
+          } catch (e) {
+            console.log('Failed to remove label. Another job may have already removed it!');
+          }
     - uses: actions/checkout@v3
     - uses: dorny/paths-filter@v2
       id: filter
@@ -52,7 +68,11 @@ jobs:
       id-token: 'write'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: 'actions/checkout@v3'
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+
       - name: 'Authenticate to Google Cloud'
         id: 'auth'
         uses: 'google-github-actions/auth@v1.0.0'
