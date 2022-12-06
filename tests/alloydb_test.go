@@ -100,7 +100,7 @@ func TestPostgresAuthWithToken(t *testing.T) {
 	}
 	_, isFlex := os.LookupEnv("FLEX")
 	if isFlex {
-		t.Skip("disabling until we migrate tests to Kokoro")
+		t.Skip("disabling because GOOGLE_APPLICATION_CREDENTIALS are not available in FLEX")
 	}
 	requirePostgresVars(t)
 	cleanup, err := pgxv4.RegisterDriver("alloydb2")
@@ -124,7 +124,7 @@ func TestPostgresAuthWithCredentialsFile(t *testing.T) {
 	}
 	_, isFlex := os.LookupEnv("FLEX")
 	if isFlex {
-		t.Skip("disabling until we migrate tests to Kokoro")
+		t.Skip("disabling because GOOGLE_APPLICATION_CREDENTIALS are not available in FLEX")
 	}
 	requirePostgresVars(t)
 	cleanup, err := pgxv4.RegisterDriver("alloydb3")
@@ -142,22 +142,13 @@ func TestPostgresAuthWithCredentialsFile(t *testing.T) {
 		"alloydb3", dsn)
 }
 
-func TestAuthWithGcloudAuth(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping Postgres integration tests")
-	}
-	requirePostgresVars(t)
-
-	dsn := fmt.Sprintf("host=localhost user=%s password=%s database=%s sslmode=disable",
-		*alloydbUser, *alloydbPass, *alloydbDB)
-	proxyConnTest(t,
-		[]string{"--gcloud-auth", *alloydbConnName},
-		"pgx", dsn)
-}
-
 func TestPostgresAuthWithCredentialsJSON(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping Postgres integration tests")
+	}
+	_, isFlex := os.LookupEnv("FLEX")
+	if isFlex {
+		t.Skip("disabling because GOOGLE_APPLICATION_CREDENTIALS are not available in FLEX")
 	}
 	requirePostgresVars(t)
 	creds := keyfile(t)
@@ -168,5 +159,18 @@ func TestPostgresAuthWithCredentialsJSON(t *testing.T) {
 		*alloydbUser, *alloydbPass, *alloydbDB)
 	proxyConnTest(t,
 		[]string{"--json-credentials", string(creds), *alloydbConnName},
+		"pgx", dsn)
+}
+
+func TestAuthWithGcloudAuth(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping Postgres integration tests")
+	}
+	requirePostgresVars(t)
+
+	dsn := fmt.Sprintf("host=localhost user=%s password=%s database=%s sslmode=disable",
+		*alloydbUser, *alloydbPass, *alloydbDB)
+	proxyConnTest(t,
+		[]string{"--gcloud-auth", *alloydbConnName},
 		"pgx", dsn)
 }

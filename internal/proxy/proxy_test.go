@@ -211,6 +211,7 @@ func TestClientInitialization(t *testing.T) {
 	}
 	_, isFlex := os.LookupEnv("FLEX")
 	if !isFlex {
+		// App Engine Flex doesn't support IPv6.
 		tcs = append(tcs, testCase{
 			desc: "IPv6 support",
 			in: &proxy.Config{
