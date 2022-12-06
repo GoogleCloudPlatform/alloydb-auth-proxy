@@ -76,6 +76,7 @@ jobs:
           java-version: 17
       - name: Run lint
         run: |
+          cd examples/java
           mvn -P lint checkstyle:check
       - name: Run tests
         env:
