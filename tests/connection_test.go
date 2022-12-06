@@ -31,14 +31,17 @@ const connTestTimeout = time.Minute
 // removeAuthEnvVar retrieves an OAuth2 token and a path to a service account key
 // and then unsets GOOGLE_APPLICATION_CREDENTIALS. It returns a cleanup function
 // that restores the original setup.
-func removeAuthEnvVar(t *testing.T) (*oauth2.Token, string, func()) {
-	ts, err := google.DefaultTokenSource(context.Background())
-	if err != nil {
-		t.Errorf("failed to resolve token source: %v", err)
-	}
-	tok, err := ts.Token()
-	if err != nil {
-		t.Errorf("failed to get token: %v", err)
+func removeAuthEnvVar(t *testing.T, wantToken bool) (*oauth2.Token, string, func()) {
+	var tok *oauth2.Token
+	if wantToken {
+		ts, err := google.DefaultTokenSource(context.Background())
+		if err != nil {
+			t.Errorf("failed to resolve token source: %v", err)
+		}
+		tok, err = ts.Token()
+		if err != nil {
+			t.Errorf("failed to get token: %v", err)
+		}
 	}
 	path, ok := os.LookupEnv("GOOGLE_APPLICATION_CREDENTIALS")
 	if !ok {

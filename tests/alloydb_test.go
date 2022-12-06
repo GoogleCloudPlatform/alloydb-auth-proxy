@@ -100,7 +100,7 @@ func TestPostgresAuthWithToken(t *testing.T) {
 	}
 	_, isFlex := os.LookupEnv("FLEX")
 	if isFlex {
-		t.Skip("disabling because GOOGLE_APPLICATION_CREDENTIALS are not available in FLEX")
+		t.Skip("App Engine Flex doesn't support retrieving OAuth2 tokens")
 	}
 	requirePostgresVars(t)
 	cleanup, err := pgxv4.RegisterDriver("alloydb2")
@@ -108,7 +108,7 @@ func TestPostgresAuthWithToken(t *testing.T) {
 		t.Fatalf("failed to register driver: %v", err)
 	}
 	defer cleanup()
-	tok, _, cleanup2 := removeAuthEnvVar(t)
+	tok, _, cleanup2 := removeAuthEnvVar(t, true)
 	defer cleanup2()
 
 	dsn := fmt.Sprintf("host=%v user=%v password=%v database=%v sslmode=disable",
@@ -122,17 +122,13 @@ func TestPostgresAuthWithCredentialsFile(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping Postgres integration tests")
 	}
-	_, isFlex := os.LookupEnv("FLEX")
-	if isFlex {
-		t.Skip("disabling because GOOGLE_APPLICATION_CREDENTIALS are not available in FLEX")
-	}
 	requirePostgresVars(t)
 	cleanup, err := pgxv4.RegisterDriver("alloydb3")
 	if err != nil {
 		t.Fatalf("failed to register driver: %v", err)
 	}
 	defer cleanup()
-	_, path, cleanup2 := removeAuthEnvVar(t)
+	_, path, cleanup2 := removeAuthEnvVar(t, false)
 	defer cleanup2()
 
 	dsn := fmt.Sprintf("host=%v user=%v password=%v database=%v sslmode=disable",
@@ -146,13 +142,9 @@ func TestPostgresAuthWithCredentialsJSON(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping Postgres integration tests")
 	}
-	_, isFlex := os.LookupEnv("FLEX")
-	if isFlex {
-		t.Skip("disabling because GOOGLE_APPLICATION_CREDENTIALS are not available in FLEX")
-	}
 	requirePostgresVars(t)
 	creds := keyfile(t)
-	_, _, cleanup := removeAuthEnvVar(t)
+	_, _, cleanup := removeAuthEnvVar(t, false)
 	defer cleanup()
 
 	dsn := fmt.Sprintf("host=localhost user=%s password=%s database=%s sslmode=disable",
