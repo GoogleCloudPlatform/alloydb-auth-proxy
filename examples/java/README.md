@@ -12,6 +12,9 @@
 [instructions](https://cloud.google.com/sql/docs/postgres/create-manage-databases). Note the database
 name. 
 
+1. Create a user in your database by following these 
+[instructions](https://cloud.google.com/alloydb/docs/database-users/about). Note the username. 
+
 1. Create a service account with the 'AlloyDB Client' permissions by following these 
 [instructions](https://cloud.google.com/sql/docs/postgres/connect-external-app#4_if_required_by_your_authentication_method_create_a_service_account).
 Download a JSON key to use to authenticate your connection. 
