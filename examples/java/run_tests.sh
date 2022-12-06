@@ -16,13 +16,15 @@
 # `-e` enables the script to automatically fail when a command fails
 set -ex
 
-# build the proxy and run it in the background listening on 127.0.0.1:5432
-go build
+# download the proxy and run it in the background listening on 127.0.0.1:5432
+URL="https://storage.googleapis.com/alloydb-auth-proxy/v0.1.0"
+wget "$URL/alloydb-auth-proxy.linux.amd64" -O alloydb-auth-proxy
+chmod +x alloydb-auth-proxy
 ./alloydb-auth-proxy "${ALLOYDB_CONNECTION_NAME}" &
 export DB_HOST="127.0.0.1"
 export DB_PORT=5432
 ps
-PROXY_PID="$(pgrep alloydb-auth-proxy)"
+PROXY_PID="$(pgrep alloydb)"
 trap 'kill ${PROXY_PID}' 1 2 3 6 15
 
 cd examples/java
