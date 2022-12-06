@@ -25,6 +25,8 @@ ps
 PROXY_PID="$(pgrep alloydb-auth-proxy)"
 trap 'kill ${PROXY_PID}' 1 2 3 6 15
 
+cd examples/java
+
 # log Java version info
 echo "Running tests using Java:"
 java -version
