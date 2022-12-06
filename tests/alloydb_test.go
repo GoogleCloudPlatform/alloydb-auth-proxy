@@ -154,3 +154,19 @@ func TestAuthWithGcloudAuth(t *testing.T) {
 		[]string{"--gcloud-auth", *alloydbConnName},
 		"pgx", dsn)
 }
+
+func TestPostgresAuthWithCredentialsJSON(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping Postgres integration tests")
+	}
+	requirePostgresVars(t)
+	creds := keyfile(t)
+	_, _, cleanup := removeAuthEnvVar(t)
+	defer cleanup()
+
+	dsn := fmt.Sprintf("host=localhost user=%s password=%s database=%s sslmode=disable",
+		*alloydbUser, *alloydbPass, *alloydbDB)
+	proxyConnTest(t,
+		[]string{"--json-credentials", string(creds), *alloydbConnName},
+		"pgx", dsn)
+}
