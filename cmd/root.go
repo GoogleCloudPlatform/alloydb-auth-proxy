@@ -188,7 +188,7 @@ the maximum time has passed. Defaults to 0s.`)
 	cmd.PersistentFlags().StringVar(&c.conf.FUSEDir, "fuse", "",
 		"Mount a directory at the path using FUSE to access Cloud SQL instances.")
 	cmd.PersistentFlags().StringVar(&c.conf.FUSETempDir, "fuse-tmp-dir",
-		filepath.Join(os.TempDir(), "alloydb-tmp"),
+		filepath.Join(os.TempDir(), "csql-tmp"),
 		"Temp dir for Unix sockets created with FUSE")
 	cmd.PersistentFlags().StringVar(&c.impersonationChain, "impersonate-service-account", "",
 		`Comma separated list of service accounts to impersonate. Last value
