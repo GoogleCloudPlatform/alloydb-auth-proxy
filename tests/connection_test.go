@@ -34,7 +34,9 @@ const connTestTimeout = time.Minute
 func removeAuthEnvVar(t *testing.T, wantToken bool) (*oauth2.Token, string, func()) {
 	var tok *oauth2.Token
 	if wantToken {
-		ts, err := google.DefaultTokenSource(context.Background())
+		ts, err := google.DefaultTokenSource(context.Background(),
+			"https://www.googleapis.com/auth/cloud-platform",
+		)
 		if err != nil {
 			t.Errorf("failed to resolve token source: %v", err)
 		}

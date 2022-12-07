@@ -221,6 +221,19 @@ func TestNewCommandArguments(t *testing.T) {
 				CredentialsJSON: `{"json":"goes-here"}`,
 			}),
 		},
+		{
+			desc: "",
+			args: []string{"--impersonate-service-account",
+				"sv1@developer.gserviceaccount.com,sv2@developer.gserviceaccount.com,sv3@developer.gserviceaccount.com",
+				"proj:region:inst"},
+			want: withDefaults(&proxy.Config{
+				ImpersonateTarget: "sv1@developer.gserviceaccount.com",
+				ImpersonateDelegates: []string{
+					"sv3@developer.gserviceaccount.com",
+					"sv2@developer.gserviceaccount.com",
+				},
+			}),
+		},
 	}
 
 	for _, tc := range tcs {
