@@ -121,16 +121,135 @@ func WithDialer(d alloydb.Dialer) Option {
 	}
 }
 
+var longHelp = `
+Overview
+
+    The ALloyDB Auth proxy is a utility for ensuring secure connections
+    to your AlloyDB instances. It provides IAM authorization, allowing you
+    to control who can connect to your instances through IAM permissions, and TLS
+    1.3 encryption, without having to manage certificates.
+
+    NOTE: The proxy does not configure the network. You MUST ensure the proxy
+    can reach your AlloyDB instance, either by deploying it in a VPC that has
+    access to your instance, or by ensuring a network path to the instance.
+
+    For every provided instance connection name, the proxy creates:
+
+    - a socket that mimics a database running locally, and
+    - an encrypted connection using TLS 1.3 back to your AlloyDB instance.
+
+    The proxy uses an ephemeral certificate to establish a secure connection to
+    your AlloyDB instance. The proxy will refresh those certificates on an
+    hourly basis. Existing client connections are unaffected by the refresh
+    cycle.
+
+Starting the Proxy
+
+    To start the proxy, you will need your instance URI, which may be found in
+    the AlloyDB instance overview page or by using gcloud with the following
+    command:
+
+        gcloud alpha alloydb instances describe INSTANCE_NAME \
+            --region=REGION --cluster CLUSTER_NAME --format='value(name)'
+
+    For example, if your instance URI is:
+
+        projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE
+
+    Starting the proxy will look like:
+
+        ./alloydb-auth-proxy \
+            projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE
+
+    By default, the proxy will start a TCP listener on Postgres' default port
+    5432. If multiple instances are specified which all use the same database
+    engine, the first will be started on the default port and subsequent
+    instances will be incremented from there (e.g., 5432, 5433, 5434, etc.) To
+    disable this behavior, use the --port flag. All subsequent listeners will
+    increment from the provided value.
+
+    All socket listeners use the localhost network interface. To override this
+    behavior, use the --address flag.
+
+Instance Level Configuration
+
+    The proxy supports overriding configuration on an instance-level with an
+    optional query string syntax using the corresponding full flag name. The
+    query string takes the form of a URL query string and should be appended to
+    the instance URI, e.g.,
+
+        'projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE?key1=value1'
+
+    When using the optional query string syntax, quotes must wrap the instance
+    connection name and query string to prevent conflicts with the shell. For
+    example, to override the address and port for one instance but otherwise use
+    the default behavior, use:
+
+        ./alloydb-auth-proxy \
+            'projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE1' \
+            'projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE2?address=0.0.0.0&port=7000'
+
+Health checks
+
+    When enabling the --health-check flag, the proxy will start an HTTP server
+    on localhost with three endpoints:
+
+    - /startup: Returns 200 status when the proxy has finished starting up.
+    Otherwise returns 503 status.
+
+    - /readiness: Returns 200 status when the proxy has started, has available
+    connections if max connections have been set with the --max-connections
+    flag, and when the proxy can connect to all registered instances. Otherwise,
+    returns a 503 status. Optionally supports a min-ready query param (e.g.,
+    /readiness?min-ready=3) where the proxy will return a 200 status if the
+    proxy can connect successfully to at least min-ready number of instances. If
+    min-ready exceeds the number of registered instances, returns a 400.
+
+    - /liveness: Always returns 200 status. If this endpoint is not responding,
+    the proxy is in a bad state and should be restarted.
+
+    To configure the address, use --http-address. To configure the port, use
+    --http-port.
+
+Service Account Impersonation
+
+    The proxy supports service account impersonation with the
+    --impersonate-service-account flag and matches gcloud's flag. When enabled,
+    all API requests are made impersonating the supplied service account. The
+    IAM principal must have the iam.serviceAccounts.getAccessToken permission or
+    the role roles/iam.serviceAccounts.serviceAccountTokenCreator.
+
+    For example:
+
+        ./alloydb-auth-proxy \
+            --impersonate-service-account=impersonated@my-project.iam.gserviceaccount.com
+            projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE
+
+    In addition, the flag supports an impersonation delegation chain where the
+    value is a comma-separated list of service accounts. The first service
+    account in the list is the impersonation target. Each subsequent service
+    account is a delegate to the previous service account. When delegation is
+    used, each delegate must have the permissions named above on the service
+    account it is delegating to.
+
+    For example:
+
+        ./alloydb-auth-proxy \
+            --impersonate-service-account=SERVICE_ACCOUNT_1,SERVICE_ACCOUNT_2,SERVICE_ACCOUNT_3
+            projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE
+
+    In this example, the environment's IAM principal impersonates
+    SERVICE_ACCOUNT_3 which impersonates SERVICE_ACCOUNT_2 which then
+    impersonates the target SERVICE_ACCOUNT_1.
+`
+
 // NewCommand returns a Command object representing an invocation of the proxy.
 func NewCommand(opts ...Option) *Command {
 	cmd := &cobra.Command{
 		Use:     "alloydb-auth-proxy instance_uri...",
 		Version: versionString,
 		Short:   "alloydb-auth-proxy provides a secure way to authorize connections to AlloyDB.",
-		Long: `The AlloyDB Auth proxy provides IAM-based authorization and encryption when
-connecting to AlloyDB instances. It listens on a local port and forwards
-connections to your instance's IP address, providing a secure connection
-without having to manage any client SSL certificates.`,
+		Long:    longHelp,
 	}
 
 	logger := log.NewStdLogger(os.Stdout, os.Stderr)
@@ -183,10 +302,11 @@ When this flag is not set, there is no limit.`)
 to close after receiving a TERM signal. The proxy will shut
 down when the number of open connections reaches 0 or when
 the maximum time has passed. Defaults to 0s.`)
-	cmd.PersistentFlags().StringVar(&c.conf.APIEndpointURL, "alloydbadmin-api-endpoint", "https://alloydb.googleapis.com/v1beta",
+	cmd.PersistentFlags().StringVar(&c.conf.APIEndpointURL, "alloydbadmin-api-endpoint",
+		"https://alloydb.googleapis.com/v1beta",
 		"When set, the proxy uses this host as the base API path.")
 	cmd.PersistentFlags().StringVar(&c.conf.FUSEDir, "fuse", "",
-		"Mount a directory at the path using FUSE to access Cloud SQL instances.")
+		"Mount a directory at the path using FUSE to access AlloyDB instances.")
 	cmd.PersistentFlags().StringVar(&c.conf.FUSETempDir, "fuse-tmp-dir",
 		filepath.Join(os.TempDir(), "csql-tmp"),
 		"Temp dir for Unix sockets created with FUSE")
