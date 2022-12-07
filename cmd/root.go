@@ -19,6 +19,7 @@ import (
 	_ "embed"
 	"errors"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
@@ -94,6 +95,7 @@ type Command struct {
 	healthCheck                bool
 	httpAddress                string
 	httpPort                   string
+	quiet                      bool
 
 	// impersonationChain is a comma separated list of one or more service
 	// accounts. The last entry in the chain is the impersonation target. Any
@@ -270,6 +272,9 @@ func NewCommand(opts ...Option) *Command {
 		if c.conf.StructuredLogs {
 			c.logger, c.cleanup = log.NewStructuredLogger()
 		}
+		if c.quiet {
+			c.logger = log.NewStdLogger(io.Discard, os.Stderr)
+		}
 		err := parseConfig(c, c.conf, args)
 		if err != nil {
 			return err
@@ -313,6 +318,7 @@ the maximum time has passed. Defaults to 0s.`)
 	cmd.PersistentFlags().StringVar(&c.impersonationChain, "impersonate-service-account", "",
 		`Comma separated list of service accounts to impersonate. Last value
 +is the target account.`)
+	cmd.PersistentFlags().BoolVar(&c.quiet, "quiet", false, "Log error messages only")
 
 	cmd.PersistentFlags().StringVar(&c.telemetryProject, "telemetry-project", "",
 		"Enable Cloud Monitoring and Cloud Trace integration with the provided project ID.")
