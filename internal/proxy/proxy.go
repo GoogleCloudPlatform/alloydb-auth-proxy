@@ -30,7 +30,6 @@ import (
 	"cloud.google.com/go/alloydbconn"
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/alloydb"
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/gcloud"
-	"github.com/GoogleCloudPlatform/cloud-sql-proxy/v2/cloudsql"
 	"golang.org/x/oauth2"
 	"google.golang.org/api/impersonate"
 	"google.golang.org/api/option"
@@ -122,7 +121,7 @@ type Config struct {
 	ImpersonateDelegates []string
 }
 
-func (c *Config) credentialsOpt(l cloudsql.Logger) (alloydbconn.Option, error) {
+func (c *Config) credentialsOpt(l alloydb.Logger) (alloydbconn.Option, error) {
 	// If service account impersonation is configured, set up an impersonated
 	// credentials token source.
 	if c.ImpersonateTarget != "" {
