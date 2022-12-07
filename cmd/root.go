@@ -124,7 +124,7 @@ func WithDialer(d alloydb.Dialer) Option {
 var longHelp = `
 Overview
 
-    The ALloyDB Auth proxy is a utility for ensuring secure connections
+    The AlloyDB Auth proxy is a utility for ensuring secure connections
     to your AlloyDB instances. It provides IAM authorization, allowing you
     to control who can connect to your instances through IAM permissions, and TLS
     1.3 encryption, without having to manage certificates.
