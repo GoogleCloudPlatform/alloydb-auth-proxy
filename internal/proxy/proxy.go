@@ -107,10 +107,6 @@ type Config struct {
 	// regardless of any open connections.
 	WaitOnClose time.Duration
 
-	// StructuredLogs sets all output to use JSON in the LogEntry format.
-	// See https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry
-	StructuredLogs bool
-
 	// ImpersonateTarget is the service account to impersonate. The IAM
 	// principal doing the impersonation must have the
 	// roles/iam.serviceAccountTokenCreator role.
@@ -119,6 +115,10 @@ type Config struct {
 	// the impersonation is achieved. Each delegate must have the
 	// roles/iam.serviceAccountTokenCreator role.
 	ImpersonateDelegates []string
+
+	// StructuredLogs sets all output to use JSON in the LogEntry format.
+	// See https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry
+	StructuredLogs bool
 }
 
 func (c *Config) credentialsOpt(l alloydb.Logger) (alloydbconn.Option, error) {
@@ -203,33 +203,6 @@ func (c *Config) DialerOptions(l alloydb.Logger) ([]alloydbconn.Option, error) {
 
 	if c.APIEndpointURL != "" {
 		opts = append(opts, alloydbconn.WithAdminAPIEndpoint(c.APIEndpointURL))
-	}
-
-	switch {
-	case c.Token != "":
-		l.Infof("Authorizing with the -token flag")
-		opts = append(opts, alloydbconn.WithTokenSource(
-			oauth2.StaticTokenSource(&oauth2.Token{AccessToken: c.Token}),
-		))
-	case c.CredentialsFile != "":
-		l.Infof("Authorizing with the credentials file at %q", c.CredentialsFile)
-		opts = append(opts, alloydbconn.WithCredentialsFile(
-			c.CredentialsFile,
-		))
-	case c.GcloudAuth:
-		l.Infof("Authorizing with gcloud user credentials")
-		ts, err := gcloud.TokenSource()
-		if err != nil {
-			return nil, err
-		}
-		opts = append(opts, alloydbconn.WithTokenSource(ts))
-	case c.CredentialsJSON != "":
-		l.Infof("Authorizing with JSON credentials environment variable")
-		opts = append(opts, alloydbconn.WithCredentialsJSON(
-			[]byte(c.CredentialsJSON),
-		))
-	default:
-		l.Infof("Authorizing with Application Default Credentials")
 	}
 
 	return opts, nil
