@@ -4,3 +4,7 @@ export ALLOYDB_PASS="postgres-password"
 export ALLOYDB_DB="postgres-db-name"
 
 export GOOGLE_APPLICATION_CREDENTIALS="path/to/credentials"
+
+# Requires the impersonating IAM principal to have
+# roles/iam.serviceAccountTokenCreator
+export IMPERSONATED_USER="some-user-with-db-access@example.com"

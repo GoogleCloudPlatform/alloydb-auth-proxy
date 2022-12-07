@@ -94,6 +94,13 @@ type Command struct {
 	healthCheck                bool
 	httpAddress                string
 	httpPort                   string
+
+	// impersonationChain is a comma separated list of one or more service
+	// accounts. The last entry in the chain is the impersonation target. Any
+	// additional service accounts before the target are delegates. The
+	// roles/iam.serviceAccountTokenCreator must be configured for each account
+	// that will be impersonated.
+	impersonationChain string
 }
 
 // Option is a function that configures a Command.
@@ -183,6 +190,9 @@ the maximum time has passed. Defaults to 0s.`)
 	cmd.PersistentFlags().StringVar(&c.conf.FUSETempDir, "fuse-tmp-dir",
 		filepath.Join(os.TempDir(), "csql-tmp"),
 		"Temp dir for Unix sockets created with FUSE")
+	cmd.PersistentFlags().StringVar(&c.impersonationChain, "impersonate-service-account", "",
+		`Comma separated list of service accounts to impersonate. Last value
++is the target account.`)
 
 	cmd.PersistentFlags().StringVar(&c.telemetryProject, "telemetry-project", "",
 		"Enable Cloud Monitoring and Cloud Trace integration with the provided project ID.")
@@ -274,7 +284,10 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 	if userHasSet("alloydbadmin-api-endpoint") {
 		_, err := url.Parse(conf.APIEndpointURL)
 		if err != nil {
-			return newBadCommandError(fmt.Sprintf("provided value for --alloydbadmin-api-endpoint is not a valid url, %v", conf.APIEndpointURL))
+			return newBadCommandError(fmt.Sprintf(
+				"provided value for --alloydbadmin-api-endpoint is not a valid url, %v",
+				conf.APIEndpointURL,
+			))
 		}
 
 		// Remove trailing '/' if included
@@ -296,6 +309,19 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 	}
 	if !userHasSet("telemetry-project") && userHasSet("disable-traces") {
 		cmd.logger.Infof("Ignoring --disable-traces as --telemetry-project was not set")
+	}
+
+	if cmd.impersonationChain != "" {
+		accts := strings.Split(cmd.impersonationChain, ",")
+		conf.ImpersonateTarget = accts[0]
+		// Assign delegates if the chain is more than one account. Delegation
+		// goes from last back towards target, e.g., With sa1,sa2,sa3, sa3
+		// delegates to sa2, which impersonates the target sa1.
+		if l := len(accts); l > 1 {
+			for i := l - 1; i > 0; i-- {
+				conf.ImpersonateDelegates = append(conf.ImpersonateDelegates, accts[i])
+			}
+		}
 	}
 
 	var ics []proxy.InstanceConnConfig
