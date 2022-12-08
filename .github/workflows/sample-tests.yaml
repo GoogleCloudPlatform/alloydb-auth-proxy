@@ -101,6 +101,7 @@ jobs:
       - name: Check file paths
         run: |
           ls /home/actions/actions-runner/_work/alloydb-auth-proxy/alloydb-auth-proxy/
+          echo "Checking working directory!"
           pwd
       - name: Run tests
         env:
