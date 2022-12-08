@@ -91,13 +91,13 @@ jobs:
           secrets: |-
             ALLOYDB_CONN_NAME:alloydb-connector-testing/ALLOYDB_CONN_NAME
             ALLOYDB_CLUSTER_PASS:alloydb-connector-testing/ALLOYDB_CLUSTER_PASS
-      - name: Check file paths
-        run: |
-          ls /home/actions/actions-runner/_work/alloydb-auth-proxy/alloydb-auth-proxy/
       - name: Setup Maven Action
         uses: s4u/setup-maven-action@v1.2.1
         with:
           java-version: 17
+      - name: Check file paths
+        run: |
+          ls /home/actions/actions-runner/_work/alloydb-auth-proxy/alloydb-auth-proxy/
       - name: Run lint
         run: |
           cd examples/java
