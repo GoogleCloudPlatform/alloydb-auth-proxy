@@ -98,6 +98,10 @@ jobs:
         run: |
           cd examples/java
           mvn -P lint checkstyle:check
+      - name: Check file paths
+        run: |
+          ls /home/actions/actions-runner/_work/alloydb-auth-proxy/alloydb-auth-proxy/
+          pwd
       - name: Run tests
         env:
           DB_NAME: 'postgres'
