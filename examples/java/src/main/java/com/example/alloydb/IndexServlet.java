@@ -20,12 +20,9 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -44,10 +41,12 @@ import javax.sql.DataSource;
 public class IndexServlet extends HttpServlet {
 
   private static final Logger LOGGER = Logger.getLogger(IndexServlet.class.getName());
+  private static final String testingTableName = System.getProperty("testingTableName");
 
-  public TemplateData getTemplateData(DataSource pool) throws ServletException {
+  public TemplateData getTemplateData(
+      DataSource pool, String tableName) throws ServletException {
     try {
-      return TemplateData.getTemplateData(pool);
+      return TemplateData.getTemplateData(pool, tableName);
     } catch (SQLException ex) {
       throw new ServletException(ex);
     }
@@ -59,8 +58,11 @@ public class IndexServlet extends HttpServlet {
     // Extract the pool from the Servlet Context, reusing the one that was created
     // in the ContextListener when the application was started
     DataSource pool = (DataSource) req.getServletContext().getAttribute("my-pool");
-
-    TemplateData templateData = getTemplateData(pool);
+    String tableName = testingTableName;
+    if (tableName == null) {
+      tableName = "votes";
+    }
+    TemplateData templateData = getTemplateData(pool, tableName);
 
     // Add variables and render the page
     req.setAttribute("tabCount", templateData.tabCount);
@@ -88,6 +90,11 @@ public class IndexServlet extends HttpServlet {
       justification = "Input is validated and sanitized.")
   @Override
   public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    String tableName = testingTableName;
+    if (tableName == null) {
+      tableName = "votes";
+    }
+
     // Get the team from the request and record the time of the vote.
     String team = validateTeam(req.getParameter("team"));
     Timestamp now = new Timestamp(new Date().getTime());
@@ -105,7 +112,8 @@ public class IndexServlet extends HttpServlet {
     try (Connection conn = pool.getConnection()) {
 
       // PreparedStatements can be more efficient and project against injections.
-      String stmt = "INSERT INTO votes (time_cast, candidate) VALUES (?, ?);";
+      String stmt = String.format(
+          "INSERT INTO %s (time_cast, candidate) VALUES (?, ?);", tableName);
       try (PreparedStatement voteStmt = conn.prepareStatement(stmt);) {
         voteStmt.setTimestamp(1, now);
         voteStmt.setString(2, team);

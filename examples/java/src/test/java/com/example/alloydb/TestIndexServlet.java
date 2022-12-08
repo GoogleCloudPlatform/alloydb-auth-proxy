@@ -89,7 +89,7 @@ public class TestIndexServlet {
     config.setPassword(System.getenv("DB_PASS")); // e.g. "my-password"
     pool = new HikariDataSource(config);
     createTable(pool);
-
+    System.setProperty("testingTableName", tableName);
   }
 
   @AfterClass
@@ -100,11 +100,12 @@ public class TestIndexServlet {
         createTableStatement.execute();
       }
     }
+    System.setProperty("testingTableName", null);
   }
 
   @Test
   public void testGetTemplateData() throws Exception {
-    TemplateData templateData = new IndexServlet().getTemplateData(pool);
+    TemplateData templateData = new IndexServlet().getTemplateData(pool, tableName);
 
     assertNotNull(templateData.tabCount);
     assertNotNull(templateData.spaceCount);

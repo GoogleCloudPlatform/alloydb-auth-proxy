@@ -37,14 +37,16 @@ public class TemplateData {
     this.recentVotes = recentVotes;
   }
 
-  public static TemplateData getTemplateData(DataSource pool) throws SQLException {
+  public static TemplateData getTemplateData(
+      DataSource pool, String tableName) throws SQLException {
     int tabCount = 0;
     int spaceCount = 0;
     List<Vote> recentVotes = new ArrayList<>();
     try (Connection conn = pool.getConnection()) {
       // PreparedStatements are compiled by the database immediately and executed at a later date.
       // Most databases cache previously compiled queries, which improves efficiency.
-      String stmt1 = "SELECT candidate, time_cast FROM votes ORDER BY time_cast DESC LIMIT 5";
+      String stmt1 = String.format(
+          "SELECT candidate, time_cast FROM %s ORDER BY time_cast DESC LIMIT 5", tableName);
       try (PreparedStatement voteStmt = conn.prepareStatement(stmt1);) {
         // Execute the statement
         ResultSet voteResults = voteStmt.executeQuery();
