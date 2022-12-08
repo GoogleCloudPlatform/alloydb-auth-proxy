@@ -60,7 +60,8 @@ public class TemplateData {
 
       // PreparedStatements can also be executed multiple times with different arguments. This can
       // improve efficiency, and project a query from being vulnerable to an SQL injection.
-      String stmt2 = "SELECT COUNT(vote_id) FROM votes WHERE candidate=?";
+      String stmt2 = String.format(
+        "SELECT COUNT(vote_id) FROM %s WHERE candidate=?", tableName);
       try (PreparedStatement voteCountStmt = conn.prepareStatement(stmt2);) {
         voteCountStmt.setString(1, "TABS");
         ResultSet tabResult = voteCountStmt.executeQuery();
