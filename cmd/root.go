@@ -379,7 +379,7 @@ the maximum time has passed. Defaults to 0s.`)
 	pflags.StringVar(&c.conf.FUSEDir, "fuse", "",
 		"Mount a directory at the path using FUSE to access AlloyDB instances.")
 	pflags.StringVar(&c.conf.FUSETempDir, "fuse-tmp-dir",
-		filepath.Join(os.TempDir(), "csql-tmp"),
+		filepath.Join(os.TempDir(), "alloydb-tmp"),
 		"Temp dir for Unix sockets created with FUSE")
 	pflags.StringVar(&c.impersonationChain, "impersonate-service-account", "",
 		`Comma separated list of service accounts to impersonate. Last value
