@@ -74,7 +74,7 @@ public class Main implements HttpFunction {
   private void returnVoteCounts(HttpRequest req, HttpResponse resp)
       throws SQLException, IOException {
     DataSource pool = PoolHolder.getInstance();
-    TemplateData templateData = TemplateData.getTemplateData(pool,"votes");
+    TemplateData templateData = TemplateData.getTemplateData(pool, "votes");
     JsonObject respContent = new JsonObject();
 
     // Return JSON Data
