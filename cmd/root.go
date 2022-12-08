@@ -255,27 +255,27 @@ Configuration using environment variables
     variable ALLOYDB_STRUCTURED_LOGS. An invocation of the proxy using
     environment variables would look like the following:
 
-        ALLOYDB_STRUCTURED_LOGS=true \
+        ALLOYDB_PROXY_STRUCTURED_LOGS=true \
             ./alloydb-auth-proxy \
             projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE
 
     In addition to CLI flags, instance URIs may also be specified with
     environment variables. If invoking the proxy with only one instance URI,
-    use ALLOYDB_INSTANCE_URI. For example:
+    use ALLOYDB_PROXY_INSTANCE_URI. For example:
 
-        ALLOYDB_INSTANCE_URI=projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE \
+        ALLOYDB_PROXY_INSTANCE_URI=projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE \
             ./alloydb-auth-proxy
 
     If multiple instance URIs are used, add the index of the instance URI as a
     suffix. For example:
 
-        ALLOYDB_INSTANCE_URI_0=projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE1 \
-        ALLOYDB_INSTANCE_URI_1=projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE2 \
+        ALLOYDB_PROXY_INSTANCE_URI_0=projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE1 \
+        ALLOYDB_PROXY_INSTANCE_URI_1=projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE2 \
             ./alloydb-auth-proxy
 
 `
 
-const envPrefix = "ALLOYDB"
+const envPrefix = "ALLOYDB_PROXY"
 
 func instanceFromEnv(args []string) []string {
 	// This supports naming the first instance first with:

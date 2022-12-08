@@ -278,7 +278,7 @@ func TestNewCommandWithEnvironmentConfigPrivateFields(t *testing.T) {
 	}{
 		{
 			desc:     "using the disable traces envvar",
-			envName:  "ALLOYDB_DISABLE_TRACES",
+			envName:  "ALLOYDB_PROXY_DISABLE_TRACES",
 			envValue: "true",
 			isValid: func(cmd *Command) bool {
 				return cmd.disableTraces == true
@@ -286,7 +286,7 @@ func TestNewCommandWithEnvironmentConfigPrivateFields(t *testing.T) {
 		},
 		{
 			desc:     "using the telemetry sample rate envvar",
-			envName:  "ALLOYDB_TELEMETRY_SAMPLE_RATE",
+			envName:  "ALLOYDB_PROXY_TELEMETRY_SAMPLE_RATE",
 			envValue: "500",
 			isValid: func(cmd *Command) bool {
 				return cmd.telemetryTracingSampleRate == 500
@@ -294,7 +294,7 @@ func TestNewCommandWithEnvironmentConfigPrivateFields(t *testing.T) {
 		},
 		{
 			desc:     "using the disable metrics envvar",
-			envName:  "ALLOYDB_DISABLE_METRICS",
+			envName:  "ALLOYDB_PROXY_DISABLE_METRICS",
 			envValue: "true",
 			isValid: func(cmd *Command) bool {
 				return cmd.disableMetrics == true
@@ -302,7 +302,7 @@ func TestNewCommandWithEnvironmentConfigPrivateFields(t *testing.T) {
 		},
 		{
 			desc:     "using the telemetry project envvar",
-			envName:  "ALLOYDB_TELEMETRY_PROJECT",
+			envName:  "ALLOYDB_PROXY_TELEMETRY_PROJECT",
 			envValue: "mycoolproject",
 			isValid: func(cmd *Command) bool {
 				return cmd.telemetryProject == "mycoolproject"
@@ -310,7 +310,7 @@ func TestNewCommandWithEnvironmentConfigPrivateFields(t *testing.T) {
 		},
 		{
 			desc:     "using the telemetry prefix envvar",
-			envName:  "ALLOYDB_TELEMETRY_PREFIX",
+			envName:  "ALLOYDB_PROXY_TELEMETRY_PREFIX",
 			envValue: "myprefix",
 			isValid: func(cmd *Command) bool {
 				return cmd.telemetryPrefix == "myprefix"
@@ -318,7 +318,7 @@ func TestNewCommandWithEnvironmentConfigPrivateFields(t *testing.T) {
 		},
 		{
 			desc:     "using the prometheus envvar",
-			envName:  "ALLOYDB_PROMETHEUS",
+			envName:  "ALLOYDB_PROXY_PROMETHEUS",
 			envValue: "true",
 			isValid: func(cmd *Command) bool {
 				return cmd.prometheus == true
@@ -326,7 +326,7 @@ func TestNewCommandWithEnvironmentConfigPrivateFields(t *testing.T) {
 		},
 		{
 			desc:     "using the prometheus namespace envvar",
-			envName:  "ALLOYDB_PROMETHEUS_NAMESPACE",
+			envName:  "ALLOYDB_PROXY_PROMETHEUS_NAMESPACE",
 			envValue: "myns",
 			isValid: func(cmd *Command) bool {
 				return cmd.prometheusNamespace == "myns"
@@ -334,7 +334,7 @@ func TestNewCommandWithEnvironmentConfigPrivateFields(t *testing.T) {
 		},
 		{
 			desc:     "using the health check envvar",
-			envName:  "ALLOYDB_HEALTH_CHECK",
+			envName:  "ALLOYDB_PROXY_HEALTH_CHECK",
 			envValue: "true",
 			isValid: func(cmd *Command) bool {
 				return cmd.healthCheck == true
@@ -342,7 +342,7 @@ func TestNewCommandWithEnvironmentConfigPrivateFields(t *testing.T) {
 		},
 		{
 			desc:     "using the http address envvar",
-			envName:  "ALLOYDB_HTTP_ADDRESS",
+			envName:  "ALLOYDB_PROXY_HTTP_ADDRESS",
 			envValue: "0.0.0.0",
 			isValid: func(cmd *Command) bool {
 				return cmd.httpAddress == "0.0.0.0"
@@ -350,7 +350,7 @@ func TestNewCommandWithEnvironmentConfigPrivateFields(t *testing.T) {
 		},
 		{
 			desc:     "using the http port envvar",
-			envName:  "ALLOYDB_HTTP_PORT",
+			envName:  "ALLOYDB_PROXY_HTTP_PORT",
 			envValue: "5555",
 			isValid: func(cmd *Command) bool {
 				return cmd.httpPort == "5555"
@@ -385,7 +385,7 @@ func TestNewCommandWithEnvironmentConfig(t *testing.T) {
 	}{
 		{
 			desc:     "using the address envvar",
-			envName:  "ALLOYDB_ADDRESS",
+			envName:  "ALLOYDB_PROXY_ADDRESS",
 			envValue: "0.0.0.0",
 			want: withDefaults(&proxy.Config{
 				Addr: "0.0.0.0",
@@ -393,7 +393,7 @@ func TestNewCommandWithEnvironmentConfig(t *testing.T) {
 		},
 		{
 			desc:     "using the port envvar",
-			envName:  "ALLOYDB_PORT",
+			envName:  "ALLOYDB_PROXY_PORT",
 			envValue: "6000",
 			want: withDefaults(&proxy.Config{
 				Port: 6000,
@@ -401,7 +401,7 @@ func TestNewCommandWithEnvironmentConfig(t *testing.T) {
 		},
 		{
 			desc:     "using the token envvar",
-			envName:  "ALLOYDB_TOKEN",
+			envName:  "ALLOYDB_PROXY_TOKEN",
 			envValue: "MYCOOLTOKEN",
 			want: withDefaults(&proxy.Config{
 				Token: "MYCOOLTOKEN",
@@ -409,7 +409,7 @@ func TestNewCommandWithEnvironmentConfig(t *testing.T) {
 		},
 		{
 			desc:     "using the credentiale file envvar",
-			envName:  "ALLOYDB_CREDENTIALS_FILE",
+			envName:  "ALLOYDB_PROXY_CREDENTIALS_FILE",
 			envValue: "/path/to/file",
 			want: withDefaults(&proxy.Config{
 				CredentialsFile: "/path/to/file",
@@ -417,7 +417,7 @@ func TestNewCommandWithEnvironmentConfig(t *testing.T) {
 		},
 		{
 			desc:     "using the JSON credentials",
-			envName:  "ALLOYDB_JSON_CREDENTIALS",
+			envName:  "ALLOYDB_PROXY_JSON_CREDENTIALS",
 			envValue: `{"json":"goes-here"}`,
 			want: withDefaults(&proxy.Config{
 				CredentialsJSON: `{"json":"goes-here"}`,
@@ -425,7 +425,7 @@ func TestNewCommandWithEnvironmentConfig(t *testing.T) {
 		},
 		{
 			desc:     "using the gcloud auth envvar",
-			envName:  "ALLOYDB_GCLOUD_AUTH",
+			envName:  "ALLOYDB_PROXY_GCLOUD_AUTH",
 			envValue: "true",
 			want: withDefaults(&proxy.Config{
 				GcloudAuth: true,
@@ -433,7 +433,7 @@ func TestNewCommandWithEnvironmentConfig(t *testing.T) {
 		},
 		{
 			desc:     "using the api-endpoint envvar",
-			envName:  "ALLOYDB_ALLOYDBADMIN_API_ENDPOINT",
+			envName:  "ALLOYDB_PROXY_ALLOYDBADMIN_API_ENDPOINT",
 			envValue: "https://test.googleapis.com/",
 			want: withDefaults(&proxy.Config{
 				APIEndpointURL: "https://test.googleapis.com",
@@ -441,7 +441,7 @@ func TestNewCommandWithEnvironmentConfig(t *testing.T) {
 		},
 		{
 			desc:     "using the unix socket envvar",
-			envName:  "ALLOYDB_UNIX_SOCKET",
+			envName:  "ALLOYDB_PROXY_UNIX_SOCKET",
 			envValue: "/path/to/dir/",
 			want: withDefaults(&proxy.Config{
 				UnixSocket: "/path/to/dir/",
@@ -449,7 +449,7 @@ func TestNewCommandWithEnvironmentConfig(t *testing.T) {
 		},
 		{
 			desc:     "enabling structured logging",
-			envName:  "ALLOYDB_STRUCTURED_LOGS",
+			envName:  "ALLOYDB_PROXY_STRUCTURED_LOGS",
 			envValue: "true",
 			want: withDefaults(&proxy.Config{
 				StructuredLogs: true,
@@ -457,7 +457,7 @@ func TestNewCommandWithEnvironmentConfig(t *testing.T) {
 		},
 		{
 			desc:     "using the max connections envvar",
-			envName:  "ALLOYDB_MAX_CONNECTIONS",
+			envName:  "ALLOYDB_PROXY_MAX_CONNECTIONS",
 			envValue: "1",
 			want: withDefaults(&proxy.Config{
 				MaxConnections: 1,
@@ -465,7 +465,7 @@ func TestNewCommandWithEnvironmentConfig(t *testing.T) {
 		},
 		{
 			desc:     "using wait after signterm envvar",
-			envName:  "ALLOYDB_MAX_SIGTERM_DELAY",
+			envName:  "ALLOYDB_PROXY_MAX_SIGTERM_DELAY",
 			envValue: "10s",
 			want: withDefaults(&proxy.Config{
 				WaitOnClose: 10 * time.Second,
@@ -473,7 +473,7 @@ func TestNewCommandWithEnvironmentConfig(t *testing.T) {
 		},
 		{
 			desc:     "using the imopersonate service accounn envvar",
-			envName:  "ALLOYDB_IMPERSONATE_SERVICE_ACCOUNT",
+			envName:  "ALLOYDB_PROXY_IMPERSONATE_SERVICE_ACCOUNT",
 			envValue: "sv1@developer.gserviceaccount.com,sv2@developer.gserviceaccount.com,sv3@developer.gserviceaccount.com",
 			want: withDefaults(&proxy.Config{
 				ImpersonateTarget: "sv1@developer.gserviceaccount.com",
@@ -512,7 +512,7 @@ func TestNewCommandWithEnvironmentConfigInstanceConnectionName(t *testing.T) {
 		{
 			desc: "with one instance connection name",
 			env: map[string]string{
-				"ALLOYDB_INSTANCE_URI": u,
+				"ALLOYDB_PROXY_INSTANCE_URI": u,
 			},
 			want: withDefaults(&proxy.Config{Instances: []proxy.InstanceConnConfig{
 				{Name: u},
@@ -521,8 +521,8 @@ func TestNewCommandWithEnvironmentConfigInstanceConnectionName(t *testing.T) {
 		{
 			desc: "with multiple instance connection names",
 			env: map[string]string{
-				"ALLOYDB_INSTANCE_URI_0": u + "0",
-				"ALLOYDB_INSTANCE_URI_1": u + "1",
+				"ALLOYDB_PROXY_INSTANCE_URI_0": u + "0",
+				"ALLOYDB_PROXY_INSTANCE_URI_1": u + "1",
 			},
 			want: withDefaults(&proxy.Config{Instances: []proxy.InstanceConnConfig{
 				{Name: u + "0"},
@@ -532,8 +532,8 @@ func TestNewCommandWithEnvironmentConfigInstanceConnectionName(t *testing.T) {
 		{
 			desc: "when the index skips a number",
 			env: map[string]string{
-				"ALLOYDB_INSTANCE_URI_0": u + "0",
-				"ALLOYDB_INSTANCE_URI_2": u + "2",
+				"ALLOYDB_PROXY_INSTANCE_URI_0": u + "0",
+				"ALLOYDB_PROXY_INSTANCE_URI_2": u + "2",
 			},
 			want: withDefaults(&proxy.Config{Instances: []proxy.InstanceConnConfig{
 				{Name: u + "0"},
@@ -542,7 +542,7 @@ func TestNewCommandWithEnvironmentConfigInstanceConnectionName(t *testing.T) {
 		{
 			desc: "when there are CLI args provided",
 			env: map[string]string{
-				"ALLOYDB_INSTANCE_URI": u,
+				"ALLOYDB_PROXY_INSTANCE_URI": u,
 			},
 			args: []string{u + "1"},
 			want: withDefaults(&proxy.Config{Instances: []proxy.InstanceConnConfig{
@@ -552,7 +552,7 @@ func TestNewCommandWithEnvironmentConfigInstanceConnectionName(t *testing.T) {
 		{
 			desc: "when only an index instance connection name is defined",
 			env: map[string]string{
-				"ALLOYDB_INSTANCE_URI_0": u,
+				"ALLOYDB_PROXY_INSTANCE_URI_0": u,
 			},
 			want: withDefaults(&proxy.Config{Instances: []proxy.InstanceConnConfig{
 				{Name: u},
