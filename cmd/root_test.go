@@ -32,33 +32,52 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func TestNewCommandArguments(t *testing.T) {
-	withDefaults := func(c *proxy.Config) *proxy.Config {
-		if c.UserAgent == "" {
-			c.UserAgent = userAgent
-		}
-		if c.Addr == "" {
-			c.Addr = "127.0.0.1"
-		}
-		if c.Port == 0 {
-			c.Port = 5432
-		}
-		if c.FUSEDir == "" {
-			if c.Instances == nil {
-				c.Instances = []proxy.InstanceConnConfig{{}}
-			}
-			if i := &c.Instances[0]; i.Name == "" {
-				i.Name = "projects/proj/locations/region/clusters/clust/instances/inst"
-			}
-		}
-		if c.FUSETempDir == "" {
-			c.FUSETempDir = filepath.Join(os.TempDir(), "csql-tmp")
-		}
-		if c.APIEndpointURL == "" {
-			c.APIEndpointURL = "https://alloydb.googleapis.com/v1beta"
-		}
-		return c
+const sampleURI = "projects/proj/locations/region/clusters/clust/instances/inst"
+
+func invokeProxyCommand(args []string) (*Command, error) {
+	c := NewCommand()
+	// Keep the test output quiet
+	c.SilenceUsage = true
+	c.SilenceErrors = true
+	// Disable execute behavior
+	c.RunE = func(*cobra.Command, []string) error {
+		return nil
 	}
+	c.SetArgs(args)
+
+	err := c.Execute()
+
+	return c, err
+}
+
+func withDefaults(c *proxy.Config) *proxy.Config {
+	if c.UserAgent == "" {
+		c.UserAgent = userAgent
+	}
+	if c.Addr == "" {
+		c.Addr = "127.0.0.1"
+	}
+	if c.Port == 0 {
+		c.Port = 5432
+	}
+	if c.FUSEDir == "" {
+		if c.Instances == nil {
+			c.Instances = []proxy.InstanceConnConfig{{}}
+		}
+		if i := &c.Instances[0]; i.Name == "" {
+			i.Name = sampleURI
+		}
+	}
+	if c.FUSETempDir == "" {
+		c.FUSETempDir = filepath.Join(os.TempDir(), "csql-tmp")
+	}
+	if c.APIEndpointURL == "" {
+		c.APIEndpointURL = "https://alloydb.googleapis.com/v1beta"
+	}
+	return c
+}
+
+func TestNewCommandArguments(t *testing.T) {
 	tcs := []struct {
 		desc string
 		args []string
@@ -222,7 +241,7 @@ func TestNewCommandArguments(t *testing.T) {
 			}),
 		},
 		{
-			desc: "",
+			desc: "using the impersonate service account flag",
 			args: []string{"--impersonate-service-account",
 				"sv1@developer.gserviceaccount.com,sv2@developer.gserviceaccount.com,sv3@developer.gserviceaccount.com",
 				"projects/proj/locations/region/clusters/clust/instances/inst"},
@@ -238,17 +257,322 @@ func TestNewCommandArguments(t *testing.T) {
 
 	for _, tc := range tcs {
 		t.Run(tc.desc, func(t *testing.T) {
-			c := NewCommand()
-			// Keep the test output quiet
-			c.SilenceUsage = true
-			c.SilenceErrors = true
-			// Disable execute behavior
-			c.RunE = func(*cobra.Command, []string) error {
-				return nil
+			c, err := invokeProxyCommand(tc.args)
+			if err != nil {
+				t.Fatalf("want error = nil, got = %v", err)
 			}
-			c.SetArgs(tc.args)
 
-			err := c.Execute()
+			if got := c.conf; !cmp.Equal(tc.want, got) {
+				t.Fatalf("want = %#v\ngot = %#v\ndiff = %v", tc.want, got, cmp.Diff(tc.want, got))
+			}
+		})
+	}
+}
+
+func TestNewCommandWithEnvironmentConfigPrivateFields(t *testing.T) {
+	tcs := []struct {
+		desc     string
+		envName  string
+		envValue string
+		isValid  func(cmd *Command) bool
+	}{
+		{
+			desc:     "using the disable traces envvar",
+			envName:  "ALLOYDB_DISABLE_TRACES",
+			envValue: "true",
+			isValid: func(cmd *Command) bool {
+				return cmd.disableTraces == true
+			},
+		},
+		{
+			desc:     "using the telemetry sample rate envvar",
+			envName:  "ALLOYDB_TELEMETRY_SAMPLE_RATE",
+			envValue: "500",
+			isValid: func(cmd *Command) bool {
+				return cmd.telemetryTracingSampleRate == 500
+			},
+		},
+		{
+			desc:     "using the disable metrics envvar",
+			envName:  "ALLOYDB_DISABLE_METRICS",
+			envValue: "true",
+			isValid: func(cmd *Command) bool {
+				return cmd.disableMetrics == true
+			},
+		},
+		{
+			desc:     "using the telemetry project envvar",
+			envName:  "ALLOYDB_TELEMETRY_PROJECT",
+			envValue: "mycoolproject",
+			isValid: func(cmd *Command) bool {
+				return cmd.telemetryProject == "mycoolproject"
+			},
+		},
+		{
+			desc:     "using the telemetry prefix envvar",
+			envName:  "ALLOYDB_TELEMETRY_PREFIX",
+			envValue: "myprefix",
+			isValid: func(cmd *Command) bool {
+				return cmd.telemetryPrefix == "myprefix"
+			},
+		},
+		{
+			desc:     "using the prometheus envvar",
+			envName:  "ALLOYDB_PROMETHEUS",
+			envValue: "true",
+			isValid: func(cmd *Command) bool {
+				return cmd.prometheus == true
+			},
+		},
+		{
+			desc:     "using the prometheus namespace envvar",
+			envName:  "ALLOYDB_PROMETHEUS_NAMESPACE",
+			envValue: "myns",
+			isValid: func(cmd *Command) bool {
+				return cmd.prometheusNamespace == "myns"
+			},
+		},
+		{
+			desc:     "using the health check envvar",
+			envName:  "ALLOYDB_HEALTH_CHECK",
+			envValue: "true",
+			isValid: func(cmd *Command) bool {
+				return cmd.healthCheck == true
+			},
+		},
+		{
+			desc:     "using the http address envvar",
+			envName:  "ALLOYDB_HTTP_ADDRESS",
+			envValue: "0.0.0.0",
+			isValid: func(cmd *Command) bool {
+				return cmd.httpAddress == "0.0.0.0"
+			},
+		},
+		{
+			desc:     "using the http port envvar",
+			envName:  "ALLOYDB_HTTP_PORT",
+			envValue: "5555",
+			isValid: func(cmd *Command) bool {
+				return cmd.httpPort == "5555"
+			},
+		},
+	}
+	for _, tc := range tcs {
+		t.Run(tc.desc, func(t *testing.T) {
+			os.Setenv(tc.envName, tc.envValue)
+			defer os.Unsetenv(tc.envName)
+
+			c, err := invokeProxyCommand([]string{
+				"projects/proj/locations/region/clusters/clust/instances/inst",
+			})
+			if err != nil {
+				t.Fatalf("want error = nil, got = %v", err)
+			}
+
+			if !tc.isValid(c) {
+				t.Fatal("want valid, got invalid")
+			}
+		})
+	}
+}
+
+func TestNewCommandWithEnvironmentConfig(t *testing.T) {
+	tcs := []struct {
+		desc     string
+		envName  string
+		envValue string
+		want     *proxy.Config
+	}{
+		{
+			desc:     "using the address envvar",
+			envName:  "ALLOYDB_ADDRESS",
+			envValue: "0.0.0.0",
+			want: withDefaults(&proxy.Config{
+				Addr: "0.0.0.0",
+			}),
+		},
+		{
+			desc:     "using the port envvar",
+			envName:  "ALLOYDB_PORT",
+			envValue: "6000",
+			want: withDefaults(&proxy.Config{
+				Port: 6000,
+			}),
+		},
+		{
+			desc:     "using the token envvar",
+			envName:  "ALLOYDB_TOKEN",
+			envValue: "MYCOOLTOKEN",
+			want: withDefaults(&proxy.Config{
+				Token: "MYCOOLTOKEN",
+			}),
+		},
+		{
+			desc:     "using the credentiale file envvar",
+			envName:  "ALLOYDB_CREDENTIALS_FILE",
+			envValue: "/path/to/file",
+			want: withDefaults(&proxy.Config{
+				CredentialsFile: "/path/to/file",
+			}),
+		},
+		{
+			desc:     "using the JSON credentials",
+			envName:  "ALLOYDB_JSON_CREDENTIALS",
+			envValue: `{"json":"goes-here"}`,
+			want: withDefaults(&proxy.Config{
+				CredentialsJSON: `{"json":"goes-here"}`,
+			}),
+		},
+		{
+			desc:     "using the gcloud auth envvar",
+			envName:  "ALLOYDB_GCLOUD_AUTH",
+			envValue: "true",
+			want: withDefaults(&proxy.Config{
+				GcloudAuth: true,
+			}),
+		},
+		{
+			desc:     "using the api-endpoint envvar",
+			envName:  "ALLOYDB_ALLOYDBADMIN_API_ENDPOINT",
+			envValue: "https://test.googleapis.com/",
+			want: withDefaults(&proxy.Config{
+				APIEndpointURL: "https://test.googleapis.com",
+			}),
+		},
+		{
+			desc:     "using the unix socket envvar",
+			envName:  "ALLOYDB_UNIX_SOCKET",
+			envValue: "/path/to/dir/",
+			want: withDefaults(&proxy.Config{
+				UnixSocket: "/path/to/dir/",
+			}),
+		},
+		{
+			desc:     "enabling structured logging",
+			envName:  "ALLOYDB_STRUCTURED_LOGS",
+			envValue: "true",
+			want: withDefaults(&proxy.Config{
+				StructuredLogs: true,
+			}),
+		},
+		{
+			desc:     "using the max connections envvar",
+			envName:  "ALLOYDB_MAX_CONNECTIONS",
+			envValue: "1",
+			want: withDefaults(&proxy.Config{
+				MaxConnections: 1,
+			}),
+		},
+		{
+			desc:     "using wait after signterm envvar",
+			envName:  "ALLOYDB_MAX_SIGTERM_DELAY",
+			envValue: "10s",
+			want: withDefaults(&proxy.Config{
+				WaitOnClose: 10 * time.Second,
+			}),
+		},
+		{
+			desc:     "using the imopersonate service accounn envvar",
+			envName:  "ALLOYDB_IMPERSONATE_SERVICE_ACCOUNT",
+			envValue: "sv1@developer.gserviceaccount.com,sv2@developer.gserviceaccount.com,sv3@developer.gserviceaccount.com",
+			want: withDefaults(&proxy.Config{
+				ImpersonateTarget: "sv1@developer.gserviceaccount.com",
+				ImpersonateDelegates: []string{
+					"sv3@developer.gserviceaccount.com",
+					"sv2@developer.gserviceaccount.com",
+				},
+			}),
+		},
+	}
+	for _, tc := range tcs {
+		t.Run(tc.desc, func(t *testing.T) {
+			os.Setenv(tc.envName, tc.envValue)
+			defer os.Unsetenv(tc.envName)
+
+			c, err := invokeProxyCommand([]string{sampleURI})
+			if err != nil {
+				t.Fatalf("want error = nil, got = %v", err)
+			}
+
+			if got := c.conf; !cmp.Equal(tc.want, got) {
+				t.Fatalf("want = %#v\ngot = %#v\ndiff = %v", tc.want, got, cmp.Diff(tc.want, got))
+			}
+		})
+	}
+}
+
+func TestNewCommandWithEnvironmentConfigInstanceConnectionName(t *testing.T) {
+	u := "projects/proj/locations/region/clusters/clust/instances/inst"
+	tcs := []struct {
+		desc string
+		env  map[string]string
+		args []string
+		want *proxy.Config
+	}{
+		{
+			desc: "with one instance connection name",
+			env: map[string]string{
+				"ALLOYDB_INSTANCE_URI": u,
+			},
+			want: withDefaults(&proxy.Config{Instances: []proxy.InstanceConnConfig{
+				{Name: u},
+			}}),
+		},
+		{
+			desc: "with multiple instance connection names",
+			env: map[string]string{
+				"ALLOYDB_INSTANCE_URI_0": u + "0",
+				"ALLOYDB_INSTANCE_URI_1": u + "1",
+			},
+			want: withDefaults(&proxy.Config{Instances: []proxy.InstanceConnConfig{
+				{Name: u + "0"},
+				{Name: u + "1"},
+			}}),
+		},
+		{
+			desc: "when the index skips a number",
+			env: map[string]string{
+				"ALLOYDB_INSTANCE_URI_0": u + "0",
+				"ALLOYDB_INSTANCE_URI_2": u + "2",
+			},
+			want: withDefaults(&proxy.Config{Instances: []proxy.InstanceConnConfig{
+				{Name: u + "0"},
+			}}),
+		},
+		{
+			desc: "when there are CLI args provided",
+			env: map[string]string{
+				"ALLOYDB_INSTANCE_URI": u,
+			},
+			args: []string{u + "1"},
+			want: withDefaults(&proxy.Config{Instances: []proxy.InstanceConnConfig{
+				{Name: u + "1"},
+			}}),
+		},
+		{
+			desc: "when only an index instance connection name is defined",
+			env: map[string]string{
+				"ALLOYDB_INSTANCE_URI_0": u,
+			},
+			want: withDefaults(&proxy.Config{Instances: []proxy.InstanceConnConfig{
+				{Name: u},
+			}}),
+		},
+	}
+	for _, tc := range tcs {
+		t.Run(tc.desc, func(t *testing.T) {
+			var cleanup []string
+			for k, v := range tc.env {
+				os.Setenv(k, v)
+				cleanup = append(cleanup, k)
+			}
+			defer func() {
+				for _, k := range cleanup {
+					os.Unsetenv(k)
+				}
+			}()
+
+			c, err := invokeProxyCommand(tc.args)
 			if err != nil {
 				t.Fatalf("want error = nil, got = %v", err)
 			}
@@ -419,17 +743,7 @@ func TestNewCommandWithErrors(t *testing.T) {
 
 	for _, tc := range tcs {
 		t.Run(tc.desc, func(t *testing.T) {
-			c := NewCommand()
-			// Keep the test output quiet
-			c.SilenceUsage = true
-			c.SilenceErrors = true
-			// Disable execute behavior
-			c.RunE = func(*cobra.Command, []string) error {
-				return nil
-			}
-			c.SetArgs(tc.args)
-
-			err := c.Execute()
+			_, err := invokeProxyCommand(tc.args)
 			if err == nil {
 				t.Fatal("want error != nil, got = nil")
 			}

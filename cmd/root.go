@@ -37,6 +37,8 @@ import (
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/log"
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/proxy"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
 	"go.opencensus.io/trace"
 )
 
@@ -241,7 +243,65 @@ Service Account Impersonation
     In this example, the environment's IAM principal impersonates
     SERVICE_ACCOUNT_3 which impersonates SERVICE_ACCOUNT_2 which then
     impersonates the target SERVICE_ACCOUNT_1.
+
+Configuration using environment variables
+
+    Instead of using CLI flags, the proxy may be configured using environment
+    variables. Each environment variable uses "ALLOYDB_PROXY" as a prefix and
+    is the uppercase version of the flag using underscores as word delimiters.
+    For example, the --structured-logs flag may be set with the environment
+    variable ALLOYDB_STRUCTURED_LOGS. An invocation of the proxy using
+    environment variables would look like the following:
+
+        ALLOYDB_STRUCTURED_LOGS=true \
+            ./alloydb-auth-proxy \
+            projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE
+
+    In addition to CLI flags, instance URIs may also be specified with
+    environment variables. If invoking the proxy with only one instance URI,
+    use ALLOYDB_INSTANCE_URI. For example:
+
+        ALLOYDB_INSTANCE_URI=projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE \
+            ./alloydb-auth-proxy
+
+    If multiple instance URIs are used, add the index of the instance URI as a
+    suffix. For example:
+
+        ALLOYDB_INSTANCE_URI_0=projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE1 \
+        ALLOYDB_INSTANCE_URI_1=projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE2 \
+            ./alloydb-auth-proxy
+
 `
+
+const envPrefix = "ALLOYDB"
+
+func instanceFromEnv(args []string) []string {
+	// This supports naming the first instance first with:
+	//     INSTANCE_URI
+	// or if that's not defined, with:
+	//     INSTANCE_URI_0
+	inst := os.Getenv(fmt.Sprintf("%s_INSTANCE_URI", envPrefix))
+	if inst == "" {
+		inst = os.Getenv(fmt.Sprintf("%s_INSTANCE_URI_0", envPrefix))
+		if inst == "" {
+			return nil
+		}
+	}
+	args = append(args, inst)
+
+	i := 1
+	for {
+		instN := os.Getenv(fmt.Sprintf("%s_INSTANCE_URI_%d", envPrefix, i))
+		// if the next instance connection name is not defined, stop checking
+		// environment variables.
+		if instN == "" {
+			break
+		}
+		args = append(args, instN)
+		i++
+	}
+	return args
+}
 
 // NewCommand returns a Command object representing an invocation of the proxy.
 func NewCommand(opts ...Option) *Command {
@@ -266,6 +326,10 @@ func NewCommand(opts ...Option) *Command {
 	}
 
 	cmd.Args = func(cmd *cobra.Command, args []string) error {
+		// If args is not already populated, try to read from the environment.
+		if len(args) == 0 {
+			args = instanceFromEnv(args)
+		}
 		// Handle logger separately from config
 		if c.conf.StructuredLogs {
 			c.logger, c.cleanup = log.NewStructuredLogger()
@@ -283,67 +347,85 @@ func NewCommand(opts ...Option) *Command {
 
 	cmd.RunE = func(*cobra.Command, []string) error { return runSignalWrapper(c) }
 
+	pflags := cmd.PersistentFlags()
+
 	// Global-only flags
-	cmd.PersistentFlags().StringVarP(&c.conf.Token, "token", "t", "",
+	pflags.StringVarP(&c.conf.Token, "token", "t", "",
 		"Bearer token used for authorization.")
-	cmd.PersistentFlags().StringVarP(&c.conf.CredentialsFile, "credentials-file", "c", "",
+	pflags.StringVarP(&c.conf.CredentialsFile, "credentials-file", "c", "",
 		"Path to a service account key to use for authentication.")
-	cmd.PersistentFlags().StringVarP(&c.conf.CredentialsJSON, "json-credentials", "j", "",
+	pflags.StringVarP(&c.conf.CredentialsJSON, "json-credentials", "j", "",
 		"Use service account key JSON as a source of IAM credentials.")
-	cmd.PersistentFlags().BoolVarP(&c.conf.GcloudAuth, "gcloud-auth", "g", false,
+	pflags.BoolVarP(&c.conf.GcloudAuth, "gcloud-auth", "g", false,
 		"Use gcloud's user configuration to retrieve a token for authentication.")
-	cmd.PersistentFlags().BoolVarP(&c.conf.StructuredLogs, "structured-logs", "l", false,
+	pflags.BoolVarP(&c.conf.StructuredLogs, "structured-logs", "l", false,
 		"Enable structured logs using the LogEntry format")
-	cmd.PersistentFlags().Uint64Var(&c.conf.MaxConnections, "max-connections", 0,
+	pflags.Uint64Var(&c.conf.MaxConnections, "max-connections", 0,
 		`Limits the number of connections by refusing any additional connections.
 When this flag is not set, there is no limit.`)
-	cmd.PersistentFlags().DurationVar(&c.conf.WaitOnClose, "max-sigterm-delay", 0,
+	pflags.DurationVar(&c.conf.WaitOnClose, "max-sigterm-delay", 0,
 		`Maximum amount of time to wait after for any open connections
 to close after receiving a TERM signal. The proxy will shut
 down when the number of open connections reaches 0 or when
 the maximum time has passed. Defaults to 0s.`)
-	cmd.PersistentFlags().StringVar(&c.conf.APIEndpointURL, "alloydbadmin-api-endpoint",
+	pflags.StringVar(&c.conf.APIEndpointURL, "alloydbadmin-api-endpoint",
 		"https://alloydb.googleapis.com/v1beta",
 		"When set, the proxy uses this host as the base API path.")
-	cmd.PersistentFlags().StringVar(&c.conf.FUSEDir, "fuse", "",
+	pflags.StringVar(&c.conf.FUSEDir, "fuse", "",
 		"Mount a directory at the path using FUSE to access AlloyDB instances.")
-	cmd.PersistentFlags().StringVar(&c.conf.FUSETempDir, "fuse-tmp-dir",
+	pflags.StringVar(&c.conf.FUSETempDir, "fuse-tmp-dir",
 		filepath.Join(os.TempDir(), "csql-tmp"),
 		"Temp dir for Unix sockets created with FUSE")
-	cmd.PersistentFlags().StringVar(&c.impersonationChain, "impersonate-service-account", "",
+	pflags.StringVar(&c.impersonationChain, "impersonate-service-account", "",
 		`Comma separated list of service accounts to impersonate. Last value
 +is the target account.`)
 
-	cmd.PersistentFlags().StringVar(&c.telemetryProject, "telemetry-project", "",
+	pflags.StringVar(&c.telemetryProject, "telemetry-project", "",
 		"Enable Cloud Monitoring and Cloud Trace integration with the provided project ID.")
-	cmd.PersistentFlags().BoolVar(&c.disableTraces, "disable-traces", false,
+	pflags.BoolVar(&c.disableTraces, "disable-traces", false,
 		"Disable Cloud Trace integration (used with telemetry-project)")
-	cmd.PersistentFlags().IntVar(&c.telemetryTracingSampleRate, "telemetry-sample-rate", 10_000,
+	pflags.IntVar(&c.telemetryTracingSampleRate, "telemetry-sample-rate", 10_000,
 		"Configure the denominator of the probabilistic sample rate of traces sent to Cloud Trace\n(e.g., 10,000 traces 1/10,000 calls).")
-	cmd.PersistentFlags().BoolVar(&c.disableMetrics, "disable-metrics", false,
+	pflags.BoolVar(&c.disableMetrics, "disable-metrics", false,
 		"Disable Cloud Monitoring integration (used with telemetry-project)")
-	cmd.PersistentFlags().StringVar(&c.telemetryPrefix, "telemetry-prefix", "",
+	pflags.StringVar(&c.telemetryPrefix, "telemetry-prefix", "",
 		"Prefix to use for Cloud Monitoring metrics.")
-	cmd.PersistentFlags().BoolVar(&c.prometheus, "prometheus", false,
+	pflags.BoolVar(&c.prometheus, "prometheus", false,
 		"Enable Prometheus HTTP endpoint /metrics")
-	cmd.PersistentFlags().StringVar(&c.prometheusNamespace, "prometheus-namespace", "",
+	pflags.StringVar(&c.prometheusNamespace, "prometheus-namespace", "",
 		"Use the provided Prometheus namespace for metrics")
-	cmd.PersistentFlags().StringVar(&c.httpAddress, "http-address", "localhost",
+	pflags.StringVar(&c.httpAddress, "http-address", "localhost",
 		"Address for Prometheus and health check server")
-	cmd.PersistentFlags().StringVar(&c.httpPort, "http-port", "9090",
+	pflags.StringVar(&c.httpPort, "http-port", "9090",
 		"Port for the Prometheus server to use")
-	cmd.PersistentFlags().BoolVar(&c.healthCheck, "health-check", false,
+	pflags.BoolVar(&c.healthCheck, "health-check", false,
 		`Enables HTTP endpoints /startup, /liveness, and /readiness
 that report on the proxy's health. Endpoints are available on localhost
 only. Uses the port specified by the http-port flag.`)
 
 	// Global and per instance flags
-	cmd.PersistentFlags().StringVarP(&c.conf.Addr, "address", "a", "127.0.0.1",
+	pflags.StringVarP(&c.conf.Addr, "address", "a", "127.0.0.1",
 		"Address on which to bind AlloyDB instance listeners.")
-	cmd.PersistentFlags().IntVarP(&c.conf.Port, "port", "p", 5432,
+	pflags.IntVarP(&c.conf.Port, "port", "p", 5432,
 		"Initial port to use for listeners. Subsequent listeners increment from this value.")
-	cmd.PersistentFlags().StringVarP(&c.conf.UnixSocket, "unix-socket", "u", "",
+	pflags.StringVarP(&c.conf.UnixSocket, "unix-socket", "u", "",
 		`Enables Unix sockets for all listeners using the provided directory.`)
+
+	v := viper.NewWithOptions(viper.EnvKeyReplacer(strings.NewReplacer("-", "_")))
+	v.SetEnvPrefix(envPrefix)
+	v.AutomaticEnv()
+	// Ignoring the error here since its only occurence is if one of the pflags
+	// is nil which is never the case here.
+	_ = v.BindPFlags(pflags)
+
+	pflags.VisitAll(func(f *pflag.Flag) {
+		// Override any unset flags with Viper values to use the pflags
+		// object as a single source of truth.
+		if !f.Changed && v.IsSet(f.Name) {
+			val := v.Get(f.Name)
+			pflags.Set(f.Name, fmt.Sprintf("%v", val))
+		}
+	})
 
 	return c
 }
