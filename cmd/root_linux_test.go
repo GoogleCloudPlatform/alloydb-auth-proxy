@@ -23,7 +23,7 @@ import (
 )
 
 func TestNewCommandArgumentsOnLinux(t *testing.T) {
-	defaultTmp := filepath.Join(os.TempDir(), "csql-tmp")
+	defaultTmp := filepath.Join(os.TempDir(), "alloydb-tmp")
 	tcs := []struct {
 		desc        string
 		args        []string
