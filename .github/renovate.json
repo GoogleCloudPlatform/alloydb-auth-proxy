@@ -4,6 +4,13 @@
     ":semanticCommitTypeAll(chore)"
   ],
   "ignorePresets": [":semanticPrefixFixDepsChoreOthers"],
+  "packageRules": [
+    {
+      "description": "Group all dependencies for Java sample",
+      "matchPaths": ["examples/java/**"],
+      "groupName": "Java sample dependencies"
+    }
+  ],
   "prConcurrentLimit": 0,
   "rebaseStalePrs": true,
   "dependencyDashboard": true,
