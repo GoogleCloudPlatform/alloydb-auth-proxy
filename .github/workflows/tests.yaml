@@ -24,6 +24,18 @@ on:
   - cron:  '0 2 * * *'
 
 jobs:
+  compilation:
+    if: "${{ (github.event.action != 'labeled' && github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name) || github.event.label.name == 'tests: run' }}"
+    name: FreeBSD and OpenBSD compilation check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: 'actions/checkout@v3'
+
+      - name: Verify FreeBSD and OpenBSD Builds
+        run: |
+          CGO_ENABLED=0 GOOS=freebsd go build
+          CGO_ENABLED=0 GOOS=openbsd go build
   integration:
     # run job on proper workflow event triggers (skip job for pull_request event from forks and only run pull_request_target for "tests: run" label)
     if: "${{ (github.event.action != 'labeled' && github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name) || github.event.label.name == 'tests: run' }}"
@@ -78,6 +90,7 @@ jobs:
           secrets: |-
             ALLOYDB_CONN_NAME:${{ secrets.GOOGLE_CLOUD_PROJECT }}/ALLOYDB_CONN_NAME
             ALLOYDB_CLUSTER_PASS:${{ secrets.GOOGLE_CLOUD_PROJECT }}/ALLOYDB_CLUSTER_PASS
+            IMPERSONATED_USER:${{ secrets.GOOGLE_CLOUD_PROJECT }}/IMPERSONATED_USER
 
       - name: Run tests
         env:
@@ -85,6 +98,7 @@ jobs:
           ALLOYDB_USER: 'postgres'
           ALLOYDB_PASS: '${{ steps.secrets.outputs.ALLOYDB_CLUSTER_PASS }}'
           ALLOYDB_CONNECTION_NAME: '${{ steps.secrets.outputs.ALLOYDB_CONN_NAME }}'
+          IMPERSONATED_USER: '${{ steps.secrets.outputs.IMPERSONATED_USER }}'
         # specifying bash shell ensures a failure in a piped process isn't lost by using `set -eo pipefail`
         shell: bash
         run: |

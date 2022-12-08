@@ -26,10 +26,15 @@ import (
 )
 
 var (
-	alloydbConnName = flag.String("alloydb_conn_name", os.Getenv("ALLOYDB_CONNECTION_NAME"), "AlloyDB instance connection name, in the form of 'project:region:instance'.")
-	alloydbUser     = flag.String("alloydb_user", os.Getenv("ALLOYDB_USER"), "Name of database user.")
-	alloydbPass     = flag.String("alloydb_pass", os.Getenv("ALLOYDB_PASS"), "Password for the database user; be careful when entering a password on the command line (it may go into your terminal's history).")
-	alloydbDB       = flag.String("alloydb_db", os.Getenv("ALLOYDB_DB"), "Name of the database to connect to.")
+	alloydbConnName  = flag.String("alloydb_conn_name", os.Getenv("ALLOYDB_CONNECTION_NAME"), "AlloyDB instance connection name, in the form of 'project:region:instance'.")
+	alloydbUser      = flag.String("alloydb_user", os.Getenv("ALLOYDB_USER"), "Name of database user.")
+	alloydbPass      = flag.String("alloydb_pass", os.Getenv("ALLOYDB_PASS"), "Password for the database user; be careful when entering a password on the command line (it may go into your terminal's history).")
+	alloydbDB        = flag.String("alloydb_db", os.Getenv("ALLOYDB_DB"), "Name of the database to connect to.")
+	impersonatedUser = flag.String(
+		"impersonated_user",
+		os.Getenv("IMPERSONATED_USER"),
+		"Name of the service account that supports impersonation (impersonator must have roles/iam.serviceAccountTokenCreator)",
+	)
 )
 
 func requirePostgresVars(t *testing.T) {
@@ -100,7 +105,7 @@ func TestPostgresAuthWithToken(t *testing.T) {
 	}
 	_, isFlex := os.LookupEnv("FLEX")
 	if isFlex {
-		t.Skip("disabling until we migrate tests to Kokoro")
+		t.Skip("App Engine Flex doesn't support retrieving OAuth2 tokens")
 	}
 	requirePostgresVars(t)
 	cleanup, err := pgxv4.RegisterDriver("alloydb2")
@@ -108,7 +113,7 @@ func TestPostgresAuthWithToken(t *testing.T) {
 		t.Fatalf("failed to register driver: %v", err)
 	}
 	defer cleanup()
-	tok, _, cleanup2 := removeAuthEnvVar(t)
+	tok, _, cleanup2 := removeAuthEnvVar(t, true)
 	defer cleanup2()
 
 	dsn := fmt.Sprintf("host=%v user=%v password=%v database=%v sslmode=disable",
@@ -122,17 +127,13 @@ func TestPostgresAuthWithCredentialsFile(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping Postgres integration tests")
 	}
-	_, isFlex := os.LookupEnv("FLEX")
-	if isFlex {
-		t.Skip("disabling until we migrate tests to Kokoro")
-	}
 	requirePostgresVars(t)
 	cleanup, err := pgxv4.RegisterDriver("alloydb3")
 	if err != nil {
 		t.Fatalf("failed to register driver: %v", err)
 	}
 	defer cleanup()
-	_, path, cleanup2 := removeAuthEnvVar(t)
+	_, path, cleanup2 := removeAuthEnvVar(t, false)
 	defer cleanup2()
 
 	dsn := fmt.Sprintf("host=%v user=%v password=%v database=%v sslmode=disable",
@@ -140,6 +141,22 @@ func TestPostgresAuthWithCredentialsFile(t *testing.T) {
 	proxyConnTest(t,
 		[]string{"--credentials-file", path, *alloydbConnName},
 		"alloydb3", dsn)
+}
+
+func TestPostgresAuthWithCredentialsJSON(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping Postgres integration tests")
+	}
+	requirePostgresVars(t)
+	creds := keyfile(t)
+	_, _, cleanup := removeAuthEnvVar(t, false)
+	defer cleanup()
+
+	dsn := fmt.Sprintf("host=localhost user=%s password=%s database=%s sslmode=disable",
+		*alloydbUser, *alloydbPass, *alloydbDB)
+	proxyConnTest(t,
+		[]string{"--json-credentials", string(creds), *alloydbConnName},
+		"pgx", dsn)
 }
 
 func TestAuthWithGcloudAuth(t *testing.T) {

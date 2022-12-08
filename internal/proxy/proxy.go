@@ -31,6 +31,9 @@ import (
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/alloydb"
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/gcloud"
 	"golang.org/x/oauth2"
+	"google.golang.org/api/impersonate"
+	"google.golang.org/api/option"
+	"google.golang.org/api/sqladmin/v1"
 )
 
 // InstanceConnConfig holds the configuration for an individual instance
@@ -59,6 +62,9 @@ type Config struct {
 
 	// CredentialsFile is the path to a service account key.
 	CredentialsFile string
+
+	// CredentialsJSON is a JSON representation of the service account key.
+	CredentialsJSON string
 
 	// GcloudAuth set whether to use Gcloud's config helper to retrieve a
 	// token for authentication.
@@ -101,9 +107,86 @@ type Config struct {
 	// regardless of any open connections.
 	WaitOnClose time.Duration
 
+	// ImpersonateTarget is the service account to impersonate. The IAM
+	// principal doing the impersonation must have the
+	// roles/iam.serviceAccountTokenCreator role.
+	ImpersonateTarget string
+	// ImpersonateDelegates are the intermediate service accounts through which
+	// the impersonation is achieved. Each delegate must have the
+	// roles/iam.serviceAccountTokenCreator role.
+	ImpersonateDelegates []string
+
 	// StructuredLogs sets all output to use JSON in the LogEntry format.
 	// See https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry
 	StructuredLogs bool
+}
+
+func (c *Config) credentialsOpt(l alloydb.Logger) (alloydbconn.Option, error) {
+	// If service account impersonation is configured, set up an impersonated
+	// credentials token source.
+	if c.ImpersonateTarget != "" {
+		var iopts []option.ClientOption
+		switch {
+		case c.Token != "":
+			l.Infof("Impersonating service account with OAuth2 token")
+			iopts = append(iopts, option.WithTokenSource(
+				oauth2.StaticTokenSource(&oauth2.Token{AccessToken: c.Token}),
+			))
+		case c.CredentialsFile != "":
+			l.Infof("Impersonating service account with the credentials file at %q", c.CredentialsFile)
+			iopts = append(iopts, option.WithCredentialsFile(c.CredentialsFile))
+		case c.CredentialsJSON != "":
+			l.Infof("Impersonating service account with JSON credentials environment variable")
+			iopts = append(iopts, option.WithCredentialsJSON([]byte(c.CredentialsJSON)))
+		case c.GcloudAuth:
+			l.Infof("Impersonating service account with gcloud user credentials")
+			ts, err := gcloud.TokenSource()
+			if err != nil {
+				return nil, err
+			}
+			iopts = append(iopts, option.WithTokenSource(ts))
+		default:
+			l.Infof("Impersonating service account with Application Default Credentials")
+		}
+		ts, err := impersonate.CredentialsTokenSource(
+			context.Background(),
+			impersonate.CredentialsConfig{
+				TargetPrincipal: c.ImpersonateTarget,
+				Delegates:       c.ImpersonateDelegates,
+				Scopes:          []string{sqladmin.SqlserviceAdminScope},
+			},
+			iopts...,
+		)
+		if err != nil {
+			return nil, err
+		}
+		return alloydbconn.WithTokenSource(ts), nil
+	}
+	// Otherwise, configure credentials as usual.
+	switch {
+	case c.Token != "":
+		l.Infof("Authorizing with OAuth2 token")
+		return alloydbconn.WithTokenSource(
+			oauth2.StaticTokenSource(&oauth2.Token{AccessToken: c.Token}),
+		), nil
+	case c.CredentialsFile != "":
+		l.Infof("Authorizing with the credentials file at %q", c.CredentialsFile)
+		return alloydbconn.WithCredentialsFile(c.CredentialsFile), nil
+	case c.CredentialsJSON != "":
+		l.Infof("Authorizing with JSON credentials environment variable")
+		return alloydbconn.WithCredentialsJSON([]byte(c.CredentialsJSON)), nil
+	case c.GcloudAuth:
+		l.Infof("Authorizing with gcloud user credentials")
+		ts, err := gcloud.TokenSource()
+		if err != nil {
+			return nil, err
+		}
+		return alloydbconn.WithTokenSource(ts), nil
+	default:
+		l.Infof("Authorizing with Application Default Credentials")
+		// Return no-op options to avoid having to handle nil in caller code
+		return alloydbconn.WithOptions(), nil
+	}
 }
 
 // DialerOptions builds appropriate list of options from the Config
@@ -112,27 +195,14 @@ func (c *Config) DialerOptions(l alloydb.Logger) ([]alloydbconn.Option, error) {
 	opts := []alloydbconn.Option{
 		alloydbconn.WithUserAgent(c.UserAgent),
 	}
-	opts = append(opts, alloydbconn.WithAdminAPIEndpoint(c.APIEndpointURL))
-	switch {
-	case c.Token != "":
-		l.Infof("Authorizing with the -token flag")
-		opts = append(opts, alloydbconn.WithTokenSource(
-			oauth2.StaticTokenSource(&oauth2.Token{AccessToken: c.Token}),
-		))
-	case c.CredentialsFile != "":
-		l.Infof("Authorizing with the credentials file at %q", c.CredentialsFile)
-		opts = append(opts, alloydbconn.WithCredentialsFile(
-			c.CredentialsFile,
-		))
-	case c.GcloudAuth:
-		l.Infof("Authorizing with gcloud user credentials")
-		ts, err := gcloud.TokenSource()
-		if err != nil {
-			return nil, err
-		}
-		opts = append(opts, alloydbconn.WithTokenSource(ts))
-	default:
-		l.Infof("Authorizing with Application Default Credentials")
+	co, err := c.credentialsOpt(l)
+	if err != nil {
+		return nil, err
+	}
+	opts = append(opts, co)
+
+	if c.APIEndpointURL != "" {
+		opts = append(opts, alloydbconn.WithAdminAPIEndpoint(c.APIEndpointURL))
 	}
 
 	return opts, nil
@@ -304,7 +374,7 @@ func (c *Client) CheckConnections(ctx context.Context) error {
 				return
 			}
 			cErr := conn.Close()
-			if err != nil {
+			if cErr != nil {
 				errCh <- fmt.Errorf("%v: %v", inst, cErr)
 			}
 		}(m.inst)
