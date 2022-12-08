@@ -252,7 +252,7 @@ Configuration using environment variables
     variables. Each environment variable uses "ALLOYDB_PROXY" as a prefix and
     is the uppercase version of the flag using underscores as word delimiters.
     For example, the --structured-logs flag may be set with the environment
-    variable ALLOYDB_STRUCTURED_LOGS. An invocation of the proxy using
+    variable ALLOYDB_PROXY_STRUCTURED_LOGS. An invocation of the proxy using
     environment variables would look like the following:
 
         ALLOYDB_PROXY_STRUCTURED_LOGS=true \
