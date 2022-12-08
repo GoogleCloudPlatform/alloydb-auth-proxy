@@ -1,5 +1,5 @@
 #! /bin/bash
-# Copyright 2020 Google LLC
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 set -ex
 
 # download the proxy and run it in the background listening on 127.0.0.1:5432
-URL="https://storage.googleapis.com/alloydb-auth-proxy/v0.1.0"
+URL="https://storage.googleapis.com/alloydb-auth-proxy/v0.6.2"
 wget "$URL/alloydb-auth-proxy.linux.amd64" -O alloydb-auth-proxy
 chmod +x alloydb-auth-proxy
 ./alloydb-auth-proxy "${ALLOYDB_CONNECTION_NAME}" &
