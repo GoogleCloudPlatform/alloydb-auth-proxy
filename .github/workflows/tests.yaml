@@ -145,15 +145,16 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
 
-      - name: check paths
-        run: |
-          ls /home/actions/actions-runner/_work/alloydb-auth-proxy/alloydb-auth-proxy/
       - id: 'auth'
         name: 'Authenticate to Google Cloud'
         uses: 'google-github-actions/auth@v1.0.0'
         with:
           workload_identity_provider: ${{ secrets.PROVIDER_NAME }}
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
+
+      - name: check paths
+        run: |
+          ls /home/actions/actions-runner/_work/alloydb-auth-proxy/alloydb-auth-proxy/
 
       - name: Run tests
         # specifying bash shell ensures a failure in a piped process isn't lost by using `set -eo pipefail`
