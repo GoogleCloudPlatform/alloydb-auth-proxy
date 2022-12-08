@@ -69,7 +69,7 @@ func withDefaults(c *proxy.Config) *proxy.Config {
 		}
 	}
 	if c.FUSETempDir == "" {
-		c.FUSETempDir = filepath.Join(os.TempDir(), "csql-tmp")
+		c.FUSETempDir = filepath.Join(os.TempDir(), "alloydb-tmp")
 	}
 	if c.APIEndpointURL == "" {
 		c.APIEndpointURL = "https://alloydb.googleapis.com/v1beta"
