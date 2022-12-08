@@ -100,7 +100,7 @@ public class TestIndexServlet {
         createTableStatement.execute();
       }
     }
-    System.setProperty("testingTableName", null);
+    System.clearProperty("testingTableName");
   }
 
   @Test
