@@ -81,6 +81,11 @@ jobs:
         with:
           workload_identity_provider: ${{ secrets.PROVIDER_NAME }}
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
+      - name: Check file paths
+        run: |
+          ls /home/actions/actions-runner/_work/alloydb-auth-proxy/alloydb-auth-proxy/
+          echo "Checking working directory!"
+          pwd
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v1.0.1'
       - name: Get Secrets
@@ -98,11 +103,7 @@ jobs:
         run: |
           cd examples/java
           mvn -P lint checkstyle:check
-      - name: Check file paths
-        run: |
-          ls /home/actions/actions-runner/_work/alloydb-auth-proxy/alloydb-auth-proxy/
-          echo "Checking working directory!"
-          pwd
+
       - name: Run tests
         env:
           DB_NAME: 'postgres'

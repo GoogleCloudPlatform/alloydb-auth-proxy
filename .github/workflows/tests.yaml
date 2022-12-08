@@ -68,10 +68,6 @@ jobs:
           workload_identity_provider: ${{ secrets.PROVIDER_NAME }}
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
 
-      - name: check paths
-        run: |
-          ls /home/actions/actions-runner/_work/alloydb-auth-proxy/alloydb-auth-proxy/
-
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v1.0.1'
 
