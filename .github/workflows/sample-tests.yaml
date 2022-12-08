@@ -81,11 +81,7 @@ jobs:
         with:
           workload_identity_provider: ${{ secrets.PROVIDER_NAME }}
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
-      - name: Check file paths
-        run: |
-          ls /home/actions/actions-runner/_work/alloydb-auth-proxy/alloydb-auth-proxy/
-          echo "Checking working directory!"
-          pwd
+
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v1.0.1'
       - name: Get Secrets
@@ -95,6 +91,9 @@ jobs:
           secrets: |-
             ALLOYDB_CONN_NAME:alloydb-connector-testing/ALLOYDB_CONN_NAME
             ALLOYDB_CLUSTER_PASS:alloydb-connector-testing/ALLOYDB_CLUSTER_PASS
+      - name: Check file paths
+        run: |
+          ls /home/actions/actions-runner/_work/alloydb-auth-proxy/alloydb-auth-proxy/
       - name: Setup Maven Action
         uses: s4u/setup-maven-action@v1.2.1
         with:
