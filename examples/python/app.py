@@ -115,8 +115,9 @@ def save_vote(db: sqlalchemy.engine.base.Engine, team: str) -> Response:
     if team != "TABS" and team != "SPACES":
         logger.warning(f"Received invalid 'team' property: '{team}'")
         return Response(
-            response=("Invalid team specified."
-            " Should be one of 'TABS' or 'SPACES'"),
+            response=(
+                "Invalid team specified."
+                " Should be one of 'TABS' or 'SPACES'"),
             status=400,
         )
 
