@@ -151,9 +151,10 @@ jobs:
 
       - name: Run lint
         run: |
+          pip install --upgrade pip
           pip install flake8
           cd examples/python
-          flake8 .
+          python -m flake8 .
 
       - name: Run tests
         env:

@@ -35,6 +35,6 @@ pip install -r requirements-test.txt
 # log python version info
 echo "Running tests using Python:"
 python --version
-pytest --version
+python -m pytest --version
 
-pytest --tb=long .
+python -m pytest --tb=long .
