@@ -140,9 +140,10 @@ jobs:
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
      
       - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
+        run: |
+          if python -V | grep -q -L '3.10'; then
+            ./examples/python/install_python.sh
+          fi
      
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v1.0.1'
