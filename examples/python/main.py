@@ -16,7 +16,7 @@ from flask import render_template, Response
 
 from app import get_index_context, init_connection_pool, migrate_db, save_vote
 
-############ TABS vs. SPACES App for Cloud Functions ############
+# TABS vs. SPACES App for Cloud Functions
 
 # initiate a connection pool to a Cloud SQL database
 db = init_connection_pool()
@@ -34,7 +34,8 @@ def votes(request):
         return save_vote(db, team)
 
     return Response(
-        response=("Invalid http request."
-        " Method not allowed, must be 'GET' or 'POST'"),
+        response=(
+            "Invalid http request."
+            " Method not allowed, must be 'GET' or 'POST'"),
         status=400,
     )
