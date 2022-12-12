@@ -24,7 +24,6 @@ import app
 logger = logging.getLogger()
 
 
-
 @pytest.fixture(scope="module")
 def client() -> FlaskClient:
     app.app.testing = True
@@ -46,4 +45,3 @@ def test_cast_vote(client: FlaskClient) -> None:
     body = response.text
     assert response.status_code == 200
     assert text in body
-

@@ -73,7 +73,7 @@ def render_index() -> str:
 
 @app.route("/votes", methods=["POST"])
 def cast_vote() -> Response:
-    team = request.form['team']
+    team = request.form["team"]
     return save_vote(db, team)
 
 
