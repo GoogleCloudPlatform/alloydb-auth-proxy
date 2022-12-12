@@ -34,6 +34,7 @@ def votes(request):
         return save_vote(db, team)
 
     return Response(
-        response="Invalid http request. Method not allowed, must be 'GET' or 'POST'",
+        response=("Invalid http request."
+        " Method not allowed, must be 'GET' or 'POST'"),
         status=400,
     )

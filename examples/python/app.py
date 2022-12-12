@@ -84,7 +84,8 @@ def get_index_context(db: sqlalchemy.engine.base.Engine) -> Dict:
     with db.connect() as conn:
         # Execute the query and fetch all results
         recent_votes = conn.execute(
-            "SELECT candidate, time_cast FROM votes ORDER BY time_cast DESC LIMIT 5"
+            "SELECT candidate, time_cast FROM votes"
+            " ORDER BY time_cast DESC LIMIT 5"
         ).fetchall()
         # Convert the results into a list of dicts representing votes
         for row in recent_votes:
@@ -114,14 +115,16 @@ def save_vote(db: sqlalchemy.engine.base.Engine, team: str) -> Response:
     if team != "TABS" and team != "SPACES":
         logger.warning(f"Received invalid 'team' property: '{team}'")
         return Response(
-            response="Invalid team specified. Should be one of 'TABS' or 'SPACES'",
+            response=("Invalid team specified."
+            " Should be one of 'TABS' or 'SPACES'"),
             status=400,
         )
 
     # [START cloud_sql_postgres_sqlalchemy_connection]
     # Preparing a statement before hand can help protect against injections.
     stmt = sqlalchemy.text(
-        "INSERT INTO votes (time_cast, candidate) VALUES (:time_cast, :candidate)"
+        "INSERT INTO votes (time_cast, candidate)"
+        " VALUES (:time_cast, :candidate)"
     )
     try:
         # Using a with statement ensures that the connection is always released
