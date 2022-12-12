@@ -29,12 +29,12 @@ logger = logging.getLogger()
 
 
 def init_connection_pool() -> sqlalchemy.engine.base.Engine:
-    # use a TCP socket when INSTANCE_HOST (e.g. 127.0.0.1) is defined
-    if os.environ.get("INSTANCE_HOST"):
+    # use a TCP socket when DB_HOST (e.g. 127.0.0.1) is defined
+    if os.environ.get("DB_HOST"):
         return connect_tcp_socket()
 
     raise ValueError(
-        "Missing database connection parameter. Please define INSTANCE_HOST"
+        "Missing database connection parameter. Please define DB_HOST"
     )
 
 

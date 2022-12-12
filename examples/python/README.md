@@ -26,7 +26,7 @@ export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service/account/key.json
 export DB_USER='my-db-user'
 export DB_PASS='my-db-pass'
 export DB_NAME='my_db'
-export INSTANCE_HOST='<IP Address of Cluster or 127.0.0.1 if using auth proxy>'
+export DB_HOST='<IP Address of Cluster or 127.0.0.1 if using auth proxy>'
 export DB_POST=5432
 export ALLOYDB_CONNECTION_NAME='projects/<PROJECT>/locations/<REGION>/clusters/<CLUSTER>/instances/<INSTANCE>'
 ```
@@ -47,7 +47,7 @@ runtime: python37
 entrypoint: gunicorn -b :$PORT app:app
 
 env_variables:
-  INSTANCE_HOST: '<IP Address of Cluster>'
+  DB_HOST: '<IP Address of Cluster>'
   DB_PORT: 5432
   DB_USER: <YOUR_DB_USER_NAME>
   DB_PASS: <YOUR_DB_PASSWORD>
@@ -78,7 +78,7 @@ env: flex
 entrypoint: gunicorn -b :$PORT app:app
 
 env_variables:
-  INSTANCE_HOST: '<IP Address of Cluster>'
+  DB_HOST: '<IP Address of Cluster>'
   DB_PORT: 5432
   DB_USER: <YOUR_DB_USER_NAME>
   DB_PASS: <YOUR_DB_PASSWORD>
@@ -113,7 +113,7 @@ gcloud builds submit --tag gcr.io/[YOUR_PROJECT_ID]/run-alloydb
     --platform managed \
     --allow-unauthenticated \
     --region [REGION] \
-    --update-env-vars INSTANCE_HOST=[INSTANCE_HOST] \
+    --update-env-vars DB_HOST=[DB_HOST] \
     --update-env-vars DB_PORT=[DB_PORT] \
     --update-env-vars DB_USER=[MY_DB_USER] \
     --update-env-vars DB_PASS=[MY_DB_PASS] \
@@ -138,7 +138,7 @@ echo -n "projects/<PROJECT>/locations/<REGION>/clusters/<CLUSTER>/instances/<INS
 Deploy the service to Cloud Run specifying the env var name and secret name:
 ```sh
 gcloud beta run deploy SERVICE --image gcr.io/[YOUR_PROJECT_ID]/run-alloydb \
-    --update-secrets   --update-secrets INSTANCE_HOST=[INSTANCE_HOST_SECRET]:latest,\
+    --update-secrets   --update-secrets DB_HOST=[DB_HOST_SECRET]:latest,\
       DB_PORT=[DB_PORT_SECRET]:latest, \
       DB_USER=[DB_USER_SECRET]:latest, \
       DB_PASS=[DB_PASS_SECRET]:latest, \
@@ -156,7 +156,7 @@ To deploy the service to [Cloud Functions](https://cloud.google.com/functions/do
 
 ```sh
 gcloud functions deploy votes --runtime python39 --trigger-http --allow-unauthenticated \
---set-env-vars INSTANCE_HOST=$INSTANCE_HOST \
+--set-env-vars DB_HOST=$DB_HOST \
 --set-env-vars DB_PORT=$DB_PORT \
 --set-env-vars DB_USER=$DB_USER \
 --set-env-vars DB_PASS=$DB_PASS \

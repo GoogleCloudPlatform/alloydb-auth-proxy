@@ -21,7 +21,7 @@ entrypoint: gunicorn -b :$PORT app:app
 # Cloud Secret Manager (https://cloud.google.com/secret-manager) to help
 # keep secrets safe.
 env_variables:
-  INSTANCE_HOST: <YOUR_DB_HOST_IP>
+  DB_HOST: <YOUR_DB_HOST_IP>
   DB_PORT: <YOUR_DB_PORT>
   DB_USER: <YOUR_DB_USER_NAME>
   DB_PASS: <YOUR_DB_PASSWORD>
