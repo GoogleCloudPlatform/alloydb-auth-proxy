@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import logging
-import os
 
 from flask.testing import FlaskClient
 

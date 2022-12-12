@@ -15,7 +15,6 @@
 
 # [START alloydb_sqlalchemy_connect_tcp]
 import os
-import ssl
 
 import sqlalchemy
 
