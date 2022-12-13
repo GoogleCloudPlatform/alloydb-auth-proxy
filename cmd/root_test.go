@@ -836,7 +836,7 @@ func TestPrometheusMetricsEndpoint(t *testing.T) {
 	// Keep the test output quiet
 	c.SilenceUsage = true
 	c.SilenceErrors = true
-	c.SetArgs([]string{"--prometheus", "my-project:my-region:my-instance"})
+	c.SetArgs([]string{"--prometheus", "projects/my-project/locations/my-region/clusters/my-cluster/instances/my-instance"})
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()

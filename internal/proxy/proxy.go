@@ -248,7 +248,7 @@ func ParseInstanceURI(inst string) (string, string, string, string, error) {
 // UnixSocketDir returns a shorted instance connection name to prevent
 // exceeding the Unix socket length, e.g., project.region.cluster.instance
 func UnixSocketDir(dir, inst string) (string, error) {
-	project, region, cluster, name, err := ParseInstanceURI(inst)
+	project, region, cluster, name, err := ParseInstanceURI(strings.ToLower(inst))
 	if err != nil {
 		return "", err
 	}
