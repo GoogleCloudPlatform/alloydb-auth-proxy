@@ -23,9 +23,9 @@ name.
 1. Use the information noted in the previous steps:
 ```bash
 export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service/account/key.json
-export DB_USER='my-db-user'
-export DB_PASS='my-db-pass'
-export DB_NAME='my_db'
+export DB_USER='<YOUR_DB_USER_NAME>'
+export DB_PASS='<YOUR_DB_PASSWORD>'
+export DB_NAME='<YOUR_DB_NAME>'
 export DB_HOST='<IP Address of Cluster or 127.0.0.1 if using auth proxy>'
 export DB_POST=5432
 export ALLOYDB_CONNECTION_NAME='projects/<PROJECT>/locations/<REGION>/clusters/<CLUSTER>/instances/<INSTANCE>'
