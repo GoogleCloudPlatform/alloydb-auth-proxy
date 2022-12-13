@@ -235,7 +235,7 @@ var (
 	unixRegex = regexp.MustCompile(`([^:]+(?:-[^:]+)?)\.(.+)\.(.+)\.(.+)`)
 )
 
-// parseInstanceURI validates the instance uri is in the proper format and
+// ParseInstanceURI validates the instance uri is in the proper format and
 // returns the project, region, cluster, and instance name.
 func ParseInstanceURI(inst string) (string, string, string, string, error) {
 	m := instURIRegex.FindSubmatch([]byte(inst))
