@@ -638,6 +638,10 @@ func TestNewCommandWithErrors(t *testing.T) {
 			args: []string{},
 		},
 		{
+			desc: "when the instance uri is bogus",
+			args: []string{"projects/proj/locations/region/clusters/clust/"},
+		},
+		{
 			desc: "when the query string is bogus",
 			args: []string{"projects/proj/locations/region/clusters/clust/instances/inst?%=foo"},
 		},
