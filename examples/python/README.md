@@ -2,8 +2,6 @@
 
 ## Before you begin
 
-## Before you begin
-
 1. Enable access to AlloyDB in your project by following these [instructions](https://cloud.google.com/alloydb/docs/project-enable-access)
 
 1. Create a VPC network and [configure Private Services Access for AlloyDB](https://cloud.google.com/alloydb/docs/configure-connectivity)
