@@ -235,24 +235,29 @@ var (
 	unixRegex = regexp.MustCompile(`([^:]+(?:-[^:]+)?)\.(.+)\.(.+)\.(.+)`)
 )
 
+// parseInstanceURI validates the instance uri is in the proper format and
+// returns the project, region, cluster, and instance name.
+func parseInstanceURI(inst string) (string, string, string, string, error) {
+	m := instURIRegex.FindSubmatch([]byte(inst))
+	if m == nil {
+		return "", "", "", "", fmt.Errorf("invalid instance name: %v", inst)
+	}
+	return string(m[1]), string(m[2]), string(m[3]), string(m[4]), nil
+}
+
 // UnixSocketDir returns a shorted instance connection name to prevent
 // exceeding the Unix socket length, e.g., project.region.cluster.instance
 func UnixSocketDir(dir, inst string) (string, error) {
-	inst = strings.ToLower(inst)
-	m := instURIRegex.FindSubmatch([]byte(inst))
-	if m == nil {
-		return "", fmt.Errorf("invalid instance name: %v", inst)
+	project, region, cluster, name, err := parseInstanceURI(inst)
+	if err != nil {
+		return "", err
 	}
-	project := string(m[1])
 	// Colons are not allowed on Windows, but are present in legacy project
 	// names (e.g., google.com:myproj). Replace any colon with an underscore to
 	// support Windows. Underscores are not allowed in project names. So use an
 	// underscore to have a Windows-friendly delimitor that can serve as a
 	// marker to recover the legacy project name when necessary (e.g., FUSE).
 	project = strings.ReplaceAll(project, ":", "_")
-	region := string(m[2])
-	cluster := string(m[3])
-	name := string(m[4])
 	shortName := strings.Join([]string{project, region, cluster, name}, ".")
 	return filepath.Join(dir, shortName), nil
 }
