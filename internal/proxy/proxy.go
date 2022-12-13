@@ -237,7 +237,7 @@ var (
 
 // parseInstanceURI validates the instance uri is in the proper format and
 // returns the project, region, cluster, and instance name.
-func parseInstanceURI(inst string) (string, string, string, string, error) {
+func ParseInstanceURI(inst string) (string, string, string, string, error) {
 	m := instURIRegex.FindSubmatch([]byte(inst))
 	if m == nil {
 		return "", "", "", "", fmt.Errorf("invalid instance name: %v", inst)
@@ -248,7 +248,7 @@ func parseInstanceURI(inst string) (string, string, string, string, error) {
 // UnixSocketDir returns a shorted instance connection name to prevent
 // exceeding the Unix socket length, e.g., project.region.cluster.instance
 func UnixSocketDir(dir, inst string) (string, error) {
-	project, region, cluster, name, err := parseInstanceURI(inst)
+	project, region, cluster, name, err := ParseInstanceURI(inst)
 	if err != nil {
 		return "", err
 	}
