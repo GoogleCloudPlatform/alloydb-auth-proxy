@@ -11,15 +11,16 @@ This repo contains the Go source code for a simple web app that can be deployed 
 1. Create an AlloyDB cluster and its primary instance by following these [instructions](https://cloud.google.com/alloydb/docs/cluster-create). Make note of the Cluster ID, Instance ID, IP Address and Password
 
 1. Create a database for your application by following these 
-[instructions](https://cloud.google.com/sql/docs/postgres/create-manage-databases). Note the database
+[instructions](https://cloud.google.com/alloydb/docs/database-create). Note the database
 name. 
 
 1. Create a user in your database by following these 
 [instructions](https://cloud.google.com/alloydb/docs/database-users/about). Note the username. 
 
-1. Create a service account with the 'AlloyDB Client' permissions by following these 
-[instructions](https://cloud.google.com/sql/docs/postgres/connect-external-app#4_if_required_by_your_authentication_method_create_a_service_account).
-Download a JSON key to use to authenticate your connection. 
+1. [Create a service account](https://cloud.google.com/iam/docs/creating-managing-service-accounts#creating)
+and then grant that service acount the 'AlloyDB Client' permissions by following these 
+[instructions](https://cloud.google.com/alloydb/docs/user-grant-access#procedure).
+Download the service account's JSON key to use to authenticate your connection. 
 
 1. Use the information noted in the previous steps:
 ```bash
