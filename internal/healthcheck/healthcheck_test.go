@@ -84,7 +84,7 @@ func newProxyWithParams(t *testing.T, maxConns uint64, dialer alloydb.Dialer) *p
 		Addr: proxyHost,
 		Port: proxyPort,
 		Instances: []proxy.InstanceConnConfig{
-			{Name: "proj:region:pg"},
+			{Name: "projects/proj/locations/region/clusters/clust/instances/inst"},
 		},
 		MaxConnections: maxConns,
 	}
