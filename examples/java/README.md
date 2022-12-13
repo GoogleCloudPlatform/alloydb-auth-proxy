@@ -9,15 +9,13 @@
 1. Create an AlloyDB cluster and its primary instance by following these [instructions](https://cloud.google.com/alloydb/docs/cluster-create). Make note of the Cluster ID, Instance ID, IP Address and Password
 
 1. Create a database for your application by following these 
-[instructions](https://cloud.google.com/sql/docs/postgres/create-manage-databases). Note the database
+[instructions](https://cloud.google.com/alloydb/docs/database-create). Note the database
 name. 
 
 1. Create a user in your database by following these 
 [instructions](https://cloud.google.com/alloydb/docs/database-users/about). Note the username. 
 
-1. Create a service account with the 'AlloyDB Client' permissions by following these 
-[instructions](https://cloud.google.com/sql/docs/postgres/connect-external-app#4_if_required_by_your_authentication_method_create_a_service_account).
-Download a JSON key to use to authenticate your connection. 
+1. Create a [service account](https://cloud.google.com/iam/docs/understanding-service-accounts) with the 'AlloyDB Client' permissions.
 
 1. Use the information noted in the previous steps:
 ```bash
@@ -26,7 +24,7 @@ export DB_USER='my-db-user'
 export DB_PASS='my-db-pass'
 export DB_NAME='my_db'
 export DB_HOST='<IP Address of Cluster or 127.0.0.1 if using auth proxy>'
-export DB_POST=5432
+export DB_PORT=5432
 export ALLOYDB_CONNECTION_NAME='projects/<PROJECT>/locations/<REGION>/clusters/<CLUSTER>/instances/<INSTANCE>'
 ```
 Note: Saving credentials in environment variables is convenient, but not secure - consider a more
@@ -67,7 +65,7 @@ mvn clean package com.google.cloud.tools:jib-maven-plugin:2.8.0:build \
 
   ```sh
   gcloud run deploy run-postgres \
-    --image gcr.io/[YOUR_PROJECT_ID]/run-postgres \
+    --image gcr.io/[YOUR_PROJECT_ID]/run-alloydb \
     --platform managed \
     --allow-unauthenticated \
     --region [REGION] \
@@ -82,7 +80,7 @@ mvn clean package com.google.cloud.tools:jib-maven-plugin:2.8.0:build \
   Take note of the URL output at the end of the deployment process.
 
   It is recommended to use the [Secret Manager integration](https://cloud.google.com/run/docs/configuring/secrets) for Cloud Run instead
-  of using environment variables for the SQL configuration. The service injects the Alloy credentials from
+  of using environment variables for the AlloyDB configuration. The service injects the Alloy credentials from
   Secret Manager at runtime via an environment variable.
 
   Create secrets via the command line:

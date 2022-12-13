@@ -36,6 +36,7 @@ jobs:
     outputs:
       java: ${{ steps.filter.outputs.java }}
       go: ${{ steps.filter.outputs.go }}
+      python: ${{ steps.filter.outputs.python }}
     steps:
     - name: Remove PR label
       if: "${{ github.event.action == 'labeled' && github.event.label.name == 'tests: run' }}"
@@ -62,6 +63,8 @@ jobs:
             - 'examples/java/**'
           go:
             - 'examples/go/**'
+          python:
+            - 'examples/python/**'
   java:
     # This ensures that the java job execute after the changes job, since it's dependent on
     # that job's output.
@@ -159,4 +162,53 @@ jobs:
           ALLOYDB_CONNECTION_NAME: '${{ steps.secrets.outputs.ALLOYDB_CONN_NAME }}'
         run: |
           ./examples/go/run_tests.sh
+
+  python:
+    # This ensures that the python job executes after the changes job, since it's dependent on
+    # that job's output.
+    needs: changes
+    if: ${{ needs.changes.outputs.python == 'true' || github.event_name == 'schedule' }}
+    runs-on: [self-hosted, linux, x64]
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    steps:
+      - name: Checkout code
+        uses: 'actions/checkout@v3'
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+
+      - name: 'Authenticate to Google Cloud'
+        id: 'auth'
+        uses: 'google-github-actions/auth@v1.0.0'
+        with:
+          workload_identity_provider: ${{ secrets.PROVIDER_NAME }}
+          service_account: ${{ secrets.SERVICE_ACCOUNT }}
+     
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v1.0.1'
+      - name: Get Secrets
+        id: 'secrets'
+        uses: 'google-github-actions/get-secretmanager-secrets@v0'
+        with:
+          secrets: |-
+            ALLOYDB_CONN_NAME:alloydb-connector-testing/ALLOYDB_CONN_NAME
+            ALLOYDB_CLUSTER_PASS:alloydb-connector-testing/ALLOYDB_CLUSTER_PASS
+
+      - name: Run lint
+        run: |
+          pip install --upgrade pip
+          pip install flake8
+          cd examples/python
+          python -m flake8 .
+
+      - name: Run tests
+        env:
+          DB_NAME: 'postgres'
+          DB_USER: 'postgres'
+          DB_PASS: '${{ steps.secrets.outputs.ALLOYDB_CLUSTER_PASS }}'
+          ALLOYDB_CONNECTION_NAME: '${{ steps.secrets.outputs.ALLOYDB_CONN_NAME }}'
+        run: |
+          ./examples/python/run_tests.sh
 
