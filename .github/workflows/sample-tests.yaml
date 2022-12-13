@@ -130,8 +130,6 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
 
-
-
       - name: 'Authenticate to Google Cloud'
         id: 'auth'
         uses: 'google-github-actions/auth@v1.0.0'
@@ -164,6 +162,4 @@ jobs:
           ALLOYDB_CONNECTION_NAME: '${{ steps.secrets.outputs.ALLOYDB_CONN_NAME }}'
         run: |
           ./examples/python/run_tests.sh
-          
-          
 
