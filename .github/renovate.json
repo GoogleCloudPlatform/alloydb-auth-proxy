@@ -9,25 +9,33 @@
       "description": "Group all dependencies for Java sample",
       "matchPaths": ["examples/java/**"],
       "groupName": "Java sample dependencies",
-      "schedule" : ["every weekday"]
+      "extends": [
+        "schedule:earlyMondays"
+      ]
     },
     {
       "description": "Group all dependencies for Node.js sample",
       "matchPaths": ["examples/nodejs/**"],
       "groupName": "Node.js sample dependencies",
-      "schedule" : ["every weekday"]
+      "extends": [
+        "schedule:earlyMondays"
+      ]
     },
     {
       "description": "Group all dependencies for Go sample",
       "matchPaths": ["examples/go/**"],
       "groupName": "Go sample dependencies",
-      "schedule" : ["every weekday"]
+      "extends": [
+        "schedule:earlyMondays"
+      ]
     },
     {
       "description": "Group all dependencies for Python sample",
       "matchPaths": ["examples/python/**"],
       "groupName": "Python sample dependencies",
-      "schedule" : ["every weekday"]
+      "extends": [
+        "schedule:earlyMondays"
+      ]
     },
   ],
   "prConcurrentLimit": 0,
