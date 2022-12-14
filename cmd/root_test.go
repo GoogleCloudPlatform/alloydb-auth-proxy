@@ -638,6 +638,10 @@ func TestNewCommandWithErrors(t *testing.T) {
 			args: []string{},
 		},
 		{
+			desc: "when the instance uri is bogus",
+			args: []string{"projects/proj/locations/region/clusters/clust/"},
+		},
+		{
 			desc: "when the query string is bogus",
 			args: []string{"projects/proj/locations/region/clusters/clust/instances/inst?%=foo"},
 		},
@@ -832,7 +836,7 @@ func TestPrometheusMetricsEndpoint(t *testing.T) {
 	// Keep the test output quiet
 	c.SilenceUsage = true
 	c.SilenceErrors = true
-	c.SetArgs([]string{"--prometheus", "my-project:my-region:my-instance"})
+	c.SetArgs([]string{"--prometheus", "projects/my-project/locations/my-region/clusters/my-cluster/instances/my-instance"})
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()

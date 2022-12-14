@@ -534,13 +534,15 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 
 	var ics []proxy.InstanceConnConfig
 	for _, a := range args {
-		// Assume no query params initially
-		ic := proxy.InstanceConnConfig{
-			Name: a,
+		// split into instance uri and query parameters
+		res := strings.SplitN(a, "?", 2)
+		_, _, _, _, err := proxy.ParseInstanceURI(res[0])
+		if err != nil {
+			return newBadCommandError(fmt.Sprintf("could not parse instance uri: %q", res[0]))
 		}
+		ic := proxy.InstanceConnConfig{Name: res[0]}
 		// If there are query params, update instance config.
-		if res := strings.SplitN(a, "?", 2); len(res) > 1 {
-			ic.Name = res[0]
+		if len(res) > 1 {
 			q, err := url.ParseQuery(res[1])
 			if err != nil {
 				return newBadCommandError(fmt.Sprintf("could not parse query: %q", res[1]))
