@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.0.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v0.6.2...v1.0.0) (2022-12-13)
+
+
+### Features
+
+* add quiet flag ([#196](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/196)) ([c307639](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/c3076397834668e24cf1640a4e8ee294716734ae))
+* add support for JSON credentials ([#188](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/188)) ([3347d3b](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/3347d3b33c7177f5f16384e995db2606ecc784e6))
+* add support for service account impersonation ([#192](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/192)) ([de15073](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/de1507336b9998283ca7f0918798f48d124a10c4))
+* configure the proxy with environment variables ([#197](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/197)) ([cfcf17d](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/cfcf17dc39ca80e441a4211d3a3024ce04429a3f))
+
+
+### Bug Fixes
+
+* correct error check in check connections ([#195](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/195)) ([8513d07](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/8513d07a75e27c8150d6f707dda2dd60b5a652f4))
+* restore openbsd and freebsd support ([#191](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/191)) ([c53f14e](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/c53f14e2f56492d277aa8a2966c20b5455c38042))
+* use alloydb-tmp as default tmp dir ([#199](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/199)) ([30587d6](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/30587d610b550404cc3365d6429e943fe16ed358))
+
+
+### Miscellaneous Chores
+
+* release 1.0.0 ([#208](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/208)) ([f8e557b](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/f8e557b36e72aab967186740c05c77b5eb7d5263))
+
 ## [0.6.2](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v0.6.1...v0.6.2) (2022-11-30)
 
 
