@@ -266,7 +266,7 @@ func TestClientLimitsMaxConnections(t *testing.T) {
 		Addr: "127.0.0.1",
 		Port: 5000,
 		Instances: []proxy.InstanceConnConfig{
-			{Name: "proj:region:pg"},
+			{Name: "projects/proj/locations/region/clusters/clust/instances/inst"},
 		},
 		MaxConnections: 1,
 	}
@@ -336,7 +336,7 @@ func TestClientCloseWaitsForActiveConnections(t *testing.T) {
 		Addr: "127.0.0.1",
 		Port: 5000,
 		Instances: []proxy.InstanceConnConfig{
-			{Name: "proj:region:pg"},
+			{Name: "projects/proj/locations/region/clusters/clust/instances/inst"},
 		},
 		WaitOnClose: 5 * time.Second,
 	}
@@ -367,7 +367,7 @@ func TestClientClosesCleanly(t *testing.T) {
 		Addr: "127.0.0.1",
 		Port: 5000,
 		Instances: []proxy.InstanceConnConfig{
-			{Name: "proj:reg:inst"},
+			{Name: "projects/proj/locations/region/clusters/clust/instances/inst"},
 		},
 	}
 	c, err := proxy.NewClient(context.Background(), &fakeDialer{}, testLogger, in)
@@ -389,7 +389,7 @@ func TestClosesWithError(t *testing.T) {
 		Addr: "127.0.0.1",
 		Port: 5000,
 		Instances: []proxy.InstanceConnConfig{
-			{Name: "proj:reg:inst"},
+			{Name: "projects/proj/locations/region/clusters/clust/instances/inst"},
 		},
 	}
 	c, err := proxy.NewClient(context.Background(), &errorDialer{}, testLogger, in)
@@ -527,7 +527,7 @@ func TestClientNotifiesCallerOnServe(t *testing.T) {
 	ctx := context.Background()
 	in := &proxy.Config{
 		Instances: []proxy.InstanceConnConfig{
-			{Name: "proj:region:pg"},
+			{Name: "projects/proj/locations/region/clusters/clust/instances/inst"},
 		},
 	}
 	c, err := proxy.NewClient(ctx, &fakeDialer{}, testLogger, in)
@@ -558,7 +558,7 @@ func TestClientConnCount(t *testing.T) {
 		Addr: "127.0.0.1",
 		Port: 5000,
 		Instances: []proxy.InstanceConnConfig{
-			{Name: "proj:region:pg"},
+			{Name: "projects/proj/locations/region/clusters/clust/instances/inst"},
 		},
 		MaxConnections: 10,
 	}
@@ -600,7 +600,7 @@ func TestCheckConnections(t *testing.T) {
 		Addr: "127.0.0.1",
 		Port: 5000,
 		Instances: []proxy.InstanceConnConfig{
-			{Name: "proj:region:pg"},
+			{Name: "projects/proj/locations/region/clusters/clust/instances/inst"},
 		},
 	}
 	d := &fakeDialer{}
@@ -623,8 +623,8 @@ func TestCheckConnections(t *testing.T) {
 		Addr: "127.0.0.1",
 		Port: 6000,
 		Instances: []proxy.InstanceConnConfig{
-			{Name: "proj:region:pg1"},
-			{Name: "proj:region:pg2"},
+			{Name: "projects/proj/locations/region/clusters/clust/instances/inst1"},
+			{Name: "projects/proj/locations/region/clusters/clust/instances/inst2"},
 		},
 	}
 	ed := &errorDialer{}
