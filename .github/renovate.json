@@ -19,7 +19,7 @@
     },
     {
       "description": "Group all dependencies for Go sample",
-      "matchPaths": ["examples/Go/**"],
+      "matchPaths": ["examples/go/**"],
       "groupName": "Go sample dependencies",
       "schedule" : ["every weekday"]
     },
