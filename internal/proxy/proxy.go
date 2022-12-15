@@ -235,24 +235,38 @@ var (
 	unixRegex = regexp.MustCompile(`([^:]+(?:-[^:]+)?)\.(.+)\.(.+)\.(.+)`)
 )
 
+// ParseInstanceURI validates the instance uri is in the proper format and
+// returns the project, region, cluster, and instance name.
+func ParseInstanceURI(inst string) (string, string, string, string, error) {
+	m := instURIRegex.FindSubmatch([]byte(inst))
+	if m == nil {
+		return "", "", "", "", fmt.Errorf("invalid instance name: %v", inst)
+	}
+	return string(m[1]), string(m[2]), string(m[3]), string(m[4]), nil
+}
+
+// ShortInstURI shortens the instance URI into project.region.cluster.instance.
+func ShortInstURI(inst string) (string, error) {
+	p, r, c, i, err := ParseInstanceURI(inst)
+	if err != nil {
+		return "", err
+	}
+	return strings.Join([]string{p, r, c, i}, "."), nil
+}
+
 // UnixSocketDir returns a shorted instance connection name to prevent
 // exceeding the Unix socket length, e.g., project.region.cluster.instance
 func UnixSocketDir(dir, inst string) (string, error) {
-	inst = strings.ToLower(inst)
-	m := instURIRegex.FindSubmatch([]byte(inst))
-	if m == nil {
-		return "", fmt.Errorf("invalid instance name: %v", inst)
+	project, region, cluster, name, err := ParseInstanceURI(strings.ToLower(inst))
+	if err != nil {
+		return "", err
 	}
-	project := string(m[1])
 	// Colons are not allowed on Windows, but are present in legacy project
 	// names (e.g., google.com:myproj). Replace any colon with an underscore to
 	// support Windows. Underscores are not allowed in project names. So use an
 	// underscore to have a Windows-friendly delimitor that can serve as a
 	// marker to recover the legacy project name when necessary (e.g., FUSE).
 	project = strings.ReplaceAll(project, ":", "_")
-	region := string(m[2])
-	cluster := string(m[3])
-	name := string(m[4])
 	shortName := strings.Join([]string{project, region, cluster, name}, ".")
 	return filepath.Join(dir, shortName), nil
 }
@@ -340,10 +354,15 @@ func NewClient(ctx context.Context, d alloydb.Dialer, l alloydb.Logger, conf *Co
 					l.Errorf("failed to close mount: %v", mErr)
 				}
 			}
-			return nil, fmt.Errorf("[%v] Unable to mount socket: %v", inst.Name, err)
+			i, err := ShortInstURI(inst.Name)
+			if err != nil {
+				// this shouldn't happen because the inst uri is already validated by this point
+				i = inst.Name
+			}
+			return nil, fmt.Errorf("[%v] Unable to mount socket: %v", i, err)
 		}
 
-		l.Infof("[%s] Listening on %s", inst.Name, m.Addr())
+		l.Infof("[%s] Listening on %s", m.instShort, m.Addr())
 		mnts = append(mnts, m)
 	}
 
@@ -514,7 +533,7 @@ func (c *Client) serveSocketMount(_ context.Context, s *socketMount) error {
 		cConn, err := s.Accept()
 		if err != nil {
 			if nerr, ok := err.(net.Error); ok && nerr.Temporary() {
-				c.logger.Errorf("[%s] Error accepting connection: %v", s.inst, err)
+				c.logger.Errorf("[%s] Error accepting connection: %v", s.instShort, err)
 				// For transient errors, wait a small amount of time to see if it resolves itself
 				time.Sleep(10 * time.Millisecond)
 				continue
@@ -523,7 +542,7 @@ func (c *Client) serveSocketMount(_ context.Context, s *socketMount) error {
 		}
 		// handle the connection in a separate goroutine
 		go func() {
-			c.logger.Infof("[%s] accepted connection from %s\n", s.inst, cConn.RemoteAddr())
+			c.logger.Infof("[%s] accepted connection from %s\n", s.instShort, cConn.RemoteAddr())
 
 			// A client has established a connection to the local socket. Before
 			// we initiate a connection to the AlloyDB backend, increment the
@@ -544,22 +563,28 @@ func (c *Client) serveSocketMount(_ context.Context, s *socketMount) error {
 
 			sConn, err := c.dialer.Dial(ctx, s.inst)
 			if err != nil {
-				c.logger.Errorf("[%s] failed to connect to instance: %v\n", s.inst, err)
+				c.logger.Errorf("[%s] failed to connect to instance: %v\n", s.instShort, err)
 				cConn.Close()
 				return
 			}
-			c.proxyConn(s.inst, cConn, sConn)
+			c.proxyConn(s.instShort, cConn, sConn)
 		}()
 	}
 }
 
 // socketMount is a tcp/unix socket that listens for an AlloyDB instance.
 type socketMount struct {
-	inst     string
-	listener net.Listener
+	inst      string
+	instShort string
+	listener  net.Listener
 }
 
 func newSocketMount(ctx context.Context, conf *Config, pc *portConfig, inst InstanceConnConfig) (*socketMount, error) {
+	shortInst, err := ShortInstURI(inst.Name)
+	if err != nil {
+		return nil, err
+	}
+
 	var (
 		// network is one of "tcp" or "unix"
 		network string
@@ -627,7 +652,11 @@ func newSocketMount(ctx context.Context, conf *Config, pc *portConfig, inst Inst
 		_ = os.Chmod(address, 0777)
 	}
 
-	m := &socketMount{inst: inst.Name, listener: ln}
+	m := &socketMount{
+		inst:      inst.Name,
+		instShort: shortInst,
+		listener:  ln,
+	}
 	return m, nil
 }
 
