@@ -6,9 +6,12 @@
   "ignorePresets": [":semanticPrefixFixDepsChoreOthers"],
   "packageRules": [
     {
-      "description": "Group all dependencies for Java sample",
-      "matchPaths": ["examples/java/**"],
-      "groupName": "Java sample dependencies"
+      "description": "Group all dependencies for Samples",
+      "matchPaths": ["examples/**"],
+      "groupName": "Sample dependencies",
+      "schedule": [
+        "before 9am on Monday"
+      ]
     }
   ],
   "prConcurrentLimit": 0,
