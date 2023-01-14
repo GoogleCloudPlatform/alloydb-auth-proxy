@@ -244,8 +244,12 @@ func TestFUSECheckConnections(t *testing.T) {
 	conn := tryDialUnix(t, postgresSocketPath(fuseDir, "proj.region.cluster.instance"))
 	defer conn.Close()
 
-	if err := c.CheckConnections(context.Background()); err != nil {
+	n, err := c.CheckConnections(context.Background())
+	if err != nil {
 		t.Fatalf("c.CheckConnections(): %v", err)
+	}
+	if want, got := 1, n; want != got {
+		t.Fatalf("CheckConnections number of connections: want = %v, got = %v", want, got)
 	}
 
 	// verify the dialer was invoked twice, once for connect, once for check

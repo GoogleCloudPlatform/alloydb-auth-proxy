@@ -698,6 +698,8 @@ func runSignalWrapper(cmd *Command) error {
 	notify := func() {}
 	if cmd.healthCheck {
 		needsHTTPServer = true
+		cmd.logger.Infof("Starting health check server at %s",
+			net.JoinHostPort(cmd.httpAddress, cmd.httpPort))
 		hc := healthcheck.NewCheck(p, cmd.logger)
 		mux.HandleFunc("/startup", hc.HandleStartup)
 		mux.HandleFunc("/readiness", hc.HandleReadiness)
@@ -708,7 +710,7 @@ func runSignalWrapper(cmd *Command) error {
 	// Start the HTTP server if anything requiring HTTP is specified.
 	if needsHTTPServer {
 		server := &http.Server{
-			Addr:    fmt.Sprintf("%s:%s", cmd.httpAddress, cmd.httpPort),
+			Addr:    net.JoinHostPort(cmd.httpAddress, cmd.httpPort),
 			Handler: mux,
 		}
 		// Start the HTTP server.
