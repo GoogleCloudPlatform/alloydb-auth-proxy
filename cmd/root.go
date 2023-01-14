@@ -100,7 +100,7 @@ type Command struct {
 	quiet                      bool
 
 	// impersonationChain is a comma separated list of one or more service
-	// accounts. The last entry in the chain is the impersonation target. Any
+	// accounts. The first entry in the chain is the impersonation target. Any
 	// additional service accounts before the target are delegates. The
 	// roles/iam.serviceAccountTokenCreator must be configured for each account
 	// that will be impersonated.
