@@ -499,9 +499,7 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 		}
 
 		// Remove trailing '/' if included
-		if strings.HasSuffix(conf.APIEndpointURL, "/") {
-			conf.APIEndpointURL = strings.TrimSuffix(conf.APIEndpointURL, "/")
-		}
+		conf.APIEndpointURL = strings.TrimSuffix(conf.APIEndpointURL, "/")
 		cmd.logger.Infof("Using API Endpoint %v", conf.APIEndpointURL)
 	}
 
@@ -725,14 +723,12 @@ func runSignalWrapper(cmd *Command) error {
 		}()
 		// Handle shutdown of the HTTP server gracefully.
 		go func() {
-			select {
-			case <-ctx.Done():
-				// Give the HTTP server a second to shutdown cleanly.
-				ctx2, cancel := context.WithTimeout(context.Background(), time.Second)
-				defer cancel()
-				if err := server.Shutdown(ctx2); err != nil {
-					cmd.logger.Errorf("failed to shutdown Prometheus HTTP server: %v\n", err)
-				}
+			<-ctx.Done()
+			// Give the HTTP server a second to shutdown cleanly.
+			ctx2, cancel := context.WithTimeout(context.Background(), time.Second)
+			defer cancel()
+			if err := server.Shutdown(ctx2); err != nil {
+				cmd.logger.Errorf("failed to shutdown Prometheus HTTP server: %v\n", err)
 			}
 		}()
 	}

@@ -18,7 +18,6 @@ import (
 	"context"
 	"errors"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -86,7 +85,7 @@ func (*errorDialer) Close() error {
 }
 
 func createTempDir(t *testing.T) (string, func()) {
-	testDir, err := ioutil.TempDir("", "*")
+	testDir, err := os.MkdirTemp("", "*")
 	if err != nil {
 		t.Fatalf("failed to create temp dir: %v", err)
 	}
