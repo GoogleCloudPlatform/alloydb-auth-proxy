@@ -48,13 +48,13 @@ var (
 	//go:embed version.txt
 	versionString string
 	// metadataString indiciates additional build or distribution metadata.
-	metadataString string
-	userAgent      string
+	metadataString   string
+	defaultUserAgent string
 )
 
 func init() {
 	versionString = semanticVersion()
-	userAgent = "alloy-db-auth-proxy/" + versionString
+	defaultUserAgent = "alloy-db-auth-proxy/" + versionString
 }
 
 // semanticVersion returns the version of the proxy including an compile-time
@@ -98,6 +98,7 @@ type Command struct {
 	httpAddress                string
 	httpPort                   string
 	quiet                      bool
+	otherUserAgents            string
 
 	// impersonationChain is a comma separated list of one or more service
 	// accounts. The first entry in the chain is the impersonation target. Any
@@ -320,7 +321,7 @@ func NewCommand(opts ...Option) *Command {
 		logger:  logger,
 		cleanup: func() error { return nil },
 		conf: &proxy.Config{
-			UserAgent: userAgent,
+			UserAgent: defaultUserAgent,
 		},
 	}
 	for _, o := range opts {
@@ -355,6 +356,8 @@ func NewCommand(opts ...Option) *Command {
 	pflags := cmd.PersistentFlags()
 
 	// Global-only flags
+	pflags.StringVar(&c.otherUserAgents, "user-agent", "",
+		"Space separated list of additional user agents, e.g. cloud-sql-proxy-operator/0.0.1")
 	pflags.StringVarP(&c.conf.Token, "token", "t", "",
 		"Bearer token used for authorization.")
 	pflags.StringVarP(&c.conf.CredentialsFile, "credentials-file", "c", "",
@@ -515,6 +518,11 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 	}
 	if !userHasSet("telemetry-project") && userHasSet("disable-traces") {
 		cmd.logger.Infof("Ignoring --disable-traces as --telemetry-project was not set")
+	}
+
+	if userHasSet("user-agent") {
+		defaultUserAgent += " " + cmd.otherUserAgents
+		conf.UserAgent = defaultUserAgent
 	}
 
 	if cmd.impersonationChain != "" {
