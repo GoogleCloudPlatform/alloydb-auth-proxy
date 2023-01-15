@@ -107,24 +107,71 @@ type Config struct {
 	// regardless of any open connections.
 	WaitOnClose time.Duration
 
-	// ImpersonateTarget is the service account to impersonate. The IAM
-	// principal doing the impersonation must have the
-	// roles/iam.serviceAccountTokenCreator role.
-	ImpersonateTarget string
-	// ImpersonateDelegates are the intermediate service accounts through which
-	// the impersonation is achieved. Each delegate must have the
-	// roles/iam.serviceAccountTokenCreator role.
-	ImpersonateDelegates []string
+	// ImpersonationChain is a comma separated list of one or more service
+	// accounts. The first entry in the chain is the impersonation target. Any
+	// additional service accounts after the target are delegates. The
+	// roles/iam.serviceAccountTokenCreator must be configured for each account
+	// that will be impersonated.
+	ImpersonationChain string
 
 	// StructuredLogs sets all output to use JSON in the LogEntry format.
 	// See https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry
 	StructuredLogs bool
+
+	// Quiet controls whether only error messages are logged.
+	Quiet bool
+
+	// TelemetryProject enables sending metrics and traces to the specified project.
+	TelemetryProject string
+	// TelemetryPrefix sets a prefix for all emitted metrics.
+	TelemetryPrefix string
+	// TelemetryTracingSampleRate sets the rate at which traces are
+	// samples. A higher value means fewer traces.
+	TelemetryTracingSampleRate int
+	// DisableTraces disables tracing when TelemetryProject is set.
+	DisableTraces bool
+	// DisableMetrics disables metrics when TelemetryProject is set.
+	DisableMetrics bool
+
+	// Prometheus enables a Prometheus endpoint served at the address and
+	// port specified by HTTPAddress and HTTPPort.
+	Prometheus bool
+	// PrometheusNamespace configures the namespace underwhich metrics are written.
+	PrometheusNamespace string
+
+	// HealthCheck enables a health check server. It's address and port are
+	// specified by HTTPAddress and HTTPPort.
+	HealthCheck bool
+
+	// HTTPAddress sets the address for the health check and prometheus server.
+	HTTPAddress string
+	// HTTPPort sets the port for the health check and prometheus server.
+	HTTPPort string
+
+	// OtherUserAgents is a list of space separate user agents that will be
+	// appended to the default user agent.
+	OtherUserAgents string
+}
+
+func parseImpersonationChain(chain string) (string, []string) {
+	accts := strings.Split(chain, ",")
+	target := accts[0]
+	// Assign delegates if the chain is more than one account. Delegation
+	// goes from last back towards target, e.g., With sa1,sa2,sa3, sa3
+	// delegates to sa2, which impersonates the target sa1.
+	var delegates []string
+	if l := len(accts); l > 1 {
+		for i := l - 1; i > 0; i-- {
+			delegates = append(delegates, accts[i])
+		}
+	}
+	return target, delegates
 }
 
 func credentialsOpt(c Config, l alloydb.Logger) (alloydbconn.Option, error) {
 	// If service account impersonation is configured, set up an impersonated
 	// credentials token source.
-	if c.ImpersonateTarget != "" {
+	if c.ImpersonationChain != "" {
 		var iopts []option.ClientOption
 		switch {
 		case c.Token != "":
@@ -148,11 +195,12 @@ func credentialsOpt(c Config, l alloydb.Logger) (alloydbconn.Option, error) {
 		default:
 			l.Infof("Impersonating service account with Application Default Credentials")
 		}
+		target, delegates := parseImpersonationChain(c.ImpersonationChain)
 		ts, err := impersonate.CredentialsTokenSource(
 			context.Background(),
 			impersonate.CredentialsConfig{
-				TargetPrincipal: c.ImpersonateTarget,
-				Delegates:       c.ImpersonateDelegates,
+				TargetPrincipal: target,
+				Delegates:       delegates,
 				Scopes:          []string{sqladmin.SqlserviceAdminScope},
 			},
 			iopts...,
