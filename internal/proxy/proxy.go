@@ -33,7 +33,6 @@ import (
 	"golang.org/x/oauth2"
 	"google.golang.org/api/impersonate"
 	"google.golang.org/api/option"
-	"google.golang.org/api/sqladmin/v1"
 )
 
 // InstanceConnConfig holds the configuration for an individual instance
@@ -206,7 +205,7 @@ func credentialsOpt(c Config, l alloydb.Logger) (alloydbconn.Option, error) {
 			impersonate.CredentialsConfig{
 				TargetPrincipal: target,
 				Delegates:       delegates,
-				Scopes:          []string{sqladmin.SqlserviceAdminScope},
+				Scopes:          []string{"https://www.googleapis.com/auth/cloud-platform"},
 			},
 			iopts...,
 		)
