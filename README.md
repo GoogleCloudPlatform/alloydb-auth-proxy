@@ -277,6 +277,21 @@ when you want to proxy this traffic. Otherwise, it is optional. See
 [`http.ProxyFromEnvironment`](https://pkg.go.dev/net/http@go1.17.3#ProxyFromEnvironment)
 for possible values.
 
+## Localhost Admin Server
+
+The Proxy includes support for an admin server on localhost. By default, the
+admin server is not enabled. To enable the server, pass the `--debug` flag.
+This will start the server on localhost at port 9091. To change the port, use
+the `--admin-port` flag.
+
+The admin server includes Go's pprof tool and is available at `/debug/pprof/`.
+
+See the [documentation on pprof][pprof] for details on how to use the
+profiler.
+
+[pprof]: https://pkg.go.dev/net/http/pprof.
+
+
 ## Support policy
 
 ### Major version lifecycle

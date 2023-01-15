@@ -22,6 +22,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"net/http/pprof"
 	"net/url"
 	"os"
 	"os/signal"
@@ -254,6 +255,18 @@ Configuration using environment variables
         ALLOYDB_PROXY_INSTANCE_URI_1=projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE2 \
             ./alloydb-auth-proxy
 
+Localhost Admin Server
+
+    The Proxy includes support for an admin server on localhost. By default,
+    the admin server is not enabled. To enable the server, pass the --debug
+    flag. This will start the server on localhost at port 9091. To change the
+    port, use the --admin-port flag.
+
+    The admin server includes Go's pprof tool and is available at
+    /debug/pprof/.
+
+    See the documentation on pprof for details on how to use the
+    profiler at https://pkg.go.dev/net/http/pprof.
 `
 
 const envPrefix = "ALLOYDB_PROXY"
@@ -387,6 +400,10 @@ the maximum time has passed. Defaults to 0s.`)
 		"Address for Prometheus and health check server")
 	pflags.StringVar(&c.conf.HTTPPort, "http-port", "9090",
 		"Port for the Prometheus server to use")
+	pflags.BoolVar(&c.conf.Debug, "debug", false,
+		"Enable the admin server on localhost")
+	pflags.StringVar(&c.conf.AdminPort, "admin-port", "9091",
+		"Port for localhost-only admin server")
 	pflags.BoolVar(&c.conf.HealthCheck, "health-check", false,
 		`Enables HTTP endpoints /startup, /liveness, and /readiness
 that report on the proxy's health. Endpoints are available on localhost
@@ -682,6 +699,22 @@ func runSignalWrapper(cmd *Command) error {
 		notify = hc.NotifyStarted
 	}
 
+	go func() {
+		if !cmd.conf.Debug {
+			return
+		}
+		m := http.NewServeMux()
+		m.HandleFunc("/debug/pprof/", pprof.Index)
+		m.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+		m.HandleFunc("/debug/pprof/profile", pprof.Profile)
+		m.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+		m.HandleFunc("/debug/pprof/trace", pprof.Trace)
+		addr := net.JoinHostPort("localhost", cmd.conf.AdminPort)
+		cmd.logger.Infof("Starting admin server on %v", addr)
+		if lErr := http.ListenAndServe(addr, m); lErr != nil {
+			cmd.logger.Errorf("Failed to start admin HTTP server: %v", lErr)
+		}
+	}()
 	// Start the HTTP server if anything requiring HTTP is specified.
 	if needsHTTPServer {
 		server := &http.Server{
