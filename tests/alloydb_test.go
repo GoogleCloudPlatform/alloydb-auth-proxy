@@ -25,10 +25,31 @@ import (
 )
 
 var (
-	alloydbConnName = flag.String("alloydb_conn_name", os.Getenv("ALLOYDB_CONNECTION_NAME"), "AlloyDB instance connection name, in the form of 'project:region:instance'.")
-	alloydbUser     = flag.String("alloydb_user", os.Getenv("ALLOYDB_USER"), "Name of database user.")
-	alloydbPass     = flag.String("alloydb_pass", os.Getenv("ALLOYDB_PASS"), "Password for the database user; be careful when entering a password on the command line (it may go into your terminal's history).")
-	alloydbDB       = flag.String("alloydb_db", os.Getenv("ALLOYDB_DB"), "Name of the database to connect to.")
+	alloydbConnName = flag.String(
+		"alloydb_conn_name",
+		os.Getenv("ALLOYDB_CONNECTION_NAME"),
+		"AlloyDB instance connection name, in the form of projects/proj/locations/region/clusters/clust/instances/inst",
+	)
+	alloydbUser = flag.String(
+		"alloydb_user",
+		os.Getenv("ALLOYDB_USER"),
+		"Name of database user.",
+	)
+	alloydbPass = flag.String(
+		"alloydb_pass",
+		os.Getenv("ALLOYDB_PASS"),
+		"Password for the database user",
+	)
+	alloydbDB = flag.String(
+		"alloydb_db",
+		os.Getenv("ALLOYDB_DB"),
+		"Name of the database to connect to.",
+	)
+	impersonatedUser = flag.String(
+		"impersonated_user",
+		os.Getenv("IMPERSONATED_USER"),
+		"Name of the service account that supports impersonation (impersonator must have roles/iam.serviceAccountTokenCreator)",
+	)
 )
 
 func requirePostgresVars(t *testing.T) {
@@ -42,6 +63,11 @@ func requirePostgresVars(t *testing.T) {
 	case *alloydbDB:
 		t.Fatal("'alloydb_db' not set")
 	}
+}
+
+func postgresDSN() string {
+	return fmt.Sprintf("host=localhost user=%s password=%s database=%s sslmode=disable",
+		*alloydbUser, *alloydbPass, *alloydbDB)
 }
 
 func TestPostgresTCP(t *testing.T) {
@@ -93,75 +119,99 @@ func TestPostgresUnix(t *testing.T) {
 		[]string{"--unix-socket", tmpDir, *alloydbConnName}, "pgx", dsn)
 }
 
-func TestPostgresAuthWithToken(t *testing.T) {
+func TestPostgresImpersonation(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping Postgres integration tests")
 	}
-	_, isFlex := os.LookupEnv("FLEX")
-	if isFlex {
-		t.Skip("App Engine Flex doesn't support retrieving OAuth2 tokens")
-	}
 	requirePostgresVars(t)
-	cleanup, err := pgxv4.RegisterDriver("alloydb2")
-	if err != nil {
-		t.Fatalf("failed to register driver: %v", err)
-	}
-	defer cleanup()
-	tok, _, cleanup2 := removeAuthEnvVar(t, true)
-	defer cleanup2()
 
-	dsn := fmt.Sprintf("host=%v user=%v password=%v database=%v sslmode=disable",
-		*alloydbConnName, *alloydbUser, *alloydbPass, *alloydbDB)
-	proxyConnTest(t,
-		[]string{"--token", tok.AccessToken, *alloydbConnName},
-		"alloydb2", dsn)
+	proxyConnTest(t, []string{
+		"--impersonate-service-account", *impersonatedUser,
+		*alloydbConnName},
+		"pgx", postgresDSN())
 }
 
-func TestPostgresAuthWithCredentialsFile(t *testing.T) {
+func TestPostgresAuthentication(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping Postgres integration tests")
 	}
 	requirePostgresVars(t)
-	cleanup, err := pgxv4.RegisterDriver("alloydb3")
-	if err != nil {
-		t.Fatalf("failed to register driver: %v", err)
-	}
-	defer cleanup()
-	_, path, cleanup2 := removeAuthEnvVar(t, false)
-	defer cleanup2()
 
-	dsn := fmt.Sprintf("host=%v user=%v password=%v database=%v sslmode=disable",
-		*alloydbConnName, *alloydbUser, *alloydbPass, *alloydbDB)
-	proxyConnTest(t,
-		[]string{"--credentials-file", path, *alloydbConnName},
-		"alloydb3", dsn)
-}
-
-func TestPostgresAuthWithCredentialsJSON(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping Postgres integration tests")
-	}
-	requirePostgresVars(t)
 	creds := keyfile(t)
-	_, _, cleanup := removeAuthEnvVar(t, false)
+	tok, path, cleanup := removeAuthEnvVar(t, true)
 	defer cleanup()
 
-	dsn := fmt.Sprintf("host=localhost user=%s password=%s database=%s sslmode=disable",
-		*alloydbUser, *alloydbPass, *alloydbDB)
-	proxyConnTest(t,
-		[]string{"--json-credentials", string(creds), *alloydbConnName},
-		"pgx", dsn)
+	tcs := []struct {
+		desc string
+		args []string
+	}{
+		{
+			desc: "with token",
+			args: []string{"--token", tok.AccessToken, *alloydbConnName},
+		},
+		{
+			desc: "with token and impersonation",
+			args: []string{
+				"--token", tok.AccessToken,
+				"--impersonate-service-account", *impersonatedUser,
+				*alloydbConnName},
+		},
+		{
+			desc: "with credentials file",
+			args: []string{"--credentials-file", path, *alloydbConnName},
+		},
+		{
+			desc: "with credentials file and impersonation",
+			args: []string{
+				"--credentials-file", path,
+				"--impersonate-service-account", *impersonatedUser,
+				*alloydbConnName},
+		},
+		{
+			desc: "with credentials JSON",
+			args: []string{"--json-credentials", string(creds), *alloydbConnName},
+		},
+		{
+			desc: "with credentials JSON and impersonation",
+			args: []string{
+				"--json-credentials", string(creds),
+				"--impersonate-service-account", *impersonatedUser,
+				*alloydbConnName},
+		},
+	}
+	for _, tc := range tcs {
+		t.Run(tc.desc, func(t *testing.T) {
+			proxyConnTest(t, tc.args, "pgx", postgresDSN())
+		})
+	}
 }
 
-func TestAuthWithGcloudAuth(t *testing.T) {
+func TestPostgresGcloudAuth(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping Postgres integration tests")
 	}
 	requirePostgresVars(t)
 
-	dsn := fmt.Sprintf("host=localhost user=%s password=%s database=%s sslmode=disable",
-		*alloydbUser, *alloydbPass, *alloydbDB)
-	proxyConnTest(t,
-		[]string{"--gcloud-auth", *alloydbConnName},
-		"pgx", dsn)
+	tcs := []struct {
+		desc string
+		args []string
+	}{
+		{
+			desc: "gcloud user authentication",
+			args: []string{"--gcloud-auth", *alloydbConnName},
+		},
+		{
+			desc: "gcloud user authentication with impersonation",
+			args: []string{
+				"--gcloud-auth",
+				"--impersonate-service-account", *impersonatedUser,
+				*alloydbConnName},
+		},
+	}
+	for _, tc := range tcs {
+		t.Run(tc.desc, func(t *testing.T) {
+			proxyConnTest(t, tc.args, "pgx", postgresDSN())
+		})
+	}
+
 }
