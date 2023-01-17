@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.1.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.0.0...v1.1.0) (2023-01-17)
+
+
+### Features
+
+* fail on startup if instance uri is invalid ([#210](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/210)) ([49b9efd](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/49b9efdb141c710dae138621b802dd9caf990185))
+* use shorter instance uri when logging ([#213](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/213)) ([87c44db](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/87c44db1395ca08af054bdea4ee2b8f3f11e7932))
+
+
+### Bug Fixes
+
+* correctly apply metadata to user agent ([#218](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/218)) ([a023b45](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/a023b45eae7f49b2ccee0ec6189eed4002af4fb6))
+
 ## [1.0.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v0.6.2...v1.0.0) (2022-12-13)
 
 
