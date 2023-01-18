@@ -22,6 +22,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -52,7 +53,7 @@ func invokeProxyCommand(args []string) (*Command, error) {
 
 func withDefaults(c *proxy.Config) *proxy.Config {
 	if c.UserAgent == "" {
-		c.UserAgent = userAgent
+		c.UserAgent = defaultUserAgent
 	}
 	if c.Addr == "" {
 		c.Addr = "127.0.0.1"
@@ -75,6 +76,43 @@ func withDefaults(c *proxy.Config) *proxy.Config {
 		c.APIEndpointURL = "https://alloydb.googleapis.com/v1beta"
 	}
 	return c
+}
+
+func TestUserAgentWithVersionEnvVar(t *testing.T) {
+	os.Setenv("ALLOYDB_PROXY_USER_AGENT", "some-runtime/0.0.1")
+	defer os.Unsetenv("ALLOYDB_PROXY_USER_AGENT")
+
+	cmd, err := invokeProxyCommand([]string{
+		"projects/proj/locations/region/clusters/clust/instances/inst",
+	})
+	if err != nil {
+		t.Fatalf("want error = nil, got = %v", err)
+	}
+
+	want := "some-runtime/0.0.1"
+	got := cmd.conf.UserAgent
+	if !strings.Contains(got, want) {
+		t.Errorf("expected user agent to contain: %v; got: %v", want, got)
+	}
+}
+
+func TestUserAgent(t *testing.T) {
+	cmd, err := invokeProxyCommand(
+		[]string{
+			"--user-agent",
+			"some-runtime/0.0.1",
+			"projects/proj/locations/region/clusters/clust/instances/inst",
+		},
+	)
+	if err != nil {
+		t.Fatalf("want error = nil, got = %v", err)
+	}
+
+	want := "some-runtime/0.0.1"
+	got := cmd.conf.UserAgent
+	if !strings.Contains(got, want) {
+		t.Errorf("expected userAgent to contain: %v; got: %v", want, got)
+	}
 }
 
 func TestNewCommandArguments(t *testing.T) {
