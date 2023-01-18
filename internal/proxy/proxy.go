@@ -121,7 +121,7 @@ type Config struct {
 	StructuredLogs bool
 }
 
-func (c *Config) credentialsOpt(l alloydb.Logger) (alloydbconn.Option, error) {
+func credentialsOpt(c Config, l alloydb.Logger) (alloydbconn.Option, error) {
 	// If service account impersonation is configured, set up an impersonated
 	// credentials token source.
 	if c.ImpersonateTarget != "" {
@@ -195,7 +195,7 @@ func (c *Config) DialerOptions(l alloydb.Logger) ([]alloydbconn.Option, error) {
 	opts := []alloydbconn.Option{
 		alloydbconn.WithUserAgent(c.UserAgent),
 	}
-	co, err := c.credentialsOpt(l)
+	co, err := credentialsOpt(*c, l)
 	if err != nil {
 		return nil, err
 	}
@@ -371,9 +371,9 @@ func NewClient(ctx context.Context, d alloydb.Dialer, l alloydb.Logger, conf *Co
 	return c, nil
 }
 
-// CheckConnections dials each registered instance and reports any errors that
-// may have occurred.
-func (c *Client) CheckConnections(ctx context.Context) error {
+// CheckConnections dials each registered instance and reports the number of
+// connections checked and any errors that may have occurred.
+func (c *Client) CheckConnections(ctx context.Context) (int, error) {
 	var (
 		wg    sync.WaitGroup
 		errCh = make(chan error, len(c.mnts))
@@ -394,14 +394,17 @@ func (c *Client) CheckConnections(ctx context.Context) error {
 			}
 			cErr := conn.Close()
 			if cErr != nil {
-				errCh <- fmt.Errorf("%v: %v", inst, cErr)
+				c.logger.Errorf(
+					"connection check failed to close connection for %v: %v",
+					inst, cErr,
+				)
 			}
 		}(m.inst)
 	}
 	wg.Wait()
 
 	var mErr MultiErr
-	for i := 0; i < len(c.mnts); i++ {
+	for i := 0; i < len(mnts); i++ {
 		select {
 		case err := <-errCh:
 			mErr = append(mErr, err)
@@ -409,10 +412,11 @@ func (c *Client) CheckConnections(ctx context.Context) error {
 			continue
 		}
 	}
+	mLen := len(mnts)
 	if len(mErr) > 0 {
-		return mErr
+		return mLen, mErr
 	}
-	return nil
+	return mLen, nil
 }
 
 // ConnCount returns the number of open connections and the maximum allowed
@@ -505,10 +509,11 @@ func (c *Client) Close() error {
 		return nil
 	}
 	timeout := time.After(c.waitOnClose)
-	tick := time.Tick(100 * time.Millisecond)
+	t := time.NewTicker(100 * time.Millisecond)
+	defer t.Stop()
 	for {
 		select {
-		case <-tick:
+		case <-t.C:
 			if atomic.LoadUint64(&c.connCount) > 0 {
 				continue
 			}
@@ -532,7 +537,7 @@ func (c *Client) serveSocketMount(_ context.Context, s *socketMount) error {
 	for {
 		cConn, err := s.Accept()
 		if err != nil {
-			if nerr, ok := err.(net.Error); ok && nerr.Temporary() {
+			if nerr, ok := err.(net.Error); ok && nerr.Timeout() {
 				c.logger.Errorf("[%s] Error accepting connection: %v", s.instShort, err)
 				// For transient errors, wait a small amount of time to see if it resolves itself
 				time.Sleep(10 * time.Millisecond)

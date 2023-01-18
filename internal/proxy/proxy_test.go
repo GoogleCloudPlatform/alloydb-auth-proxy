@@ -18,7 +18,6 @@ import (
 	"context"
 	"errors"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -86,7 +85,7 @@ func (*errorDialer) Close() error {
 }
 
 func createTempDir(t *testing.T) (string, func()) {
-	testDir, err := ioutil.TempDir("", "*")
+	testDir, err := os.MkdirTemp("", "*")
 	if err != nil {
 		t.Fatalf("failed to create temp dir: %v", err)
 	}
@@ -611,8 +610,12 @@ func TestCheckConnections(t *testing.T) {
 	defer c.Close()
 	go c.Serve(context.Background(), func() {})
 
-	if err = c.CheckConnections(context.Background()); err != nil {
+	n, err := c.CheckConnections(context.Background())
+	if err != nil {
 		t.Fatalf("CheckConnections failed: %v", err)
+	}
+	if want, got := len(in.Instances), n; want != got {
+		t.Fatalf("CheckConnections number of connections: want = %v, got = %v", want, got)
 	}
 
 	if want, got := 1, d.dialAttempts(); want != got {
@@ -635,8 +638,11 @@ func TestCheckConnections(t *testing.T) {
 	defer c.Close()
 	go c.Serve(context.Background(), func() {})
 
-	err = c.CheckConnections(context.Background())
+	n, err = c.CheckConnections(context.Background())
 	if err == nil {
 		t.Fatal("CheckConnections should have failed, but did not")
+	}
+	if want, got := len(in.Instances), n; want != got {
+		t.Fatalf("CheckConnections number of connections: want = %v, got = %v", want, got)
 	}
 }

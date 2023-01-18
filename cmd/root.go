@@ -48,13 +48,13 @@ var (
 	//go:embed version.txt
 	versionString string
 	// metadataString indiciates additional build or distribution metadata.
-	metadataString string
-	userAgent      string
+	metadataString   string
+	defaultUserAgent string
 )
 
 func init() {
 	versionString = semanticVersion()
-	userAgent = "alloy-db-auth-proxy/" + versionString
+	defaultUserAgent = "alloy-db-auth-proxy/" + versionString
 }
 
 // semanticVersion returns the version of the proxy including an compile-time
@@ -98,10 +98,11 @@ type Command struct {
 	httpAddress                string
 	httpPort                   string
 	quiet                      bool
+	otherUserAgents            string
 
 	// impersonationChain is a comma separated list of one or more service
-	// accounts. The last entry in the chain is the impersonation target. Any
-	// additional service accounts before the target are delegates. The
+	// accounts. The first entry in the chain is the impersonation target. Any
+	// additional service accounts after the target are delegates. The
 	// roles/iam.serviceAccountTokenCreator must be configured for each account
 	// that will be impersonated.
 	impersonationChain string
@@ -320,7 +321,7 @@ func NewCommand(opts ...Option) *Command {
 		logger:  logger,
 		cleanup: func() error { return nil },
 		conf: &proxy.Config{
-			UserAgent: userAgent,
+			UserAgent: defaultUserAgent,
 		},
 	}
 	for _, o := range opts {
@@ -355,6 +356,8 @@ func NewCommand(opts ...Option) *Command {
 	pflags := cmd.PersistentFlags()
 
 	// Global-only flags
+	pflags.StringVar(&c.otherUserAgents, "user-agent", "",
+		"Space separated list of additional user agents, e.g. cloud-sql-proxy-operator/0.0.1")
 	pflags.StringVarP(&c.conf.Token, "token", "t", "",
 		"Bearer token used for authorization.")
 	pflags.StringVarP(&c.conf.CredentialsFile, "credentials-file", "c", "",
@@ -499,9 +502,7 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 		}
 
 		// Remove trailing '/' if included
-		if strings.HasSuffix(conf.APIEndpointURL, "/") {
-			conf.APIEndpointURL = strings.TrimSuffix(conf.APIEndpointURL, "/")
-		}
+		conf.APIEndpointURL = strings.TrimSuffix(conf.APIEndpointURL, "/")
 		cmd.logger.Infof("Using API Endpoint %v", conf.APIEndpointURL)
 	}
 
@@ -517,6 +518,11 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 	}
 	if !userHasSet("telemetry-project") && userHasSet("disable-traces") {
 		cmd.logger.Infof("Ignoring --disable-traces as --telemetry-project was not set")
+	}
+
+	if userHasSet("user-agent") {
+		defaultUserAgent += " " + cmd.otherUserAgents
+		conf.UserAgent = defaultUserAgent
 	}
 
 	if cmd.impersonationChain != "" {
@@ -700,6 +706,8 @@ func runSignalWrapper(cmd *Command) error {
 	notify := func() {}
 	if cmd.healthCheck {
 		needsHTTPServer = true
+		cmd.logger.Infof("Starting health check server at %s",
+			net.JoinHostPort(cmd.httpAddress, cmd.httpPort))
 		hc := healthcheck.NewCheck(p, cmd.logger)
 		mux.HandleFunc("/startup", hc.HandleStartup)
 		mux.HandleFunc("/readiness", hc.HandleReadiness)
@@ -710,7 +718,7 @@ func runSignalWrapper(cmd *Command) error {
 	// Start the HTTP server if anything requiring HTTP is specified.
 	if needsHTTPServer {
 		server := &http.Server{
-			Addr:    fmt.Sprintf("%s:%s", cmd.httpAddress, cmd.httpPort),
+			Addr:    net.JoinHostPort(cmd.httpAddress, cmd.httpPort),
 			Handler: mux,
 		}
 		// Start the HTTP server.
@@ -725,14 +733,12 @@ func runSignalWrapper(cmd *Command) error {
 		}()
 		// Handle shutdown of the HTTP server gracefully.
 		go func() {
-			select {
-			case <-ctx.Done():
-				// Give the HTTP server a second to shutdown cleanly.
-				ctx2, cancel := context.WithTimeout(context.Background(), time.Second)
-				defer cancel()
-				if err := server.Shutdown(ctx2); err != nil {
-					cmd.logger.Errorf("failed to shutdown Prometheus HTTP server: %v\n", err)
-				}
+			<-ctx.Done()
+			// Give the HTTP server a second to shutdown cleanly.
+			ctx2, cancel := context.WithTimeout(context.Background(), time.Second)
+			defer cancel()
+			if err := server.Shutdown(ctx2); err != nil {
+				cmd.logger.Errorf("failed to shutdown Prometheus HTTP server: %v\n", err)
 			}
 		}()
 	}
