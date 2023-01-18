@@ -19,7 +19,6 @@ package proxy_test
 
 import (
 	"context"
-	"io/ioutil"
 	"net"
 	"os"
 	"path/filepath"
@@ -33,7 +32,7 @@ import (
 func randTmpDir(t interface {
 	Fatalf(format string, args ...interface{})
 }) string {
-	name, err := ioutil.TempDir("", "*")
+	name, err := os.MkdirTemp("", "*")
 	if err != nil {
 		t.Fatalf("failed to create tmp dir: %v", err)
 	}
@@ -92,7 +91,7 @@ func TestFUSEREADME(t *testing.T) {
 		t.Fatalf("want = %v, got = %v", want, got)
 	}
 
-	data, err := ioutil.ReadFile(filepath.Join(dir, "README"))
+	data, err := os.ReadFile(filepath.Join(dir, "README"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -103,9 +102,9 @@ func TestFUSEREADME(t *testing.T) {
 	cleanup() // close the client
 
 	// verify that the FUSE server is no longer mounted
-	_, err = ioutil.ReadFile(filepath.Join(dir, "README"))
+	_, err = os.ReadFile(filepath.Join(dir, "README"))
 	if err == nil {
-		t.Fatal("expected ioutil.Readfile to fail, but it succeeded")
+		t.Fatal("expected os.Readfile to fail, but it succeeded")
 	}
 }
 

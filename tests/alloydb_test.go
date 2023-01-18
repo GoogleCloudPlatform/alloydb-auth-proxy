@@ -17,7 +17,6 @@ package tests
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -26,15 +25,10 @@ import (
 )
 
 var (
-	alloydbConnName  = flag.String("alloydb_conn_name", os.Getenv("ALLOYDB_CONNECTION_NAME"), "AlloyDB instance connection name, in the form of 'project:region:instance'.")
-	alloydbUser      = flag.String("alloydb_user", os.Getenv("ALLOYDB_USER"), "Name of database user.")
-	alloydbPass      = flag.String("alloydb_pass", os.Getenv("ALLOYDB_PASS"), "Password for the database user; be careful when entering a password on the command line (it may go into your terminal's history).")
-	alloydbDB        = flag.String("alloydb_db", os.Getenv("ALLOYDB_DB"), "Name of the database to connect to.")
-	impersonatedUser = flag.String(
-		"impersonated_user",
-		os.Getenv("IMPERSONATED_USER"),
-		"Name of the service account that supports impersonation (impersonator must have roles/iam.serviceAccountTokenCreator)",
-	)
+	alloydbConnName = flag.String("alloydb_conn_name", os.Getenv("ALLOYDB_CONNECTION_NAME"), "AlloyDB instance connection name, in the form of 'project:region:instance'.")
+	alloydbUser     = flag.String("alloydb_user", os.Getenv("ALLOYDB_USER"), "Name of database user.")
+	alloydbPass     = flag.String("alloydb_pass", os.Getenv("ALLOYDB_PASS"), "Password for the database user; be careful when entering a password on the command line (it may go into your terminal's history).")
+	alloydbDB       = flag.String("alloydb_db", os.Getenv("ALLOYDB_DB"), "Name of the database to connect to.")
 )
 
 func requirePostgresVars(t *testing.T) {
@@ -68,7 +62,7 @@ func TestPostgresTCP(t *testing.T) {
 }
 
 func createTempDir(t *testing.T) (string, func()) {
-	testDir, err := ioutil.TempDir("", "*")
+	testDir, err := os.MkdirTemp("", "*")
 	if err != nil {
 		t.Fatalf("failed to create temp dir: %v", err)
 	}
