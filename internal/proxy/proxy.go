@@ -121,7 +121,7 @@ type Config struct {
 	StructuredLogs bool
 }
 
-func (c *Config) credentialsOpt(l alloydb.Logger) (alloydbconn.Option, error) {
+func credentialsOpt(c Config, l alloydb.Logger) (alloydbconn.Option, error) {
 	// If service account impersonation is configured, set up an impersonated
 	// credentials token source.
 	if c.ImpersonateTarget != "" {
@@ -195,7 +195,7 @@ func (c *Config) DialerOptions(l alloydb.Logger) ([]alloydbconn.Option, error) {
 	opts := []alloydbconn.Option{
 		alloydbconn.WithUserAgent(c.UserAgent),
 	}
-	co, err := c.credentialsOpt(l)
+	co, err := credentialsOpt(*c, l)
 	if err != nil {
 		return nil, err
 	}
