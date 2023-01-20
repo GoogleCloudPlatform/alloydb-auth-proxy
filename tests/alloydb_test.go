@@ -76,16 +76,7 @@ func TestPostgresTCP(t *testing.T) {
 	}
 	requirePostgresVars(t)
 
-	cleanup, err := pgxv4.RegisterDriver("alloydb1")
-	if err != nil {
-		t.Fatalf("failed to register driver: %v", err)
-	}
-	defer cleanup()
-
-	// Use a DSN with the instance URI for the customer alloydb1 driver.
-	dsn := fmt.Sprintf("host=%v user=%v password=%v database=%v sslmode=disable",
-		*alloydbConnName, *alloydbUser, *alloydbPass, *alloydbDB)
-	proxyConnTest(t, []string{*alloydbConnName}, "alloydb1", dsn)
+	proxyConnTest(t, []string{*alloydbConnName}, "pgx", postgresDSN())
 }
 
 func createTempDir(t *testing.T) (string, func()) {
@@ -132,13 +123,10 @@ func TestPostgresImpersonation(t *testing.T) {
 	}
 	defer cleanup()
 
-	// Use a DSN with the instance URI for the customer alloydb1 driver.
-	dsn := fmt.Sprintf("host=%v user=%v password=%v database=%v sslmode=disable",
-		*alloydbConnName, *alloydbUser, *alloydbPass, *alloydbDB)
 	proxyConnTest(t, []string{
 		"--impersonate-service-account", *impersonatedUser,
 		*alloydbConnName},
-		"alloydb2", dsn)
+		"pgx", postgresDSN())
 }
 
 func TestPostgresAuthentication(t *testing.T) {
@@ -156,15 +144,15 @@ func TestPostgresAuthentication(t *testing.T) {
 		args []string
 	}{
 		{
+			desc: "with token",
+			args: []string{"--token", tok.AccessToken, *alloydbConnName},
+		},
+		{
 			desc: "with token and impersonation",
 			args: []string{
 				"--token", tok.AccessToken,
 				"--impersonate-service-account", *impersonatedUser,
 				*alloydbConnName},
-		},
-		{
-			desc: "with token",
-			args: []string{"--token", tok.AccessToken, *alloydbConnName},
 		},
 		{
 			desc: "with credentials file",
