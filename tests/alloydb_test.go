@@ -66,8 +66,8 @@ func requirePostgresVars(t *testing.T) {
 }
 
 func postgresDSN() string {
-	return fmt.Sprintf("host=localhost user=%s password=%s database=%s sslmode=disable",
-		*alloydbUser, *alloydbPass, *alloydbDB)
+	return fmt.Sprintf("host=%v user=%v password=%v database=%v sslmode=disable",
+		*alloydbConnName, *alloydbUser, *alloydbPass, *alloydbDB)
 }
 
 func TestPostgresTCP(t *testing.T) {
@@ -82,9 +82,7 @@ func TestPostgresTCP(t *testing.T) {
 	}
 	defer cleanup()
 
-	dsn := fmt.Sprintf("host=%v user=%v password=%v database=%v sslmode=disable",
-		*alloydbConnName, *alloydbUser, *alloydbPass, *alloydbDB)
-	proxyConnTest(t, []string{*alloydbConnName}, "alloydb1", dsn)
+	proxyConnTest(t, []string{*alloydbConnName}, "alloydb1", postgresDSN())
 }
 
 func createTempDir(t *testing.T) (string, func()) {
