@@ -82,7 +82,10 @@ func TestPostgresTCP(t *testing.T) {
 	}
 	defer cleanup()
 
-	proxyConnTest(t, []string{*alloydbConnName}, "alloydb1", postgresDSN())
+	// Use a DSN with the instance URI for the customer alloydb1 driver.
+	dsn := fmt.Sprintf("host=%v user=%v password=%v database=%v sslmode=disable",
+		*alloydbConnName, *alloydbUser, *alloydbPass, *alloydbDB)
+	proxyConnTest(t, []string{*alloydbConnName}, "alloydb1", dsn)
 }
 
 func createTempDir(t *testing.T) (string, func()) {
