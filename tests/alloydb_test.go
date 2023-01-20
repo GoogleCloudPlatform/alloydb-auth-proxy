@@ -66,8 +66,8 @@ func requirePostgresVars(t *testing.T) {
 }
 
 func postgresDSN() string {
-	return fmt.Sprintf("host=%v user=%s password=%s database=%s sslmode=disable",
-		*alloydbConnName, *alloydbUser, *alloydbPass, *alloydbDB)
+	return fmt.Sprintf("host=localhost user=%s password=%s database=%s sslmode=disable",
+		*alloydbUser, *alloydbPass, *alloydbDB)
 }
 
 func TestPostgresTCP(t *testing.T) {
