@@ -175,6 +175,16 @@ Instance Level Configuration
             'projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE1' \
             'projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE2?address=0.0.0.0&port=7000'
 
+    When necessary, you may specify the full path to a Unix socket. Set the
+    unix-socket-path query parameter to the absolute path of the Unix socket for
+    the database instance. The parent directory of the unix-socket-path must 
+    exist when the proxy starts or else socket creation will fail. For Postgres
+    instances, the proxy will ensure that the last path element is 
+    '.s.PGSQL.5432' appending it if necessary. For example,
+
+        ./cloud-sql-proxy \
+          'my-project:us-central1:my-db-server?unix-socket-path=/path/to/socket'
+
 Health checks
 
     When enabling the --health-check flag, the proxy will start an HTTP server
@@ -541,12 +551,22 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 			a, aok := q["address"]
 			p, pok := q["port"]
 			u, uok := q["unix-socket"]
+			up, upok := q["unix-socket-path"]
 
 			if aok && uok {
 				return newBadCommandError("cannot specify both address and unix-socket query params")
 			}
 			if pok && uok {
 				return newBadCommandError("cannot specify both port and unix-socket query params")
+			}
+			if aok && upok {
+				return newBadCommandError("cannot specify both address and unix-socket-path query params")
+			}
+			if pok && upok {
+				return newBadCommandError("cannot specify both port and unix-socket-path query params")
+			}
+			if uok && upok {
+				return newBadCommandError("cannot specify both unix-socket-path and unix-socket query params")
 			}
 
 			if aok {
@@ -560,6 +580,13 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 						))
 				}
 				ic.Addr = a[0]
+			}
+
+			if upok {
+				if len(up) != 1 {
+					return newBadCommandError(fmt.Sprintf("unix-socket-path query param should be only one value: %q", a))
+				}
+				ic.UnixSocketPath = up[0]
 			}
 
 			if pok {

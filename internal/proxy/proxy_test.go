@@ -22,6 +22,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"path"
 	"path/filepath"
 	"sync"
 	"testing"
@@ -103,6 +104,8 @@ func TestClientInitialization(t *testing.T) {
 	inst1 := "projects/proj/locations/region/clusters/clust/instances/inst1"
 	inst2 := "projects/proj/locations/region/clusters/clust/instances/inst2"
 	wantUnix := "proj.region.clust.inst1"
+	testUnixSocketPath := path.Join(testDir, "db")
+	testUnixSocketPathPg := path.Join(testDir, "db", ".s.PGSQL.5432")
 
 	tcs := []testCase{
 		{
@@ -205,6 +208,40 @@ func TestClientInitialization(t *testing.T) {
 			},
 			wantTCPAddrs: []string{
 				"127.0.0.1:5000",
+			},
+		},
+		{
+			desc: "with a Unix socket path overriding Unix socket",
+			in: &proxy.Config{
+				UnixSocket: testDir,
+				Instances: []proxy.InstanceConnConfig{
+					{Name: inst1, UnixSocketPath: testUnixSocketPath},
+				},
+			},
+			wantUnixAddrs: []string{
+				filepath.Join(testUnixSocketPathPg),
+			},
+		},
+		{
+			desc: "with a Unix socket path per pg instance",
+			in: &proxy.Config{
+				Instances: []proxy.InstanceConnConfig{
+					{Name: inst1, UnixSocketPath: testUnixSocketPath},
+				},
+			},
+			wantUnixAddrs: []string{
+				filepath.Join(testUnixSocketPathPg),
+			},
+		},
+		{
+			desc: "with a Unix socket path per pg instance and explicit pg path suffix",
+			in: &proxy.Config{
+				Instances: []proxy.InstanceConnConfig{
+					{Name: inst1, UnixSocketPath: testUnixSocketPathPg},
+				},
+			},
+			wantUnixAddrs: []string{
+				filepath.Join(testUnixSocketPathPg),
 			},
 		},
 	}
