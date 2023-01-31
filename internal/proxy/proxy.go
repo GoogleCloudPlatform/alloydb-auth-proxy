@@ -20,6 +20,7 @@ import (
 	"io"
 	"net"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -48,6 +49,13 @@ type InstanceConnConfig struct {
 	// connected to the AlloyDB instance. If set, takes precedence over Addr
 	// and Port.
 	UnixSocket string
+	// UnixSocketPath is the path where a Unix socket will be created,
+	// connected to the Cloud SQL instance. The full path to the socket will be
+	// UnixSocketPath. Because this is a Postgres database, the proxy will ensure
+	// the last path element is `.s.PGSQL.5432`, appending this path element if
+	// necessary. If set, UnixSocketPath takes precedence over UnixSocket, Addr
+	// and Port.
+	UnixSocketPath string
 }
 
 // Config contains all the configuration provided by the caller.
@@ -648,6 +656,7 @@ func newSocketMount(ctx context.Context, conf *Config, pc *portConfig, inst Inst
 		// address is either a TCP host port, or a Unix socket
 		address string
 	)
+
 	// IF
 	//   a global Unix socket directory is NOT set AND
 	//   an instance-level Unix socket is NOT set
@@ -658,7 +667,7 @@ func newSocketMount(ctx context.Context, conf *Config, pc *portConfig, inst Inst
 	//   instance)
 	// use a TCP listener.
 	// Otherwise, use a Unix socket.
-	if (conf.UnixSocket == "" && inst.UnixSocket == "") ||
+	if (conf.UnixSocket == "" && inst.UnixSocket == "" && inst.UnixSocketPath == "") ||
 		(inst.Addr != "" || inst.Port != 0) {
 		network = "tcp"
 
@@ -678,23 +687,10 @@ func newSocketMount(ctx context.Context, conf *Config, pc *portConfig, inst Inst
 		address = net.JoinHostPort(a, fmt.Sprint(np))
 	} else {
 		network = "unix"
-
-		dir := conf.UnixSocket
-		if dir == "" {
-			dir = inst.UnixSocket
-		}
-		ud, err := UnixSocketDir(dir, inst.Name)
+		address, err = newUnixSocketMount(inst, conf.UnixSocket, true)
 		if err != nil {
 			return nil, err
 		}
-		// Create the parent directory that will hold the socket.
-		if _, err := os.Stat(ud); err != nil {
-			if err = os.Mkdir(ud, 0777); err != nil {
-				return nil, err
-			}
-		}
-		// use the Postgres-specific socket name
-		address = filepath.Join(ud, ".s.PGSQL.5432")
 	}
 
 	lc := net.ListenConfig{KeepAlive: 30 * time.Second}
@@ -715,6 +711,54 @@ func newSocketMount(ctx context.Context, conf *Config, pc *portConfig, inst Inst
 		listener:  ln,
 	}
 	return m, nil
+}
+
+// newUnixSocketMount parses the configuration and returns the path to the unix
+// socket, or an error if that path is not valid.
+func newUnixSocketMount(inst InstanceConnConfig, unixSocketDir string, postgres bool) (string, error) {
+	var (
+		// the path to the unix socket
+		address string
+		// the parent directory of the unix socket
+		dir string
+		err error
+	)
+	if inst.UnixSocketPath != "" {
+		// When UnixSocketPath is set
+		address = inst.UnixSocketPath
+		// If UnixSocketPath ends .s.PGSQL.5432, remove it for consistency
+		if postgres && path.Base(address) == ".s.PGSQL.5432" {
+			address = path.Dir(address)
+		}
+		dir = path.Dir(address)
+	} else {
+		// When UnixSocket is set
+		dir = unixSocketDir
+		if dir == "" {
+			dir = inst.UnixSocket
+		}
+		address, err = UnixSocketDir(dir, inst.Name)
+		if err != nil {
+			return "", err
+		}
+	}
+	// if base directory does not exist, fail
+	if _, err := os.Stat(dir); err != nil {
+		return "", err
+	}
+	// When setting up a listener for Postgres, create address as a
+	// directory, and use the Postgres-specific socket name
+	// .s.PGSQL.5432.
+	if postgres {
+		// Make the directory only if it hasn't already been created.
+		if _, err := os.Stat(address); err != nil {
+			if err = os.Mkdir(address, 0777); err != nil {
+				return "", err
+			}
+		}
+		address = UnixAddress(address, ".s.PGSQL.5432")
+	}
+	return address, nil
 }
 
 func (s *socketMount) Addr() net.Addr {
