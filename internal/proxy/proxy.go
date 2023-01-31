@@ -406,8 +406,8 @@ func NewClient(ctx context.Context, d alloydb.Dialer, l alloydb.Logger, conf *Co
 					l.Errorf("failed to close mount: %v", mErr)
 				}
 			}
-			i, instUriErr := ShortInstURI(inst.Name)
-			if instUriErr != nil {
+			i, instURIErr := ShortInstURI(inst.Name)
+			if instURIErr != nil {
 				// this shouldn't happen because the inst uri is already validated by this point
 				i = inst.Name
 			}
