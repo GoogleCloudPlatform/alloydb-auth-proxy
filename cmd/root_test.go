@@ -903,7 +903,7 @@ func TestPrometheusMetricsEndpoint(t *testing.T) {
 	// Keep the test output quiet
 	c.SilenceUsage = true
 	c.SilenceErrors = true
-	c.SetArgs([]string{"--prometheus", "projects/my-project/locations/my-region/clusters/my-cluster/instances/my-instance"})
+	c.SetArgs([]string{"--prometheus", "projects/my-project/locations/my-region/clusters/my-cluster/instances/my-instance?port=5321"})
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -926,7 +926,7 @@ func TestPProfServer(t *testing.T) {
 	c.SilenceUsage = true
 	c.SilenceErrors = true
 	c.SetArgs([]string{"--debug", "--admin-port", "9191",
-		"projects/proj/locations/region/clusters/clust/instances/inst"})
+		"projects/proj/locations/region/clusters/clust/instances/inst?port=5323"})
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
