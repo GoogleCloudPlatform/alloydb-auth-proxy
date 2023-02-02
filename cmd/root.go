@@ -29,6 +29,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -177,9 +178,9 @@ Instance Level Configuration
 
     When necessary, you may specify the full path to a Unix socket. Set the
     unix-socket-path query parameter to the absolute path of the Unix socket for
-    the database instance. The parent directory of the unix-socket-path must 
+    the database instance. The parent directory of the unix-socket-path must
     exist when the proxy starts or else socket creation will fail. For Postgres
-    instances, the proxy will ensure that the last path element is 
+    instances, the proxy will ensure that the last path element is
     '.s.PGSQL.5432' appending it if necessary. For example,
 
         ./cloud-sql-proxy \
@@ -268,15 +269,20 @@ Configuration using environment variables
 Localhost Admin Server
 
     The Proxy includes support for an admin server on localhost. By default,
-    the admin server is not enabled. To enable the server, pass the --debug
-    flag. This will start the server on localhost at port 9091. To change the
-    port, use the --admin-port flag.
+    the admin server is not enabled. To enable the server, pass the --debug or
+    --quitquitquit flag. This will start the server on localhost at port 9091.
+    To change the port, use the --admin-port flag.
 
-    The admin server includes Go's pprof tool and is available at
+    When --debug is set, the admin server enables Go's profiler available at
     /debug/pprof/.
 
     See the documentation on pprof for details on how to use the
     profiler at https://pkg.go.dev/net/http/pprof.
+
+    When --quitquitquit is set, the admin server adds an endpoint at
+    /quitquitquit. The admin server exits gracefully when it receives a POST
+    request at /quitquitquit.
+
 `
 
 const envPrefix = "ALLOYDB_PROXY"
@@ -411,7 +417,9 @@ the maximum time has passed. Defaults to 0s.`)
 	pflags.StringVar(&c.conf.HTTPPort, "http-port", "9090",
 		"Port for the Prometheus server to use")
 	pflags.BoolVar(&c.conf.Debug, "debug", false,
-		"Enable the admin server on localhost")
+		"Enable pprof on the localhost admin server")
+	pflags.BoolVar(&c.conf.QuitQuitQuit, "quitquitquit", false,
+		"Enable quitquitquit endpoint on the localhost admin server")
 	pflags.StringVar(&c.conf.AdminPort, "admin-port", "9091",
 		"Port for localhost-only admin server")
 	pflags.BoolVar(&c.conf.HealthCheck, "health-check", false,
@@ -619,7 +627,7 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 }
 
 // runSignalWrapper watches for SIGTERM and SIGINT and interupts execution if necessary.
-func runSignalWrapper(cmd *Command) error {
+func runSignalWrapper(cmd *Command) (err error) {
 	defer cmd.cleanup()
 	ctx, cancel := context.WithCancel(cmd.Context())
 	defer cancel()
@@ -651,21 +659,6 @@ func runSignalWrapper(cmd *Command) error {
 			sd.Flush()
 			sd.StopMetricsExporter()
 		}()
-	}
-
-	var (
-		needsHTTPServer bool
-		mux             = http.NewServeMux()
-	)
-	if cmd.conf.Prometheus {
-		needsHTTPServer = true
-		e, err := prometheus.NewExporter(prometheus.Options{
-			Namespace: cmd.conf.PrometheusNamespace,
-		})
-		if err != nil {
-			return err
-		}
-		mux.Handle("/metrics", e)
 	}
 
 	shutdownCh := make(chan error)
@@ -711,10 +704,27 @@ func runSignalWrapper(cmd *Command) error {
 	defer func() {
 		if cErr := p.Close(); cErr != nil {
 			cmd.logger.Errorf("error during shutdown: %v", cErr)
+			// Capture error from close to propagate it to the caller.
+			err = cErr
 		}
 	}()
 
-	notify := func() {}
+	var (
+		needsHTTPServer bool
+		mux             = http.NewServeMux()
+		notify          = func() {}
+	)
+	if cmd.conf.Prometheus {
+		needsHTTPServer = true
+		e, err := prometheus.NewExporter(prometheus.Options{
+			Namespace: cmd.conf.PrometheusNamespace,
+		})
+		if err != nil {
+			return err
+		}
+		mux.Handle("/metrics", e)
+	}
+
 	if cmd.conf.HealthCheck {
 		needsHTTPServer = true
 		cmd.logger.Infof("Starting health check server at %s",
@@ -725,54 +735,51 @@ func runSignalWrapper(cmd *Command) error {
 		mux.HandleFunc("/liveness", hc.HandleLiveness)
 		notify = hc.NotifyStarted
 	}
+	// Start the HTTP server if anything requiring HTTP is specified.
+	if needsHTTPServer {
+		go startHTTPServer(
+			ctx,
+			cmd.logger,
+			net.JoinHostPort(cmd.conf.HTTPAddress, cmd.conf.HTTPPort),
+			mux,
+			shutdownCh,
+		)
+	}
 
-	go func() {
-		if !cmd.conf.Debug {
-			return
-		}
-		m := http.NewServeMux()
+	var (
+		needsAdminServer bool
+		m                = http.NewServeMux()
+	)
+	if cmd.conf.QuitQuitQuit {
+		needsAdminServer = true
+		cmd.logger.Infof("Enabling quitquitquit endpoint at localhost:%v", cmd.conf.AdminPort)
+		// quitquitquit allows for shutdown on localhost only.
+		var quitOnce sync.Once
+		m.HandleFunc("/quitquitquit", quitquitquit(&quitOnce, shutdownCh))
+	}
+	if cmd.conf.Debug {
+		needsAdminServer = true
+		cmd.logger.Infof("Enabling pprof endpoints at localhost:%v", cmd.conf.AdminPort)
+		// pprof standard endpoints
 		m.HandleFunc("/debug/pprof/", pprof.Index)
 		m.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
 		m.HandleFunc("/debug/pprof/profile", pprof.Profile)
 		m.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
 		m.HandleFunc("/debug/pprof/trace", pprof.Trace)
-		addr := net.JoinHostPort("localhost", cmd.conf.AdminPort)
-		cmd.logger.Infof("Starting admin server on %v", addr)
-		if lErr := http.ListenAndServe(addr, m); lErr != nil {
-			cmd.logger.Errorf("Failed to start admin HTTP server: %v", lErr)
-		}
-	}()
-	// Start the HTTP server if anything requiring HTTP is specified.
-	if needsHTTPServer {
-		server := &http.Server{
-			Addr:    net.JoinHostPort(cmd.conf.HTTPAddress, cmd.conf.HTTPPort),
-			Handler: mux,
-		}
-		// Start the HTTP server.
-		go func() {
-			err := server.ListenAndServe()
-			if err == http.ErrServerClosed {
-				return
-			}
-			if err != nil {
-				shutdownCh <- fmt.Errorf("failed to start HTTP server: %v", err)
-			}
-		}()
-		// Handle shutdown of the HTTP server gracefully.
-		go func() {
-			<-ctx.Done()
-			// Give the HTTP server a second to shutdown cleanly.
-			ctx2, cancel := context.WithTimeout(context.Background(), time.Second)
-			defer cancel()
-			if err := server.Shutdown(ctx2); err != nil {
-				cmd.logger.Errorf("failed to shutdown Prometheus HTTP server: %v\n", err)
-			}
-		}()
+	}
+	if needsAdminServer {
+		go startHTTPServer(
+			ctx,
+			cmd.logger,
+			net.JoinHostPort("localhost", cmd.conf.AdminPort),
+			m,
+			shutdownCh,
+		)
 	}
 
 	go func() { shutdownCh <- p.Serve(ctx, notify) }()
 
-	err := <-shutdownCh
+	err = <-shutdownCh
 	switch {
 	case errors.Is(err, errSigInt):
 		cmd.logger.Errorf("SIGINT signal received. Shutting down...")
@@ -782,4 +789,46 @@ func runSignalWrapper(cmd *Command) error {
 		cmd.logger.Errorf("The proxy has encountered a terminal error: %v", err)
 	}
 	return err
+}
+
+func quitquitquit(quitOnce *sync.Once, shutdownCh chan<- error) http.HandlerFunc {
+	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		if req.Method != http.MethodPost {
+			rw.WriteHeader(400)
+			return
+		}
+		quitOnce.Do(func() {
+			select {
+			case shutdownCh <- errQuitQuitQuit:
+			default:
+				// The write attempt to shutdownCh failed and
+				// the proxy is already exiting.
+			}
+		})
+	})
+}
+
+func startHTTPServer(ctx context.Context, l cloudsql.Logger, addr string, mux *http.ServeMux, shutdownCh chan<- error) {
+	server := &http.Server{
+		Addr:    addr,
+		Handler: mux,
+	}
+	// Start the HTTP server.
+	go func() {
+		err := server.ListenAndServe()
+		if err == http.ErrServerClosed {
+			return
+		}
+		if err != nil {
+			shutdownCh <- fmt.Errorf("failed to start HTTP server: %v", err)
+		}
+	}()
+	// Handle shutdown of the HTTP server gracefully.
+	<-ctx.Done()
+	// Give the HTTP server a second to shutdown cleanly.
+	ctx2, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	if err := server.Shutdown(ctx2); err != nil {
+		l.Errorf("failed to shutdown HTTP server: %v\n", err)
+	}
 }
