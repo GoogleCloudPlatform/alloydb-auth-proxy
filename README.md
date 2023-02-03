@@ -279,18 +279,22 @@ for possible values.
 
 ## Localhost Admin Server
 
-The Proxy includes support for an admin server on localhost. By default, the
-admin server is not enabled. To enable the server, pass the `--debug` flag.
-This will start the server on localhost at port 9091. To change the port, use
-the `--admin-port` flag.
+The Proxy includes support for an admin server on localhost. By default,
+the admin server is not enabled. To enable the server, pass the --debug or
+--quitquitquit flag. This will start the server on localhost at port 9091.
+To change the port, use the --admin-port flag.
 
-The admin server includes Go's pprof tool and is available at `/debug/pprof/`.
+When --debug is set, the admin server enables Go's profiler available at
+/debug/pprof/.
 
 See the [documentation on pprof][pprof] for details on how to use the
 profiler.
 
-[pprof]: https://pkg.go.dev/net/http/pprof.
+When --quitquitquit is set, the admin server adds an endpoint at
+/quitquitquit. The admin server exits gracefully when it receives a POST
+request at /quitquitquit.
 
+[pprof]: https://pkg.go.dev/net/http/pprof.
 
 ## Support policy
 
