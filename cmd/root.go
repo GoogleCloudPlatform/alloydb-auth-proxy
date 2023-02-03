@@ -808,7 +808,7 @@ func quitquitquit(quitOnce *sync.Once, shutdownCh chan<- error) http.HandlerFunc
 	})
 }
 
-func startHTTPServer(ctx context.Context, l cloudsql.Logger, addr string, mux *http.ServeMux, shutdownCh chan<- error) {
+func startHTTPServer(ctx context.Context, l alloydb.Logger, addr string, mux *http.ServeMux, shutdownCh chan<- error) {
 	server := &http.Server{
 		Addr:    addr,
 		Handler: mux,

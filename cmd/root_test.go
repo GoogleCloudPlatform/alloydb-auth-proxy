@@ -327,7 +327,8 @@ func TestNewCommandArguments(t *testing.T) {
 		},
 		{
 			desc: "using the quitquitquit flag",
-			args: []string{"--quitquitquit", "proj:region:inst"},
+			args: []string{"--quitquitquit",
+				"projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
 				QuitQuitQuit: true,
 			}),
@@ -549,7 +550,7 @@ func TestNewCommandWithEnvironmentConfig(t *testing.T) {
 		},
 		{
 			desc:     "using the quitquitquit envvar",
-			envName:  "CSQL_PROXY_QUITQUITQUIT",
+			envName:  "ALLOYDB_PROXY_QUITQUITQUIT",
 			envValue: "true",
 			want: withDefaults(&proxy.Config{
 				QuitQuitQuit: true,
@@ -986,7 +987,8 @@ func TestQuitQuitQuit(t *testing.T) {
 	c := NewCommand(WithDialer(&spyDialer{}))
 	c.SilenceUsage = true
 	c.SilenceErrors = true
-	c.SetArgs([]string{"--quitquitquit", "--admin-port", "9192", "my-project:my-region:my-instance"})
+	c.SetArgs([]string{"--quitquitquit", "--admin-port", "9192",
+		"projects/proj/locations/region/clusters/clust/instances/inst"})
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -1030,8 +1032,7 @@ func TestQuitQuitQuitWithErrors(t *testing.T) {
 	c.SilenceErrors = true
 	c.SetArgs([]string{
 		"--quitquitquit", "--admin-port", "9193",
-		"my-project:my-region:my-instance",
-	})
+		"projects/proj/locations/region/clusters/clust/instances/inst"})
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
