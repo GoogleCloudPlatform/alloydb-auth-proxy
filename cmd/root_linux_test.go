@@ -32,14 +32,14 @@ func TestNewCommandArgumentsOnLinux(t *testing.T) {
 	}{
 		{
 			desc:        "using the fuse flag",
-			args:        []string{"--fuse", "/cloudsql"},
-			wantDir:     "/cloudsql",
+			args:        []string{"--fuse", "/alloydb"},
+			wantDir:     "/alloydb",
 			wantTempDir: defaultTmp,
 		},
 		{
 			desc:        "using the fuse temporary directory flag",
-			args:        []string{"--fuse", "/cloudsql", "--fuse-tmp-dir", "/mycooldir"},
-			wantDir:     "/cloudsql",
+			args:        []string{"--fuse", "/alloydb", "--fuse-tmp-dir", "/mycooldir"},
+			wantDir:     "/alloydb",
 			wantTempDir: "/mycooldir",
 		},
 	}
