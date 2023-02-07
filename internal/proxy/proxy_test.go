@@ -74,7 +74,7 @@ func (*fakeDialer) Close() error {
 }
 
 type errorDialer struct {
-	fakeDialer
+	fakeDialer //nolint:unused
 }
 
 func (*errorDialer) Dial(_ context.Context, _ string, _ ...alloydbconn.DialOption) (net.Conn, error) {
