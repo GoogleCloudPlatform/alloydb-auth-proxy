@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.2.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.1.0...v1.2.0) (2023-02-17)
+
+
+### Features
+
+* add admin server with pprof ([#236](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/236)) ([46d59c8](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/46d59c8b43cb58852b513e2114f9307176b76d0c))
+* add support for Go 1.20 ([#256](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/256)) ([1f4f1c7](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/1f4f1c7f1c85d175576189d045c9c58d6c25a3f5))
+* add support for min ready instances ([#229](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/229)) ([f9d262a](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/f9d262aa4244bc9be80c096b76378af74722511f))
+* add support for quitquitquit endpoint ([#255](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/255)) ([afc7bc1](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/afc7bc1ab620999e52763e723d782d5312c7cf3d))
+* add support for unix-socket-path instance parameter. ([#251](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/251)) ([3c17cfa](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/3c17cfa4d7af792a70c6f2f2d8e792fdd4687f26))
+* add support for user-agent configuration ([#232](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/232)) ([0b1d3e9](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/0b1d3e962bd0487b045a32777f54709d84ff2bea))
+
+
+### Bug Fixes
+
+* honor request context in readiness check ([#265](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/265)) ([96ec2aa](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/96ec2aab0a554f7735ab9dbcb084099e7477e714))
+* report the real error when newSocketMount() fails ([#252](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/252)) ([d76a334](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/d76a3346307640b5e3a81f3d5bbefcdf55e94e5b))
+* return correct exit code on SIGTERM ([#231](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/231)) ([a0ac50c](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/a0ac50cf968a77b94959d9dac232a9777391a0b9))
+* use correct OAuth2 scope for impersonation ([#241](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/241)) ([af91431](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/af914315111360a963377a3a4802ef612f7013e5))
+
 ## [1.1.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.0.0...v1.1.0) (2023-01-17)
 
 
