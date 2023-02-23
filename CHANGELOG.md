@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.2.0...v1.2.1) (2023-02-23)
+
+
+### Bug Fixes
+
+* build statically linked binaries ([#272](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/272)) ([75c05a6](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/75c05a606d5ebb675aefe6f2c557082f2ed0e3bc))
+
 ## [1.2.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.1.0...v1.2.0) (2023-02-17)
 
 
