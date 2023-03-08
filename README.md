@@ -182,7 +182,7 @@ See [Roles and Permissions in AlloyDB][roles-and-permissions] for details.
 When the proxy authenticates under the Compute Engine VM's default service
 account, the VM must have the `cloud-platform` API scope (i.e.,
 "https://www.googleapis.com/auth/cloud-platform") and the associated project
-must have the AlloyDB Admin API enabled. The default service account must also
+must have the AlloyDB API enabled. The default service account must also
 have at least writer or editor privileges to any projects of target AlloyDB
 instances.
 
@@ -276,6 +276,46 @@ to the AlloyDB Admin API. Specifying `HTTPS_PROXY` or `HTTP_PROXY` is only neces
 when you want to proxy this traffic. Otherwise, it is optional. See
 [`http.ProxyFromEnvironment`](https://pkg.go.dev/net/http@go1.17.3#ProxyFromEnvironment)
 for possible values.
+
+## Support for Metrics and Tracing
+
+The Proxy supports [Cloud Monitoring][], [Cloud Trace][], and [Prometheus][].
+
+Supported metrics include:
+
+- `alloydbconn/dial_latency`: The distribution of dialer latencies (ms)
+- `alloydbconn/open_connections`: The current number of open AlloyDB
+  connections
+- `alloydbconn/dial_failure_count`: The number of failed dial attempts
+- `alloydbconn/refresh_success_count`: The number of successful certificate
+  refresh operations
+- `alloydbconn/refresh_failure_count`: The number of failed refresh
+  operations.
+
+Supported traces include:
+
+- `cloud.google.com/go/alloydbconn.Dial`: The dial operation including
+  refreshing an ephemeral certificate and connecting to the instance
+- `cloud.google.com/go/alloydbconn/internal.InstanceInfo`: The call to retrieve
+  instance metadata (e.g., IP address, etc)
+- `cloud.google.com/go/alloydbconn/internal.Connect`: The connection attempt
+  using the ephemeral certificate
+- AlloyDB API client operations
+
+To enable Cloud Monitoring and Cloud Trace, use the `--telemetry-project` flag
+with the project where you want to view metrics and traces. To configure the
+metrics prefix used by Cloud Monitoring, use the `--telemetry-prefix` flag. When
+enabling telementry, both Cloud Monitoring and Cloud Trace are enabled. To
+disable Cloud Monitoring, use `--disable-metrics`. To disable Cloud Trace, use
+`--disable-traces`.
+
+To enable Prometheus, use the `--prometheus` flag. This will start an HTTP
+server on localhost with a `/metrics` endpoint. The Prometheus namespace may
+optionally be set with `--prometheus-namespace`.
+
+[cloud monitoring]: https://cloud.google.com/monitoring
+[cloud trace]: https://cloud.google.com/trace
+[prometheus]: https://prometheus.io/
 
 ## Localhost Admin Server
 
