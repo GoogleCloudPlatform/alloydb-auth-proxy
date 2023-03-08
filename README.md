@@ -283,13 +283,13 @@ The Proxy supports [Cloud Monitoring][], [Cloud Trace][], and [Prometheus][].
 
 Supported metrics include:
 
-- `/alloydbconn/dial_latency`: The distribution of dialer latencies (ms)
-- `/alloydbconn/open_connections`: The current number of open AlloyDB
+- `alloydbconn/dial_latency`: The distribution of dialer latencies (ms)
+- `alloydbconn/open_connections`: The current number of open AlloyDB
   connections
-- `/alloydbconn/dial_failure_count`: The number of failed dial attempts
-- `/alloydbconn/refresh_success_count`: The number of successful certificate
+- `alloydbconn/dial_failure_count`: The number of failed dial attempts
+- `alloydbconn/refresh_success_count`: The number of successful certificate
   refresh operations
-- `/alloydbconn/refresh_failure_count`: The number of failed refresh
+- `alloydbconn/refresh_failure_count`: The number of failed refresh
   operations.
 
 Supported traces include:
