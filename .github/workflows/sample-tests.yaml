@@ -21,6 +21,10 @@ on:
     types: [labeled]
   schedule:
   - cron:  '0 2 * * *'
+
+# Declare default permissions as read only.
+permissions: read-all
+
 jobs:
   # job to run change detection
   changes:
@@ -31,7 +35,8 @@ jobs:
     runs-on: ubuntu-latest
     # Required permissions
     permissions:
-      pull-requests: read
+      pull-requests: write
+      issues: write
     # Set job outputs to values from filter step
     outputs:
       java: ${{ steps.filter.outputs.java }}
@@ -41,7 +46,7 @@ jobs:
     steps:
     - name: Remove PR label
       if: "${{ github.event.action == 'labeled' && github.event.label.name == 'tests: run' }}"
-      uses: actions/github-script@v6
+      uses: actions/github-script@98814c53be79b1d30f795b907e553d8679345975 # v6.4.0
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
@@ -55,8 +60,8 @@ jobs:
           } catch (e) {
             console.log('Failed to remove label. Another job may have already removed it!');
           }
-    - uses: actions/checkout@v3
-    - uses: dorny/paths-filter@v2
+    - uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3.5.0
+    - uses: dorny/paths-filter@4512585405083f25c027a35db413c2b3b9006d50 # v2.11.1
       id: filter
       with:
         filters: |
@@ -79,28 +84,28 @@ jobs:
       id-token: 'write'
     steps:
       - name: Checkout code
-        uses: 'actions/checkout@v3'
+        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3.5.0
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
 
       - name: Setup Maven Action
-        uses: s4u/setup-maven-action@v1.2.1
+        uses: s4u/setup-maven-action@ff43cac4adff20c56ab316be03068e9ba66b46ef # v1.2.1
         with:
           java-version: 17
 
-      - name: 'Authenticate to Google Cloud'
+      - name: Authenticate to Google Cloud
         id: 'auth'
-        uses: 'google-github-actions/auth@v1.0.0'
+        uses: google-github-actions/auth@ef5d53e30bbcd8d0836f4288f5e50ff3e086997d # v1.0.0
         with:
           workload_identity_provider: ${{ secrets.PROVIDER_NAME }}
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
 
       - name: 'Set up Cloud SDK'
-        uses: 'google-github-actions/setup-gcloud@v1.1.0'
+        uses: google-github-actions/setup-gcloud@62d4898025f6041e16b1068643bfc5a696863587 # v1.1.0
       - name: Get Secrets
         id: 'secrets'
-        uses: 'google-github-actions/get-secretmanager-secrets@v0'
+        uses: google-github-actions/get-secretmanager-secrets@3686c350e6e4d637b9d23a67a3d6d8f0120f36d4 # v0.5.3
         with:
           secrets: |-
             ALLOYDB_CONN_NAME:alloydb-connector-testing/ALLOYDB_CONN_NAME
@@ -130,27 +135,27 @@ jobs:
       id-token: 'write'
     steps:
       - name: Checkout code
-        uses: 'actions/checkout@v3'
+        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3.5.0
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
         with:
           node-version: 14
 
-      - name: 'Authenticate to Google Cloud'
+      - name: Authenticate to Google Cloud
         id: 'auth'
-        uses: 'google-github-actions/auth@v1.0.0'
+        uses: google-github-actions/auth@ef5d53e30bbcd8d0836f4288f5e50ff3e086997d # v1.0.0
         with:
           workload_identity_provider: ${{ secrets.PROVIDER_NAME }}
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
 
-      - name: 'Set up Cloud SDK'
-        uses: 'google-github-actions/setup-gcloud@v1.1.0'
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@62d4898025f6041e16b1068643bfc5a696863587 # v1.1.0
       - name: Get Secrets
         id: 'secrets'
-        uses: 'google-github-actions/get-secretmanager-secrets@v0'
+        uses: google-github-actions/get-secretmanager-secrets@3686c350e6e4d637b9d23a67a3d6d8f0120f36d4 # v0.5.3
         with:
           secrets: |-
             ALLOYDB_CONN_NAME:alloydb-connector-testing/ALLOYDB_CONN_NAME
@@ -175,26 +180,26 @@ jobs:
       id-token: 'write'
     steps:
       - name: Checkout code
-        uses: 'actions/checkout@v3'
+        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3.5.0
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
       - name: Setup Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@4d34df0c2316fe8122ab82dc22947d607c0c91f9 # v4.0.0
         with:
           go-version: "1.20"
-      - name: 'Authenticate to Google Cloud'
+      - name: Authenticate to Google Cloud
         id: 'auth'
-        uses: 'google-github-actions/auth@v1.0.0'
+        uses: google-github-actions/auth@ef5d53e30bbcd8d0836f4288f5e50ff3e086997d # v1.0.0
         with:
           workload_identity_provider: ${{ secrets.PROVIDER_NAME }}
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
 
-      - name: 'Set up Cloud SDK'
-        uses: 'google-github-actions/setup-gcloud@v1.1.0'
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@62d4898025f6041e16b1068643bfc5a696863587 # v1.1.0
       - name: Get Secrets
         id: 'secrets'
-        uses: 'google-github-actions/get-secretmanager-secrets@v0'
+        uses: google-github-actions/get-secretmanager-secrets@3686c350e6e4d637b9d23a67a3d6d8f0120f36d4 # v0.5.3
         with:
           secrets: |-
             ALLOYDB_CONN_NAME:alloydb-connector-testing/ALLOYDB_CONN_NAME
@@ -219,23 +224,23 @@ jobs:
       id-token: 'write'
     steps:
       - name: Checkout code
-        uses: 'actions/checkout@v3'
+        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3.5.0
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
 
       - name: 'Authenticate to Google Cloud'
         id: 'auth'
-        uses: 'google-github-actions/auth@v1.0.0'
+        uses: 'google-github-actions/auth@ef5d53e30bbcd8d0836f4288f5e50ff3e086997d # v1.0.0'
         with:
           workload_identity_provider: ${{ secrets.PROVIDER_NAME }}
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
      
-      - name: 'Set up Cloud SDK'
-        uses: 'google-github-actions/setup-gcloud@v1.1.0'
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@62d4898025f6041e16b1068643bfc5a696863587 # v1.1.0
       - name: Get Secrets
         id: 'secrets'
-        uses: 'google-github-actions/get-secretmanager-secrets@v0'
+        uses: google-github-actions/get-secretmanager-secrets@3686c350e6e4d637b9d23a67a3d6d8f0120f36d4 # v0.5.3
         with:
           secrets: |-
             ALLOYDB_CONN_NAME:alloydb-connector-testing/ALLOYDB_CONN_NAME
