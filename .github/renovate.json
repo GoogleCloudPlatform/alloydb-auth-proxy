@@ -1,9 +1,8 @@
 {
   "extends": [
     "config:base",
-    ":semanticCommitTypeAll(chore)"
   ],
-  "ignorePresets": [":semanticPrefixFixDepsChoreOthers"],
+  "commitMessagePrefix": "deps: ",
   "packageRules": [
     {
       "description": "Group all dependencies for Samples",
@@ -14,11 +13,4 @@
       ]
     }
   ],
-  "prConcurrentLimit": 0,
-  "rebaseStalePrs": true,
-  "dependencyDashboard": true,
-  "semanticCommits": true,
-  "postUpdateOptions": [
-    "gomodTidy"
-  ]
 }
