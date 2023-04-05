@@ -90,7 +90,7 @@ jobs:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
 
       - name: Setup Maven Action
-        uses: s4u/setup-maven-action@ff43cac4adff20c56ab316be03068e9ba66b46ef # v1.2.1
+        uses: s4u/setup-maven-action@94605e0cdfe442da48d603db22bbf4c7d203c076 # v1.7.0
         with:
           java-version: 17
 
@@ -105,7 +105,7 @@ jobs:
         uses: google-github-actions/setup-gcloud@62d4898025f6041e16b1068643bfc5a696863587 # v1.1.0
       - name: Get Secrets
         id: 'secrets'
-        uses: google-github-actions/get-secretmanager-secrets@3686c350e6e4d637b9d23a67a3d6d8f0120f36d4 # v0.5.3
+        uses: google-github-actions/get-secretmanager-secrets@7fced8b6579c75d7c465165b38ec29175d9a469c # v1.0.0
         with:
           secrets: |-
             ALLOYDB_CONN_NAME:alloydb-connector-testing/ALLOYDB_CONN_NAME
@@ -155,7 +155,7 @@ jobs:
         uses: google-github-actions/setup-gcloud@62d4898025f6041e16b1068643bfc5a696863587 # v1.1.0
       - name: Get Secrets
         id: 'secrets'
-        uses: google-github-actions/get-secretmanager-secrets@3686c350e6e4d637b9d23a67a3d6d8f0120f36d4 # v0.5.3
+        uses: google-github-actions/get-secretmanager-secrets@7fced8b6579c75d7c465165b38ec29175d9a469c # v1.0.0
         with:
           secrets: |-
             ALLOYDB_CONN_NAME:alloydb-connector-testing/ALLOYDB_CONN_NAME
@@ -199,7 +199,7 @@ jobs:
         uses: google-github-actions/setup-gcloud@62d4898025f6041e16b1068643bfc5a696863587 # v1.1.0
       - name: Get Secrets
         id: 'secrets'
-        uses: google-github-actions/get-secretmanager-secrets@3686c350e6e4d637b9d23a67a3d6d8f0120f36d4 # v0.5.3
+        uses: google-github-actions/get-secretmanager-secrets@7fced8b6579c75d7c465165b38ec29175d9a469c # v1.0.0
         with:
           secrets: |-
             ALLOYDB_CONN_NAME:alloydb-connector-testing/ALLOYDB_CONN_NAME
@@ -240,7 +240,7 @@ jobs:
         uses: google-github-actions/setup-gcloud@62d4898025f6041e16b1068643bfc5a696863587 # v1.1.0
       - name: Get Secrets
         id: 'secrets'
-        uses: google-github-actions/get-secretmanager-secrets@3686c350e6e4d637b9d23a67a3d6d8f0120f36d4 # v0.5.3
+        uses: google-github-actions/get-secretmanager-secrets@7fced8b6579c75d7c465165b38ec29175d9a469c # v1.0.0
         with:
           secrets: |-
             ALLOYDB_CONN_NAME:alloydb-connector-testing/ALLOYDB_CONN_NAME
