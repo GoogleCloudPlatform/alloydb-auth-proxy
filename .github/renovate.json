@@ -5,7 +5,7 @@
   "commitMessagePrefix": "deps: ",
   "postUpdateOptions": [
     "gomodTidy"
-  ]
+  ],
   "packageRules": [
     {
       "description": "Group all dependencies for Samples",
