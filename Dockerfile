@@ -26,7 +26,7 @@ RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} \
     go build -ldflags "-X github.com/GoogleCloudPlatform/alloydb-auth-proxy/cmd.metadataString=container"
 
 # Final Stage
-FROM gcr.io/distroless/static:nonroot
+FROM gcr.io/distroless/static:nonroot@sha256:149531e38c7e4554d4a6725d7d70593ef9f9881358809463800669ac89f3b0ec
 COPY --from=build --chown=nonroot /go/src/alloydb-auth-proxy/alloydb-auth-proxy /alloydb-auth-proxy
 # set the uid as an integer for compatibility with runAsNonRoot in Kubernetes
 USER 65532
