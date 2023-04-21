@@ -31,13 +31,10 @@ export DB_PASS='my-db-pass'
 export DB_NAME='my_db'
 export DB_HOST='<IP Address of Cluster or 127.0.0.1 if using auth proxy>'
 export DB_PORT=5432
-export ALLOYDB_CONNECTION_NAME='projects/<PROJECT>/locations/<REGION>/clusters/<CLUSTER>/instances/<INSTANCE>'
 ```
-Note: Defining credentials in environment variables is convenient, but not secure. For a more secure solution, use
-[Secret Manager](https://cloud.google.com/secret-manager/) to help keep secrets safe. You can then define
-`export ALLOYDB_CREDENTIALS_SECRET='projects/PROJECT_ID/secrets/SECRET_ID/versions/VERSION'` to reference a secret
-that stores your AlloyDB database password. The sample app checks for your defined secret version. If a version is
-present, the app retrieves the `DB_PASS` from Secret Manager before it connects to AlloyDB.
+
+Note: Saving credentials in environment variables is convenient, but not secure - consider a more
+secure solution such as [Secret Manager](https://cloud.google.com/secret-manager/) to help keep secrets safe.
 
 ## Deploy to Google App Engine Standard
 
@@ -77,27 +74,21 @@ gcloud builds submit --tag gcr.io/[YOUR_PROJECT_ID]/run-alloydb
 2. Deploy the service to Cloud Run:
 
 ```sh
-gcloud run deploy run-sql --image gcr.io/[YOUR_PROJECT_ID]/run-alloydb
-```
-
-Take note of the URL output at the end of the deployment process.
-
-3. Configure the service for use with Cloud Run
-
-```sh
-gcloud run services update run-alloydb \
+gcloud run deploy run-sql --image gcr.io/[YOUR_PROJECT_ID]/run-alloydb \
   --platform managed \
   --vpc-connector=[YOUR_VPC_CONNECTOR] \
   --allow-unauthenticated \
-  --region <REGION> \
-  --update-env-vars ALLOYDB_CONNECTION_NAME=<ALLOYDB_CONNECTION_NAME> \
-  --update-env-vars DB_USER='[MY_DB_USER]' \
-  --update-env-vars DB_PASS='[MY_DB_PASS]' \
-  --update-env-vars DB_NAME='[MY_DB]'
+  --region [REGION] \
+  --update-env-vars DB_HOST=[MY_DB_HOST] \
+  --update-env-vars DB_PORT=[DB_PORT] \
+  --update-env-vars DB_USER=[MY_DB_USER] \
+  --update-env-vars DB_PASS=[MY_DB_PASS] \
+  --update-env-vars DB_NAME=[MY_DB]
 ```
-Replace environment variables with the correct values for your AlloyDB configuration.
 
-This step can be done as part of deployment but is separated for clarity.
+Replace environment variables with the correct values for your AlloyDB instance configuration.
+
+Take note of the URL output at the end of the deployment process.
 
 It is recommended to use the [Secret Manager integration](https://cloud.google.com/run/docs/configuring/secrets) for Cloud Run instead
 of using environment variables for the SQL configuration. The service injects the AlloyDB credentials from
@@ -105,19 +96,20 @@ Secret Manager at runtime via an environment variable.
 
 Create secrets via the command line:
 ```sh
-echo -n $ALLOYDB_CONNECTION | \
-    gcloud secrets create [ALLOYDB_CONNECTION_SECRET] --data-file=-
+echo -n $DB_USER | \
+    gcloud secrets versions add DB_USER_SECRET --data-file=-
 ```
 
 Deploy the service to Cloud Run specifying the env var name and secret name:
 ```sh
 gcloud beta run deploy SERVICE --image gcr.io/[YOUR_PROJECT_ID]/alloydb \
-    --update-secrets ALLOYDB_CONNECTION_NAME=[ALLOYDB_CONNECTION_NAME_SECRET]:latest,\
+    --update-secrets DB_HOST=[DB_HOST_SECRET]:latest,\
+      DB_PORT=[DB_PORT_SECRET]:latest, \
       DB_USER=[DB_USER_SECRET]:latest, \
       DB_PASS=[DB_PASS_SECRET]:latest, \
       DB_NAME=[DB_NAME_SECRET]:latest
 ```
 
-4. Navigate your browser to the URL noted in step 2.
+1. Navigate your browser to the URL noted in step 2.
 
 For more details about using Cloud Run see http://cloud.run.

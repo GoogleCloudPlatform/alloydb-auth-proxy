@@ -26,7 +26,6 @@ export DB_PASS='<YOUR_DB_PASSWORD>'
 export DB_NAME='<YOUR_DB_NAME>'
 export DB_HOST='<IP Address of Cluster or 127.0.0.1 if using auth proxy>'
 export DB_POST=5432
-export ALLOYDB_CONNECTION_NAME='projects/<PROJECT>/locations/<REGION>/clusters/<CLUSTER>/instances/<INSTANCE>'
 ```
 Note: Saving credentials in environment variables is convenient, but not secure - consider a more
 secure solution such as [Secret Manager](https://cloud.google.com/secret-manager/) to help keep secrets safe.
@@ -130,14 +129,14 @@ Secret Manager at runtime via an environment variable.
 
 Create secrets via the command line:
 ```sh
-echo -n "projects/<PROJECT>/locations/<REGION>/clusters/<CLUSTER>/instances/<INSTANCE>" | \
-      gcloud secrets versions add ALLOYDB_CONNECTION_NAME_SECRET --data-file=-
+echo -n $DB_USER | \
+    gcloud secrets versions add DB_USER_SECRET --data-file=-
 ```
 
 Deploy the service to Cloud Run specifying the env var name and secret name:
 ```sh
 gcloud beta run deploy SERVICE --image gcr.io/[YOUR_PROJECT_ID]/run-alloydb \
-    --update-secrets   --update-secrets DB_HOST=[DB_HOST_SECRET]:latest,\
+    --update-secrets DB_HOST=[DB_HOST_SECRET]:latest,\
       DB_PORT=[DB_PORT_SECRET]:latest, \
       DB_USER=[DB_USER_SECRET]:latest, \
       DB_PASS=[DB_PASS_SECRET]:latest, \
