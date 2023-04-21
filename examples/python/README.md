@@ -110,7 +110,6 @@ gcloud builds submit --tag gcr.io/[YOUR_PROJECT_ID]/run-alloydb
     --image gcr.io/[YOUR_PROJECT_ID]/run-alloydb \
     --platform managed \
     --vpc-connector=[YOUR_VPC_CONNECTOR] \
-    --vpc-egress=all-traffic \
     --allow-unauthenticated \
     --region [REGION] \
     --update-env-vars DB_HOST=[DB_HOST] \
