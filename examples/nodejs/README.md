@@ -30,7 +30,7 @@ export DB_USER='my-db-user'
 export DB_PASS='my-db-pass'
 export DB_NAME='my_db'
 export DB_HOST='<IP Address of Cluster or 127.0.0.1 if using auth proxy>'
-export DB_POST=5432
+export DB_PORT=5432
 export ALLOYDB_CONNECTION_NAME='projects/<PROJECT>/locations/<REGION>/clusters/<CLUSTER>/instances/<INSTANCE>'
 ```
 Note: Defining credentials in environment variables is convenient, but not secure. For a more secure solution, use
