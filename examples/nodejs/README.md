@@ -87,6 +87,8 @@ Take note of the URL output at the end of the deployment process.
 ```sh
 gcloud run services update run-alloydb \
   --platform managed \
+  --vpc-connector=[YOUR_VPC_CONNECTOR] \
+  --vpc-egress=all-traffic \
   --allow-unauthenticated \
   --region <REGION> \
   --update-env-vars ALLOYDB_CONNECTION_NAME=<ALLOYDB_CONNECTION_NAME> \

@@ -66,6 +66,8 @@ mvn clean package com.google.cloud.tools:jib-maven-plugin:2.8.0:build \
   ```sh
   gcloud run deploy run-postgres \
     --image gcr.io/[YOUR_PROJECT_ID]/run-alloydb \
+    --vpc-connector=[YOUR_VPC_CONNECTOR] \
+    --vpc-egress=all-traffic \
     --platform managed \
     --allow-unauthenticated \
     --region [REGION] \
