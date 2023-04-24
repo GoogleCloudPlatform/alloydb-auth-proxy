@@ -29,6 +29,10 @@ func TestPostgresFUSEConnect(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping Postgres integration tests")
 	}
+	_, isFlex := os.LookupEnv("FLEX")
+	if isFlex {
+		t.Skip("App Engine Flex doesn't support FUSE")
+	}
 	tmpDir, cleanup := createTempDir(t)
 	defer cleanup()
 
