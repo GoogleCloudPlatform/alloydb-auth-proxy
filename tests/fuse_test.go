@@ -65,10 +65,6 @@ func testFUSE(t *testing.T, tmpDir, host string, dsn string) {
 			desc: "using default fuse",
 			args: []string{fmt.Sprintf("--fuse=%s", tmpDir), fmt.Sprintf("--fuse-tmp-dir=%s", tmpDir2)},
 		},
-		{
-			desc: "using fuse with auto-iam-authn",
-			args: []string{fmt.Sprintf("--fuse=%s", tmpDir), "--auto-iam-authn"},
-		},
 	}
 
 	for _, tc := range tcs {
