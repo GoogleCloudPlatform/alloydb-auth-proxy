@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.3](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.2.2...v1.2.3) (2023-04-24)
+
+
+### Bug Fixes
+
+* allow `--structured-logs` and `--quiet` flags together ([#317](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/317)) ([2cba2f0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/2cba2f07767164327f534a1c748e943a2d0d5cc3))
+* pass dial options to FUSE mounts ([#319](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/319)) ([65ce745](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/65ce745b0585b7353b1c8bac596032c9c609d416))
+
 ## [1.2.2](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.2.1...v1.2.2) (2023-03-22)
 
 
