@@ -28,7 +28,7 @@ export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service/account/key.json
 export DB_USER='<YOUR_DB_USER_NAME>'
 export DB_PASS='<YOUR_DB_PASSWORD>'
 export DB_NAME='<YOUR_DB_NAME>'
-export DB_HOST='<IP Address of Cluster or 127.0.0.1 if using auth proxy>'
+export INSTANCE_HOST='<IP Address of Cluster or 127.0.0.1 if using auth proxy>'
 export DB_PORT=5432
 ```
 
@@ -46,7 +46,7 @@ variables into the runtime. Your `app.standard.yaml` file should look like this:
 ```yaml
 runtime: go116
 env_variables:
-  DB_HOST: 127.0.0.1
+  INSTANCE_HOST: 127.0.0.1
   DB_PORT: 5432
   DB_USER: <YOUR_DB_USER_NAME>
   DB_PASS: <YOUR_DB_PASSWORD>
@@ -81,7 +81,7 @@ gcloud run deploy run-alloydb --image gcr.io/[YOUR_PROJECT_ID]/run-alloydb \
   --vpc-connector=[YOUR_VPC_CONNECTOR] \
   --allow-unauthenticated \
   --region <REGION> \
-  --update-env-vars DB_HOST='<DB_HOST>' \
+  --update-env-vars INSTANCE_HOST='<INSTANCE_HOST>' \
   --update-env-vars DB_PORT='<DB_PORT>' \
   --update-env-vars DB_USER='<YOUR_DB_USER_NAME>' \
   --update-env-vars DB_PASS='<YOUR_DB_PASSWORD>' \
@@ -105,7 +105,7 @@ echo -n $DB_USER | \
 Deploy the service to Cloud Run specifying the env var name and secret name:
 ```sh
 gcloud beta run deploy SERVICE --image gcr.io/[YOUR_PROJECT_ID]/run-alloydb \
-  --update-secrets DB_HOST=[DB_HOST_SECRET]:latest,\
+  --update-secrets INSTANCE_HOST=[INSTANCE_HOST_SECRET]:latest,\
     DB_PORT=[DB_PORT_SECRET]:latest,\
     DB_USER=[DB_USER_SECRET]:latest, \
     DB_PASS=[DB_PASS_SECRET]:latest, \

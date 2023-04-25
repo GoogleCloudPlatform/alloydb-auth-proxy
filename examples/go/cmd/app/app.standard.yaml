@@ -15,7 +15,7 @@
 runtime: go116
 
 env_variables:
-  DB_HOST: 127.0.0.1
+  INSTANCE_HOST: 127.0.0.1
   DB_PORT: 5432
   DB_USER: <YOUR_DB_USER_NAME>
   DB_PASS: <YOUR_DB_PASSWORD>
