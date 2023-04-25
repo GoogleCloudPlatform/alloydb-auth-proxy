@@ -18,7 +18,7 @@
   <threadsafe>true</threadsafe>
   <runtime>java8</runtime>
   <env-variables>
-    <env-var name="DB_HOST" value="127.0.0.1" />
+    <env-var name="INSTANCE_HOST" value="127.0.0.1" />
     <env-var name="DB_PORT" value="5432" />
     <env-var name="DB_USER" value="my-db-user" />
     <env-var name="DB_PASS" value="my-db-password" />

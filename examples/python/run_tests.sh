@@ -21,7 +21,7 @@ URL="https://storage.googleapis.com/alloydb-auth-proxy/v0.6.2"
 wget "$URL/alloydb-auth-proxy.linux.amd64" -O alloydb-auth-proxy
 chmod +x alloydb-auth-proxy
 ./alloydb-auth-proxy "${ALLOYDB_CONNECTION_NAME}" &
-export DB_HOST="127.0.0.1"
+export INSTANCE_HOST="127.0.0.1"
 export DB_PORT=5432
 ps
 PROXY_PID="$(pgrep alloydb)"

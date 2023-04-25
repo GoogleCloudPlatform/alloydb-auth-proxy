@@ -66,20 +66,20 @@ func setupTestEnv(c dbConfig) func() {
 	oldDBPass := os.Getenv("DB_PASS")
 	oldDBName := os.Getenv("DB_NAME")
 	oldDBPort := os.Getenv("DB_PORT")
-	oldHost := os.Getenv("DB_HOST")
+	oldHost := os.Getenv("INSTANCE_HOST")
 
 	os.Setenv("DB_USER", c.user)
 	os.Setenv("DB_PASS", c.pass)
 	os.Setenv("DB_NAME", c.name)
 	os.Setenv("DB_PORT", c.port)
-	os.Setenv("DB_HOST", c.host)
+	os.Setenv("INSTANCE_HOST", c.host)
 
 	return func() {
 		os.Setenv("DB_USER", oldDBUser)
 		os.Setenv("DB_PASS", oldDBPass)
 		os.Setenv("DB_NAME", oldDBName)
 		os.Setenv("DB_PORT", oldDBPort)
-		os.Setenv("DB_HOST", oldHost)
+		os.Setenv("INSTANCE_HOST", oldHost)
 	}
 }
 

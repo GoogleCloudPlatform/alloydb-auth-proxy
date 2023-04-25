@@ -23,10 +23,10 @@ export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service/account/key.json
 export DB_USER='my-db-user'
 export DB_PASS='my-db-pass'
 export DB_NAME='my_db'
-export DB_HOST='<IP Address of Cluster or 127.0.0.1 if using auth proxy>'
+export INSTANCE_HOST='<IP Address of Cluster or 127.0.0.1 if using auth proxy>'
 export DB_PORT=5432
-export ALLOYDB_CONNECTION_NAME='projects/<PROJECT>/locations/<REGION>/clusters/<CLUSTER>/instances/<INSTANCE>'
 ```
+
 Note: Saving credentials in environment variables is convenient, but not secure - consider a more
 secure solution such as [Secret Manager](https://cloud.google.com/secret-manager/) to help keep secrets safe.
 
@@ -66,10 +66,12 @@ mvn clean package com.google.cloud.tools:jib-maven-plugin:2.8.0:build \
   ```sh
   gcloud run deploy run-postgres \
     --image gcr.io/[YOUR_PROJECT_ID]/run-alloydb \
+    --vpc-connector=[YOUR_VPC_CONNECTOR] \
     --platform managed \
     --allow-unauthenticated \
     --region [REGION] \
-    --update-env-vars ALLOYDB_CONNECTION_NAME=[ALLOYDB_CONNECTION_NAME] \
+    --update-env-vars INSTANCE_HOST=[INSTANCE_HOST] \
+    --update-env-vars DB_PORT=[DB_PORT] \
     --update-env-vars DB_USER=[MY_DB_USER] \
     --update-env-vars DB_PASS=[MY_DB_PASS] \
     --update-env-vars DB_NAME=[MY_DB]
@@ -85,14 +87,15 @@ mvn clean package com.google.cloud.tools:jib-maven-plugin:2.8.0:build \
 
   Create secrets via the command line:
   ```sh
-  echo -n "projects/<PROJECT>/locations/<REGION>/clusters/<CLUSTER>/instances/<INSTANCE>" | \
-      gcloud secrets versions add ALLOYDB_CONNECTION_NAME_SECRET --data-file=-
+  echo -n $DB_USER | \
+    gcloud secrets versions add DB_USER_SECRET --data-file=-
   ```
 
   Deploy the service to Cloud Run specifying the env var name and secret name:
   ```sh
   gcloud beta run deploy SERVICE --image gcr.io/[YOUR_PROJECT_ID]/run-alloydb \
-      --update-secrets ALLOYDB_CONNECTION_NAME=[ALLOYDB_CONNECTION_NAME_SECRET]:latest,\
+      --update-secrets INSTANCE_HOST=[INSTANCE_HOST_SECRET]:latest,\
+        DB_PORT=[DB_PORT_SECRET]:latest, \
         DB_USER=[DB_USER_SECRET]:latest, \
         DB_PASS=[DB_PASS_SECRET]:latest, \
         DB_NAME=[DB_NAME_SECRET]:latest

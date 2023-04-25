@@ -362,18 +362,12 @@ type Client struct {
 	// all AlloyDB instances.
 	connCount uint64
 
-	// maxConns is the maximum number of allowed connections tracked by
-	// connCount. If not set, there is no limit.
-	maxConns uint64
+	conf *Config
 
 	dialer alloydb.Dialer
 
 	// mnts is a list of all mounted sockets for this client
 	mnts []*socketMount
-
-	// waitOnClose is the maximum duration to wait for open connections to close
-	// when shutting down.
-	waitOnClose time.Duration
 
 	logger alloydb.Logger
 
@@ -396,10 +390,9 @@ func NewClient(ctx context.Context, d alloydb.Dialer, l alloydb.Logger, conf *Co
 	}
 
 	c := &Client{
-		logger:      l,
-		dialer:      d,
-		maxConns:    conf.MaxConnections,
-		waitOnClose: conf.WaitOnClose,
+		logger: l,
+		dialer: d,
+		conf:   conf,
 	}
 
 	if conf.FUSEDir != "" {
@@ -485,7 +478,7 @@ func (c *Client) CheckConnections(ctx context.Context) (int, error) {
 // ConnCount returns the number of open connections and the maximum allowed
 // connections. Returns 0 when the maximum allowed connections have not been set.
 func (c *Client) ConnCount() (uint64, uint64) {
-	return atomic.LoadUint64(&c.connCount), c.maxConns
+	return atomic.LoadUint64(&c.connCount), c.conf.MaxConnections
 }
 
 // Serve starts proxying connections for all configured instances using the
@@ -565,13 +558,13 @@ func (c *Client) Close() error {
 	if cErr != nil {
 		mErr = append(mErr, cErr)
 	}
-	if c.waitOnClose == 0 {
+	if c.conf.WaitOnClose == 0 {
 		if len(mErr) > 0 {
 			return mErr
 		}
 		return nil
 	}
-	timeout := time.After(c.waitOnClose)
+	timeout := time.After(c.conf.WaitOnClose)
 	t := time.NewTicker(100 * time.Millisecond)
 	defer t.Stop()
 	for {
@@ -586,7 +579,7 @@ func (c *Client) Close() error {
 	}
 	open := atomic.LoadUint64(&c.connCount)
 	if open > 0 {
-		mErr = append(mErr, fmt.Errorf("%d connection(s) still open after waiting %v", open, c.waitOnClose))
+		mErr = append(mErr, fmt.Errorf("%d connection(s) still open after waiting %v", open, c.conf.WaitOnClose))
 	}
 	if len(mErr) > 0 {
 		return mErr
@@ -619,8 +612,8 @@ func (c *Client) serveSocketMount(_ context.Context, s *socketMount) error {
 			count := atomic.AddUint64(&c.connCount, 1)
 			defer atomic.AddUint64(&c.connCount, ^uint64(0))
 
-			if c.maxConns > 0 && count > c.maxConns {
-				c.logger.Infof("max connections (%v) exceeded, refusing new connection", c.maxConns)
+			if c.conf.MaxConnections > 0 && count > c.conf.MaxConnections {
+				c.logger.Infof("max connections (%v) exceeded, refusing new connection", c.conf.MaxConnections)
 				_ = cConn.Close()
 				return
 			}
