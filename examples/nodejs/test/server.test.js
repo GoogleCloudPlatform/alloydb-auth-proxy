@@ -22,12 +22,12 @@ const SAMPLE_PATH = path.join(__dirname, '../server/server.js');
 
 const server = require(SAMPLE_PATH);
 
-const _db_host_backup = process.env.DB_HOST;
-delete process.env.DB_HOST;
+const _INSTANCE_HOST_backup = process.env.INSTANCE_HOST;
+delete process.env.INSTANCE_HOST;
 
 const serverUnix = require(SAMPLE_PATH);
 
-process.env.DB_HOST = _db_host_backup;
+process.env.INSTANCE_HOST = _INSTANCE_HOST_backup;
 
 after(() => {
   server.close();

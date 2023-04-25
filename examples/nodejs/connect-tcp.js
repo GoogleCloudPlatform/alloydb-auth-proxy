@@ -26,7 +26,7 @@ const createTcpPool = async config => {
   const dbConfig = {
     client: 'pg',
     connection: {
-      host: process.env.DB_HOST, // e.g. '127.0.0.1'
+      host: process.env.INSTANCE_HOST, // e.g. '127.0.0.1'
       port: process.env.DB_PORT, // e.g. '5432'
       user: process.env.DB_USER, // e.g. 'my-user'
       password: process.env.DB_PASS, // e.g. 'my-user-password'

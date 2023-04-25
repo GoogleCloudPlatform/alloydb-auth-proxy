@@ -32,7 +32,7 @@ public class TcpConnectionPoolFactory extends ConnectionPoolFactory {
   private static final String DB_PASS = System.getenv("DB_PASS");
   private static final String DB_NAME = System.getenv("DB_NAME");
 
-  private static final String DB_HOST = System.getenv("DB_HOST");
+  private static final String INSTANCE_HOST = System.getenv("INSTANCE_HOST");
   private static final String DB_PORT = System.getenv("DB_PORT");
 
 
@@ -41,10 +41,10 @@ public class TcpConnectionPoolFactory extends ConnectionPoolFactory {
     HikariConfig config = new HikariConfig();
 
     // The following URL is equivalent to setting the config options below:
-    // jdbc:postgresql://<DB_HOST>:<DB_PORT>/<DB_NAME>?user=<DB_USER>&password=<DB_PASS>l
+    // jdbc:postgresql://<INSTANCE_HOST>:<DB_PORT>/<DB_NAME>?user=<DB_USER>&password=<DB_PASS>l
 
     // Configure which instance and what database user to connect with.
-    config.setJdbcUrl(String.format("jdbc:postgresql://%s:%s/%s", DB_HOST, DB_PORT, DB_NAME));
+    config.setJdbcUrl(String.format("jdbc:postgresql://%s:%s/%s", INSTANCE_HOST, DB_PORT, DB_NAME));
     config.setUsername(DB_USER); // e.g. "root", "postgres"
     config.setPassword(DB_PASS); // e.g. "my-password"
 

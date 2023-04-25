@@ -29,7 +29,7 @@ export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service/account/key.json
 export DB_USER='my-db-user'
 export DB_PASS='my-db-pass'
 export DB_NAME='my_db'
-export DB_HOST='<IP Address of Cluster or 127.0.0.1 if using auth proxy>'
+export INSTANCE_HOST='<IP Address of Cluster or 127.0.0.1 if using auth proxy>'
 export DB_PORT=5432
 ```
 
@@ -42,7 +42,7 @@ secure solution such as [Secret Manager](https://cloud.google.com/secret-manager
 
     ```yaml
     env_variables:
-      DB_HOST: 127.0.0.1
+      INSTANCE_HOST: 127.0.0.1
       DB_PORT: 5432
       DB_USER: MY_DB_USER
       DB_PASS: MY_DB_PASSWORD
@@ -79,7 +79,7 @@ gcloud run deploy run-sql --image gcr.io/[YOUR_PROJECT_ID]/run-alloydb \
   --vpc-connector=[YOUR_VPC_CONNECTOR] \
   --allow-unauthenticated \
   --region [REGION] \
-  --update-env-vars DB_HOST=[MY_DB_HOST] \
+  --update-env-vars INSTANCE_HOST=[MY_INSTANCE_HOST] \
   --update-env-vars DB_PORT=[DB_PORT] \
   --update-env-vars DB_USER=[MY_DB_USER] \
   --update-env-vars DB_PASS=[MY_DB_PASS] \
@@ -103,7 +103,7 @@ echo -n $DB_USER | \
 Deploy the service to Cloud Run specifying the env var name and secret name:
 ```sh
 gcloud beta run deploy SERVICE --image gcr.io/[YOUR_PROJECT_ID]/alloydb \
-    --update-secrets DB_HOST=[DB_HOST_SECRET]:latest,\
+    --update-secrets INSTANCE_HOST=[INSTANCE_HOST_SECRET]:latest,\
       DB_PORT=[DB_PORT_SECRET]:latest, \
       DB_USER=[DB_USER_SECRET]:latest, \
       DB_PASS=[DB_PASS_SECRET]:latest, \

@@ -44,7 +44,7 @@ import org.junit.Test;
 public class TestIndexServlet {
 
   private static List<String> requiredEnvVars =
-      Arrays.asList("DB_USER", "DB_PASS", "DB_NAME", "DB_HOST", "DB_PORT");
+      Arrays.asList("DB_USER", "DB_PASS", "DB_NAME", "INSTANCE_HOST", "DB_PORT");
 
   private static DataSource pool;
   private static String tableName;
@@ -81,7 +81,7 @@ public class TestIndexServlet {
     HikariConfig config = new HikariConfig();
 
     config.setJdbcUrl(String.format("jdbc:postgresql://%s:%s/%s", 
-        System.getenv("DB_HOST"), 
+        System.getenv("INSTANCE_HOST"), 
         System.getenv("DB_PORT"), 
         System.getenv("DB_NAME")
     ));
