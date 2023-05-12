@@ -12,6 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require './app'
 
-run Sinatra::Application
+FROM ruby:2.7.4
+
+# Copy local code to the container image.
+ENV APP_HOME /app
+WORKDIR $APP_HOME
+COPY . ./
+
+# Install production dependencies.
+RUN bundle install
+
+EXPOSE 8080
+
+CMD ["bundle", "exec", "rackup", "--host", "0.0.0.0", "-p", "8080"]
