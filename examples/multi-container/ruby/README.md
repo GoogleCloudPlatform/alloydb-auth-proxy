@@ -32,7 +32,7 @@ DB = connect_tcp()
 gcloud builds submit --tag gcr.io/<YOUR_PROJECT_ID>/run-alloydb
 ```
 
-Finally, create a revision YAML file (multicontainers.yaml) for the deployment, listing the AlloyDB container image as a sidecar:
+Finally, create a revision YAML file (multicontainers.yaml), using the `example.yaml` file as a referece for the deployment, listing the AlloyDB container image as a sidecar:
 
 ```yaml
 apiVersion: serving.knative.dev/v1
@@ -76,4 +76,6 @@ Before deploying, you will need to make sure that the service account associated
 
 Finally, you can deploy the service using:
 
+```bash
 gcloud run services replace multicontainers.yaml
+```
