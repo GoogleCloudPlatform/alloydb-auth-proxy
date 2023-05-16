@@ -1,7 +1,12 @@
 # AlloyDB Auth Proxy Sidecar
-The instructions for deploying an auth proxy sidecar for AlloyDB are very similar to those for deploying a Cloud SQL Auth Proxy Sidecar. Before starting, make sure you have a working AlloyDB instance. Make note of the connection URI, and the database name, username, and password needed for authentication.
 
-The excerpt below demonstrates how to create a connection pool which connects to AlloyDB:
+The instructions for deploying an auth proxy sidecar for AlloyDB are very similar
+to those for deploying a Cloud SQL Auth Proxy Sidecar. Before starting, make sure
+you have a working AlloyDB instance. Make note of the connection URI, and the
+database name, username, and password needed for authentication.
+
+The excerpt below demonstrates how to create a connection pool which connects to
+AlloyDB:
 
 ```ruby
 require 'sinatra'
@@ -32,7 +37,8 @@ DB = connect_tcp()
 gcloud builds submit --tag gcr.io/<YOUR_PROJECT_ID>/run-alloydb
 ```
 
-Finally, create a revision YAML file (multicontainers.yaml), using the `example.yaml` file as a referece for the deployment, listing the AlloyDB container image as a sidecar:
+Finally, create a revision YAML file (multicontainers.yaml), using the `example.yaml`
+file as a referece for the deployment, listing the AlloyDB container image as a sidecar:
 
 ```yaml
 apiVersion: serving.knative.dev/v1
@@ -72,7 +78,9 @@ spec:
              - "<INSTANCE_URI>"
 ```
 
-Before deploying, you will need to make sure that the service account associated with the Cloud Run Deployment has the AlloyDB Client role. See [this documentation](https://cloud.google.com/alloydb/docs/reference/iam-roles-permissions) for more details.
+Before deploying, you will need to make sure that the service account associated
+with the Cloud Run Deployment has the AlloyDB Client role. See [this documentation](https://cloud.google.com/alloydb/docs/reference/iam-roles-permissions)
+for more details.
 
 Finally, you can deploy the service using:
 
