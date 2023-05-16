@@ -2,8 +2,30 @@
 
 The instructions for deploying an auth proxy sidecar for AlloyDB are very similar
 to those for deploying a Cloud SQL Auth Proxy Sidecar. Before starting, make sure
-you have a working AlloyDB instance. Make note of the connection URI, and the
-database name, username, and password needed for authentication.
+you have a working AlloyDB instance.
+
+## Before you begin
+
+1. Enable access to AlloyDB in your project by following these [instructions](https://cloud.google.com/alloydb/docs/project-enable-access)
+
+1. Create a VPC network and [configure Private Services Access for AlloyDB](https://cloud.google.com/alloydb/docs/configure-connectivity).
+Make note of the VPC name.
+
+1. Create a [Serverless VPC Connector](https://cloud.google.com/run/docs/configuring/connecting-vpc#yaml)
+for Cloud Run. Make note of the connector name.
+
+1. Create an AlloyDB cluster and its primary instance by following these [instructions](https://cloud.google.com/alloydb/docs/cluster-create).
+Make note of the Cluster ID, Instance ID, IP Address and Password
+
+1. Create a database for your application by following these 
+[instructions](https://cloud.google.com/alloydb/docs/database-create).
+Note the database name.
+
+1. Create a user in your database by following these
+[instructions](https://cloud.google.com/alloydb/docs/database-users/about).
+Note the username.
+
+## Deploying the application
 
 The excerpt below demonstrates how to create a connection pool which connects to
 AlloyDB:
@@ -52,6 +74,7 @@ spec:
     metadata:
       annotations:
         run.googleapis.com/execution-environment: gen1 #or gen2
+        run.googleapis.com/vpc-access-connector: <VPC_CONNECTOR_NAME>
     spec:
       containers:
       - name: my-app
