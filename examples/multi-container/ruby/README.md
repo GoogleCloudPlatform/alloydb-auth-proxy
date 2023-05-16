@@ -96,7 +96,7 @@ spec:
         image: gcr.io/cloud-sql-connectors/alloydb-auth-proxy:latest
         args:
 
-             # Replace DB_PORT with the port the proxy should listen on
+             # Ensure the port number on the --port argument matches the value of the DB_PORT env var on the my-app container.
              - "--port=5432"
              - "<INSTANCE_URI>"
 ```
