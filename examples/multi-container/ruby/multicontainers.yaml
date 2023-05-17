@@ -47,4 +47,5 @@ spec:
 
             # Ensure the port number on the --port argument matches the value of the DB_PORT env var on the my-app container.
              - "--port=5432"
+            # Instance URIs follow the format projects/PROJECT_ID/locations/REGION_ID/clusters/CLUSTER_ID/instances/INSTANCE_ID
              - "<INSTANCE_URI>"
