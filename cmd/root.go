@@ -385,7 +385,7 @@ to close after receiving a TERM signal. The proxy will shut
 down when the number of open connections reaches 0 or when
 the maximum time has passed. Defaults to 0s.`)
 	pflags.StringVar(&c.conf.APIEndpointURL, "alloydbadmin-api-endpoint",
-		"https://alloydb.googleapis.com/v1beta",
+		"https://alloydb.googleapis.com",
 		"When set, the proxy uses this host as the base API path.")
 	pflags.StringVar(&c.conf.FUSEDir, "fuse", "",
 		"Mount a directory at the path using FUSE to access AlloyDB instances.")

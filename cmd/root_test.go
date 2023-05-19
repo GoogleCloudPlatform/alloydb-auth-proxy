@@ -86,7 +86,7 @@ func withDefaults(c *proxy.Config) *proxy.Config {
 		c.TelemetryTracingSampleRate = 10_000
 	}
 	if c.APIEndpointURL == "" {
-		c.APIEndpointURL = "https://alloydb.googleapis.com/v1beta"
+		c.APIEndpointURL = "https://alloydb.googleapis.com"
 	}
 	return c
 }
