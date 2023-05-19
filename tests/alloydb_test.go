@@ -50,15 +50,9 @@ func TestPostgresTCP(t *testing.T) {
 	}
 	requirePostgresVars(t)
 
-	cleanup, err := pgxv4.RegisterDriver("alloydb1")
-	if err != nil {
-		t.Fatalf("failed to register driver: %v", err)
-	}
-	defer cleanup()
-
-	dsn := fmt.Sprintf("host=%v user=%v password=%v database=%v sslmode=disable",
-		*alloydbConnName, *alloydbUser, *alloydbPass, *alloydbDB)
-	proxyConnTest(t, []string{*alloydbConnName}, "alloydb1", dsn)
+	dsn := fmt.Sprintf("host=127.0.0.1 user=%v password=%v database=%v sslmode=disable",
+		*alloydbUser, *alloydbPass, *alloydbDB)
+	proxyConnTest(t, []string{*alloydbConnName}, "pgx", dsn)
 }
 
 func createTempDir(t *testing.T) (string, func()) {
