@@ -20,15 +20,30 @@ import (
 	"os"
 	"testing"
 
-	"cloud.google.com/go/alloydbconn/driver/pgxv4"
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/proxy"
 )
 
 var (
-	alloydbConnName = flag.String("alloydb_conn_name", os.Getenv("ALLOYDB_CONNECTION_NAME"), "AlloyDB instance connection name, in the form of 'project:region:instance'.")
-	alloydbUser     = flag.String("alloydb_user", os.Getenv("ALLOYDB_USER"), "Name of database user.")
-	alloydbPass     = flag.String("alloydb_pass", os.Getenv("ALLOYDB_PASS"), "Password for the database user; be careful when entering a password on the command line (it may go into your terminal's history).")
-	alloydbDB       = flag.String("alloydb_db", os.Getenv("ALLOYDB_DB"), "Name of the database to connect to.")
+	alloydbConnName = flag.String(
+		"alloydb_conn_name",
+		os.Getenv("ALLOYDB_CONNECTION_NAME"),
+		"AlloyDB instance connection name, in the form of 'project:region:instance'.",
+	)
+	alloydbUser = flag.String(
+		"alloydb_user",
+		os.Getenv("ALLOYDB_USER"),
+		"Name of database user.",
+	)
+	alloydbPass = flag.String(
+		"alloydb_pass",
+		os.Getenv("ALLOYDB_PASS"),
+		"Password for the database user.",
+	)
+	alloydbDB = flag.String(
+		"alloydb_db",
+		os.Getenv("ALLOYDB_DB"),
+		"Name of the database to connect to.",
+	)
 )
 
 func requirePostgresVars(t *testing.T) {
@@ -96,19 +111,14 @@ func TestPostgresAuthWithToken(t *testing.T) {
 		t.Skip("App Engine Flex doesn't support retrieving OAuth2 tokens")
 	}
 	requirePostgresVars(t)
-	cleanup, err := pgxv4.RegisterDriver("alloydb2")
-	if err != nil {
-		t.Fatalf("failed to register driver: %v", err)
-	}
-	defer cleanup()
 	tok, _, cleanup2 := removeAuthEnvVar(t, true)
 	defer cleanup2()
 
-	dsn := fmt.Sprintf("host=%v user=%v password=%v database=%v sslmode=disable",
-		*alloydbConnName, *alloydbUser, *alloydbPass, *alloydbDB)
+	dsn := fmt.Sprintf("host=localhost user=%v password=%v database=%v sslmode=disable",
+		*alloydbUser, *alloydbPass, *alloydbDB)
 	proxyConnTest(t,
 		[]string{"--token", tok.AccessToken, *alloydbConnName},
-		"alloydb2", dsn)
+		"pgx", dsn)
 }
 
 func TestPostgresAuthWithCredentialsFile(t *testing.T) {
@@ -116,19 +126,14 @@ func TestPostgresAuthWithCredentialsFile(t *testing.T) {
 		t.Skip("skipping Postgres integration tests")
 	}
 	requirePostgresVars(t)
-	cleanup, err := pgxv4.RegisterDriver("alloydb3")
-	if err != nil {
-		t.Fatalf("failed to register driver: %v", err)
-	}
-	defer cleanup()
 	_, path, cleanup2 := removeAuthEnvVar(t, false)
 	defer cleanup2()
 
-	dsn := fmt.Sprintf("host=%v user=%v password=%v database=%v sslmode=disable",
-		*alloydbConnName, *alloydbUser, *alloydbPass, *alloydbDB)
+	dsn := fmt.Sprintf("host=localhost user=%v password=%v database=%v sslmode=disable",
+		*alloydbUser, *alloydbPass, *alloydbDB)
 	proxyConnTest(t,
 		[]string{"--credentials-file", path, *alloydbConnName},
-		"alloydb3", dsn)
+		"pgx", dsn)
 }
 
 func TestPostgresAuthWithCredentialsJSON(t *testing.T) {
