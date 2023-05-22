@@ -21,6 +21,7 @@ import (
 	"testing"
 
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/proxy"
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 var (
