@@ -25,10 +25,11 @@ import (
 )
 
 var (
-	alloydbConnName = flag.String(
+	alloydbInstanceName = flag.String(
 		"alloydb_conn_name",
-		os.Getenv("ALLOYDB_CONNECTION_NAME"),
-		"AlloyDB instance connection name, in the form of 'project:region:instance'.",
+		os.Getenv("ALLOYDB_INSTANCE_NAME"),
+		`AlloyDB instance connection name, in the form of
+projects/<PROJECT>/locations/<REGION>/clusters/<CLUSTER>/instances/<INSTANCE>`,
 	)
 	alloydbUser = flag.String(
 		"alloydb_user",
@@ -49,7 +50,7 @@ var (
 
 func requirePostgresVars(t *testing.T) {
 	switch "" {
-	case *alloydbConnName:
+	case *alloydbInstanceName:
 		t.Fatal("'alloydb_conn_name' not set")
 	case *alloydbUser:
 		t.Fatal("'alloydb_user' not set")
@@ -68,7 +69,7 @@ func TestPostgresTCP(t *testing.T) {
 
 	dsn := fmt.Sprintf("host=127.0.0.1 user=%v password=%v database=%v sslmode=disable",
 		*alloydbUser, *alloydbPass, *alloydbDB)
-	proxyConnTest(t, []string{*alloydbConnName}, "pgx", dsn)
+	proxyConnTest(t, []string{*alloydbInstanceName}, "pgx", dsn)
 }
 
 func createTempDir(t *testing.T) (string, func()) {
@@ -91,16 +92,16 @@ func TestPostgresUnix(t *testing.T) {
 	tmpDir, cleanup := createTempDir(t)
 	defer cleanup()
 
-	dir, err := proxy.UnixSocketDir(tmpDir, *alloydbConnName)
+	dir, err := proxy.UnixSocketDir(tmpDir, *alloydbInstanceName)
 	if err != nil {
-		t.Fatalf("invalid connection name: %v", *alloydbConnName)
+		t.Fatalf("invalid connection name: %v", *alloydbInstanceName)
 	}
 	dsn := fmt.Sprintf("host=%s user=%s password=%s database=%s sslmode=disable",
 		dir,
 		*alloydbUser, *alloydbPass, *alloydbDB)
 
 	proxyConnTest(t,
-		[]string{"--unix-socket", tmpDir, *alloydbConnName}, "pgx", dsn)
+		[]string{"--unix-socket", tmpDir, *alloydbInstanceName}, "pgx", dsn)
 }
 
 func TestPostgresAuthWithToken(t *testing.T) {
@@ -118,7 +119,7 @@ func TestPostgresAuthWithToken(t *testing.T) {
 	dsn := fmt.Sprintf("host=localhost user=%v password=%v database=%v sslmode=disable",
 		*alloydbUser, *alloydbPass, *alloydbDB)
 	proxyConnTest(t,
-		[]string{"--token", tok.AccessToken, *alloydbConnName},
+		[]string{"--token", tok.AccessToken, *alloydbInstanceName},
 		"pgx", dsn)
 }
 
@@ -133,7 +134,7 @@ func TestPostgresAuthWithCredentialsFile(t *testing.T) {
 	dsn := fmt.Sprintf("host=localhost user=%v password=%v database=%v sslmode=disable",
 		*alloydbUser, *alloydbPass, *alloydbDB)
 	proxyConnTest(t,
-		[]string{"--credentials-file", path, *alloydbConnName},
+		[]string{"--credentials-file", path, *alloydbInstanceName},
 		"pgx", dsn)
 }
 
@@ -149,7 +150,7 @@ func TestPostgresAuthWithCredentialsJSON(t *testing.T) {
 	dsn := fmt.Sprintf("host=localhost user=%s password=%s database=%s sslmode=disable",
 		*alloydbUser, *alloydbPass, *alloydbDB)
 	proxyConnTest(t,
-		[]string{"--json-credentials", string(creds), *alloydbConnName},
+		[]string{"--json-credentials", string(creds), *alloydbInstanceName},
 		"pgx", dsn)
 }
 
@@ -162,6 +163,6 @@ func TestAuthWithGcloudAuth(t *testing.T) {
 	dsn := fmt.Sprintf("host=localhost user=%s password=%s database=%s sslmode=disable",
 		*alloydbUser, *alloydbPass, *alloydbDB)
 	proxyConnTest(t,
-		[]string{"--gcloud-auth", *alloydbConnName},
+		[]string{"--gcloud-auth", *alloydbInstanceName},
 		"pgx", dsn)
 }
