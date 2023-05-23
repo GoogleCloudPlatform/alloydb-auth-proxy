@@ -1,4 +1,4 @@
-export ALLOYDB_CONNECTION_NAME="project:region:instance"
+export ALLOYDB_INSTANCE_NAME="projects/<PROJECT>/locations/<REGION>/clusters/<CLUSTER>/instances/<INSTANCE>"
 export ALLOYDB_USER="postgres-user"
 export ALLOYDB_PASS="postgres-password"
 export ALLOYDB_DB="postgres-db-name"
