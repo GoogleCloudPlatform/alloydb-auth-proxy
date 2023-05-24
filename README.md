@@ -15,7 +15,8 @@ See the [Connecting Overview][connection-overview] page for more information on
 connecting to an AlloyDB instance, or the [About the proxy][about-proxy] page
 for details on how the AlloyDB Auth Proxy works.
 
-If you're using Go, or Python, consider using the corresponding AlloyDB Connector which does everything the Proxy does, but in a native process:
+If you're using Go, or Python, consider using the corresponding AlloyDB Connector
+which does everything the Proxy does, but in a native process:
 
 - [AlloyDB Go connector][go connector]
 - [AlloyDB Python connector][python connector]
