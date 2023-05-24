@@ -891,7 +891,7 @@ func TestCommandWithCustomDialer(t *testing.T) {
 			err = f()
 			if err != nil {
 				attempts++
-				time.Sleep(time.Millisecond)
+				time.Sleep(100 * time.Millisecond)
 				continue
 			}
 			return
