@@ -15,9 +15,17 @@ See the [Connecting Overview][connection-overview] page for more information on
 connecting to an AlloyDB instance, or the [About the proxy][about-proxy] page
 for details on how the AlloyDB Auth Proxy works.
 
+If you're using Go, or Python, consider using the corresponding AlloyDB Connector which does everything the Proxy does, but in a native process:
+
+- [AlloyDB Go connector][go connector]
+- [AlloyDB Python connector][python connector]
+
 Note: The Proxy *cannot* provide a network path to an AlloyDB instance if one is
 not already present (e.g., the proxy cannot access a VPC if it does not already
 have access to it).
+
+[go connector]: https://github.com/GoogleCloudPlatform/alloydb-go-connector
+[python connector]: https://github.com/GoogleCloudPlatform/alloydb-python-connector
 
 ## Installation
 
