@@ -59,7 +59,7 @@ DB = connect_tcp()
 gcloud builds submit --tag gcr.io/<YOUR_PROJECT_ID>/run-alloydb
 ```
 
-Finally, update the `multicontainers.yaml` file with the correct values for your
+Finally, update the `multicontainer.yaml` file with the correct values for your
 deployment for `VPC_CONNECTOR_NAME` `YOUR_PROJECT_ID`, `DB_USER`, `DB_PASS`, `DB_NAME`, and `INSTANCE_URI`, listing the AlloyDB container image as a sidecar:
 
 ```yaml
