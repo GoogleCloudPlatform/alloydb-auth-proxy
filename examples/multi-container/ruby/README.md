@@ -59,8 +59,8 @@ DB = connect_tcp()
 gcloud builds submit --tag gcr.io/<YOUR_PROJECT_ID>/run-alloydb
 ```
 
-Finally, create a revision YAML file (multicontainers.yaml), using the `example.yaml`
-file as a referece for the deployment, listing the AlloyDB container image as a sidecar:
+Finally, update the `multicontainer.yaml` file with the correct values for your
+deployment for `VPC_CONNECTOR_NAME` `YOUR_PROJECT_ID`, `DB_USER`, `DB_PASS`, `DB_NAME`, and `INSTANCE_URI`, listing the AlloyDB container image as a sidecar:
 
 ```yaml
 apiVersion: serving.knative.dev/v1
@@ -98,6 +98,8 @@ spec:
 
              # Ensure the port number on the --port argument matches the value of the DB_PORT env var on the my-app container.
              - "--port=5432"
+            # Instance URIs follow the format 
+            # projects/PROJECT_ID/locations/REGION_ID/clusters/CLUSTER_ID/instances/INSTANCE_ID
              - "<INSTANCE_URI>"
 ```
 
