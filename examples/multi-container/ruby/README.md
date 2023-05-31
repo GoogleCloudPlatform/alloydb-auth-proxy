@@ -103,14 +103,17 @@ spec:
              - "<INSTANCE_URI>"
 ```
 
+You can optionally use Secret Manager to store the database password. See
+[this documentation](https://cloud.google.com/run/docs/deploying#yaml) for more details.
+
 Before deploying, you will need to make sure that the service account associated
 with the Cloud Run Deployment has the AlloyDB Client role. See [this documentation](https://cloud.google.com/alloydb/docs/reference/iam-roles-permissions)
-for more details.
+for more details. The default service account will already have these permissions.
 
 Finally, you can deploy the service using:
 
 ```bash
-gcloud run services replace multicontainers.yaml
+gcloud run services replace multicontainer.yaml
 ```
 
 Once the service is deployed, the console should print out a URL. You can test
