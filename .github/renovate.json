@@ -1,6 +1,6 @@
 {
   "extends": [
-    "config:base",
+    "config:base"
   ],
   "commitMessagePrefix": "deps: ",
   "postUpdateOptions": [
@@ -10,10 +10,10 @@
     {
       "description": "Group all dependencies for Samples",
       "matchPaths": ["examples/**"],
-      "groupName": "Sample dependencies",
-      "schedule": [
-        "before 9am on Monday"
-      ]
+      "groupName": "Sample dependencies"
     }
   ],
+  "schedule": [
+    "before 4am on the first Tuesday of the month"
+  ]
 }
