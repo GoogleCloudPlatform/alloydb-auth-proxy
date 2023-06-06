@@ -425,6 +425,9 @@ the maximum time has passed. Defaults to 0s.`)
 		`Enables HTTP endpoints /startup, /liveness, and /readiness
 that report on the proxy's health. Endpoints are available on localhost
 only. Uses the port specified by the http-port flag.`)
+	pflags.BoolVar(&c.conf.RunConnectionTest, "run-connection-test", false, `Runs a connection test
+against all specified instances. If an instance is unreachable, the Proxy exits with a failure
+status code.`)
 
 	// Global and per instance flags
 	pflags.StringVarP(&c.conf.Addr, "address", "a", "127.0.0.1",
@@ -461,6 +464,10 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 	}
 
 	if conf.FUSEDir != "" {
+		if conf.RunConnectionTest {
+			return newBadCommandError("cannot run connection tests in FUSE mode")
+		}
+
 		if err := proxy.SupportsFUSE(); err != nil {
 			return newBadCommandError(
 				fmt.Sprintf("--fuse is not supported: %v", err),
