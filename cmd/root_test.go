@@ -290,8 +290,8 @@ func TestNewCommandArguments(t *testing.T) {
 		{
 			desc: "using the JSON credentials",
 			args: []string{"--json-credentials", `{"json":"goes-here"}`, "projects/proj/locations/region/clusters/clust/instances/inst"}, want: withDefaults(&proxy.Config{
-			CredentialsJSON: `{"json":"goes-here"}`,
-		}),
+				CredentialsJSON: `{"json":"goes-here"}`,
+			}),
 		},
 		{
 			desc: "using the (short) JSON credentials",
@@ -842,7 +842,7 @@ func TestNewCommandWithErrors(t *testing.T) {
 				"--run-connection-test",
 				"--fuse", "myfusedir",
 			},
-		},}
+		}}
 
 	for _, tc := range tcs {
 		t.Run(tc.desc, func(t *testing.T) {
