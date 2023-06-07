@@ -333,6 +333,14 @@ func TestNewCommandArguments(t *testing.T) {
 				QuitQuitQuit: true,
 			}),
 		},
+		{
+			desc: "using the run-connection-test flag",
+			args: []string{"--run-connection-test",
+				"projects/proj/locations/region/clusters/clust/instances/inst"},
+			want: withDefaults(&proxy.Config{
+				RunConnectionTest: true,
+			}),
+		},
 	}
 
 	for _, tc := range tcs {
@@ -828,7 +836,13 @@ func TestNewCommandWithErrors(t *testing.T) {
 			desc: "using fuse-tmp-dir without fuse",
 			args: []string{"--fuse-tmp-dir", "/mydir"},
 		},
-	}
+		{
+			desc: "run-connection-test with fuse",
+			args: []string{
+				"--run-connection-test",
+				"--fuse", "myfusedir",
+			},
+		}}
 
 	for _, tc := range tcs {
 		t.Run(tc.desc, func(t *testing.T) {
