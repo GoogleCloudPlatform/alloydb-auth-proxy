@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.2.4...v1.3.0) (2023-06-15)
+
+
+### Features
+
+* add support for connection test ([#367](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/367)) ([9157991](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/915799102ba8f553bd683cf370f1e2b42e030d10))
+
 ## [1.2.4](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.2.3...v1.2.4) (2023-05-19)
 
 
