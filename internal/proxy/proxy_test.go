@@ -692,20 +692,11 @@ func TestRunConnectionCheck(t *testing.T) {
 	if err != nil {
 		t.Fatalf("proxy.NewClient error: %v", err)
 	}
-	defer func(c *proxy.Client) {
-		err := c.Close()
-		if err != nil {
-			t.Log(err)
-		}
-	}(c)
-	go func() {
-		// Serve alone without any connections will still verify that the
-		// provided instances are reachable.
-		err := c.Serve(context.Background(), func() {})
-		if err != nil {
-			t.Log(err)
-		}
-	}()
+	defer c.Close()
+
+	// Serve alone without any connections will still verify that the
+	// provided instances are reachable.
+	go c.Serve(context.Background(), func() {})
 
 	verifyDialAttempts := func() error {
 		var tries int
@@ -724,5 +715,4 @@ func TestRunConnectionCheck(t *testing.T) {
 	if err := verifyDialAttempts(); err != nil {
 		t.Fatal(err)
 	}
-
 }
