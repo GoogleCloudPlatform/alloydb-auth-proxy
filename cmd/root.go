@@ -373,7 +373,11 @@ func NewCommand(opts ...Option) *Command {
 	pflags.StringVarP(&c.conf.CredentialsJSON, "json-credentials", "j", "",
 		"Use service account key JSON as a source of IAM credentials.")
 	pflags.BoolVarP(&c.conf.GcloudAuth, "gcloud-auth", "g", false,
-		"Use gcloud's user configuration to retrieve a token for authentication.")
+		`Use gcloud's user credentials as a source of IAM credentials.
+NOTE: this flag is a legacy feature and generally should not be used.
+Instead prefer Application Default Credentials
+(enabled with: gcloud auth application-default login) which
+the Proxy will then pick-up automatically.`)
 	pflags.BoolVarP(&c.conf.StructuredLogs, "structured-logs", "l", false,
 		"Enable structured logs using the LogEntry format")
 	pflags.Uint64Var(&c.conf.MaxConnections, "max-connections", 0,
