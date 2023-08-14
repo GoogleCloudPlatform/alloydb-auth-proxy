@@ -12,8 +12,5 @@
       "matchPaths": ["examples/**"],
       "groupName": "Sample dependencies"
     }
-  ],
-  "schedule": [
-    "before 4am on the first day of the month"
   ]
 }
