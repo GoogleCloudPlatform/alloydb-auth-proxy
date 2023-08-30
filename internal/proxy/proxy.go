@@ -56,6 +56,10 @@ type InstanceConnConfig struct {
 	// necessary. If set, UnixSocketPath takes precedence over UnixSocket, Addr
 	// and Port.
 	UnixSocketPath string
+
+	// AutoIAMAuthN enables automatic IAM authentication on the instance only.
+	// See Config.AutoIAMAuthN for more details.
+	AutoIAMAuthN bool
 }
 
 // Config contains all the configuration provided by the caller.
@@ -63,6 +67,11 @@ type Config struct {
 	// UserAgent is the user agent to use when sending requests to the Admin
 	// API.
 	UserAgent string
+
+	// AutoIAMAuthN enabled automatic IAM authentication which results in the
+	// Proxy sending the IAM principal's OAuth2 token to the backend to enable
+	// a passwordless login for callers.
+	AutoIAMAuthN bool
 
 	// Token is the Bearer token used for authorization.
 	Token string
@@ -270,6 +279,10 @@ func (c *Config) DialerOptions(l alloydb.Logger) ([]alloydbconn.Option, error) {
 
 	if c.APIEndpointURL != "" {
 		opts = append(opts, alloydbconn.WithAdminAPIEndpoint(c.APIEndpointURL))
+	}
+
+	if c.AutoIAMAuthN {
+		opts = append(opts, alloydbconn.WithIAMAuthN())
 	}
 
 	return opts, nil

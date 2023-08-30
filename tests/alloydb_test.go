@@ -36,6 +36,11 @@ projects/<PROJECT>/locations/<REGION>/clusters/<CLUSTER>/instances/<INSTANCE>`,
 		os.Getenv("ALLOYDB_USER"),
 		"Name of database user.",
 	)
+	alloydbIAMUser = flag.String(
+		"alloydb_iam_user",
+		os.Getenv("ALLOYDB_IAM_USER"),
+		"Name of database user.",
+	)
 	alloydbPass = flag.String(
 		"alloydb_pass",
 		os.Getenv("ALLOYDB_PASS"),
@@ -54,6 +59,8 @@ func requirePostgresVars(t *testing.T) {
 		t.Fatal("'alloydb_conn_name' not set")
 	case *alloydbUser:
 		t.Fatal("'alloydb_user' not set")
+	case *alloydbIAMUser:
+		t.Fatal("'alloydb_iam_user' not set")
 	case *alloydbPass:
 		t.Fatal("'alloydb_pass' not set")
 	case *alloydbDB:
@@ -70,6 +77,17 @@ func TestPostgresTCP(t *testing.T) {
 	dsn := fmt.Sprintf("host=127.0.0.1 user=%v password=%v database=%v sslmode=disable",
 		*alloydbUser, *alloydbPass, *alloydbDB)
 	proxyConnTest(t, []string{*alloydbInstanceName}, "pgx", dsn)
+}
+
+func TestPostgresAutoIAMAuthN(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping Postgres integration tests")
+	}
+	requirePostgresVars(t)
+
+	dsn := fmt.Sprintf("host=127.0.0.1 user=%v password=%v database=%v sslmode=disable",
+		*alloydbIAMUser, *alloydbPass, *alloydbDB)
+	proxyConnTest(t, []string{*alloydbInstanceName, "--auto-iam-authn"}, "pgx", dsn)
 }
 
 func createTempDir(t *testing.T) (string, func()) {

@@ -131,6 +131,25 @@ Overview
     hourly basis. Existing client connections are unaffected by the refresh
     cycle.
 
+Authentication
+
+    The Proxy uses Application Default Credentials by default. Enable these
+    credentials with gcloud:
+
+        gcloud auth application-default login
+
+    In Google-run environments, Application Default Credentials are already
+    available and do not need to be retrieved.
+
+    The Proxy will use the environment's IAM principal when authenticating to
+    the backend. To use a specific set of credentials, use the
+    --credentials-file flag, e.g.,
+
+        ./alloydb-auth-proxy --credentials-file /path/to/key.json \
+            projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE
+
+    See the individual flags below, for more options.
+
 Starting the Proxy
 
     To start the proxy, you will need your instance URI, which may be found in
@@ -184,8 +203,29 @@ Instance Level Configuration
     instances, the proxy will ensure that the last path element is
     '.s.PGSQL.5432' appending it if necessary. For example,
 
-        ./cloud-sql-proxy \
-          'my-project:us-central1:my-db-server?unix-socket-path=/path/to/socket'
+        ./alloydb-aith-proxy \
+            'projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE1?unix-socket-path=/path/to/socket'
+
+    (*) indicates a flag that may be used as a query parameter
+
+Automatic IAM Authentication
+
+    The Auth Proxy support Automatic IAM Authentication where the Proxy
+    retrieves the environment's IAM principal's OAuth2 token and supplies it to
+    the backend. When a client connects to the Proxy, there is no need to supply
+    a database user password.
+
+    To enable the feature, run:
+
+        ./alloydb-auth-proxy \
+            --auto-iam-authn \
+            'projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE'
+
+    In addition, Auto IAM AuthN may be enabled on a per-instance basis with the
+    query string syntax described above.
+
+        ./alloydb-auth-proxy \
+            'projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE?auto-iam-authn=true'
 
 Health checks
 
@@ -436,11 +476,13 @@ status code.`)
 
 	// Global and per instance flags
 	pflags.StringVarP(&c.conf.Addr, "address", "a", "127.0.0.1",
-		"Address on which to bind AlloyDB instance listeners.")
+		"(*) Address on which to bind AlloyDB instance listeners.")
 	pflags.IntVarP(&c.conf.Port, "port", "p", 5432,
-		"Initial port to use for listeners. Subsequent listeners increment from this value.")
+		"(*) Initial port to use for listeners. Subsequent listeners increment from this value.")
 	pflags.StringVarP(&c.conf.UnixSocket, "unix-socket", "u", "",
-		`Enables Unix sockets for all listeners using the provided directory.`)
+		`(*) Enables Unix sockets for all listeners using the provided directory.`)
+	pflags.BoolVarP(&c.conf.AutoIAMAuthN, "auto-iam-authn", "i", false,
+		"(*) Enables Automatic IAM Authentication for all instances")
 
 	v := viper.NewWithOptions(viper.EnvKeyReplacer(strings.NewReplacer("-", "_")))
 	v.SetEnvPrefix(envPrefix)
@@ -629,12 +671,48 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 				ic.UnixSocket = u[0]
 
 			}
+
+			ic.AutoIAMAuthN, err = parseBoolOpt(q, "auto-iam-authn")
+			if err != nil {
+				return err
+			}
 		}
 		ics = append(ics, ic)
 	}
 
 	conf.Instances = ics
 	return nil
+}
+
+// parseBoolOpt parses a boolean option from the query string.
+// True is can be "t", "true" (case-insensitive).
+// False can be "f" or "false" (case-insensitive).
+func parseBoolOpt(q url.Values, name string) (bool, error) {
+	v, ok := q[name]
+	if !ok {
+		return false, nil
+	}
+
+	if len(v) != 1 {
+		return false, newBadCommandError(
+			fmt.Sprintf("%v param should be only one value: %q", name, v),
+		)
+	}
+
+	switch strings.ToLower(v[0]) {
+	// if only the key is present (and the value is empty string), accept that
+	// as true.
+	case "true", "t", "":
+		return true, nil
+	case "false", "f":
+		return false, nil
+	default:
+		// value is not recognized
+		return false, newBadCommandError(
+			fmt.Sprintf("%v query param should be true or false, got: %q",
+				name, v[0],
+			))
+	}
 }
 
 // runSignalWrapper watches for SIGTERM and SIGINT and interupts execution if necessary.
