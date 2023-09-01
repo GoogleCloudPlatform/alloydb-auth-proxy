@@ -6,6 +6,7 @@ require (
 	cloud.google.com/go/alloydbconn v1.3.4
 	contrib.go.opencensus.io/exporter/prometheus v0.4.2
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.14
+	github.com/coreos/go-systemd v0.0.0-20191104093116-d3cd4ed1dbcf
 	github.com/google/go-cmp v0.5.9
 	github.com/hanwen/go-fuse/v2 v2.3.0
 	github.com/jackc/pgx/v5 v5.4.3
@@ -16,7 +17,7 @@ require (
 	go.uber.org/zap v1.25.0
 	golang.org/x/oauth2 v0.11.0
 	golang.org/x/sys v0.11.0
-	google.golang.org/api v0.137.0
+	google.golang.org/api v0.138.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 )
 
