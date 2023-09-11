@@ -6,9 +6,10 @@
 
 # Compiled binary
 /alloydb-auth-proxy
+/alloydb-auth-proxy.exe
 
 /key.json
-
+/logs/
 
 
 ### SAMPLES
