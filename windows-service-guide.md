@@ -1,13 +1,16 @@
 # AlloyDB Auth Proxy Windows Service Guide
 
-This document covers running the *AlloyDB Auth Proxy* as service
+This document covers running the *AlloyDB Auth Proxy* as a service
 on the Windows operating system.
 
 It was originally built and tested using Go 1.20.2 on Windows Server 2019.
 
 ## Install the Windows Service
 
-Prerequisites: A built binary for Windows of the AlloyDB Auth Proxy is required. Either build it from source or [download a release](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/releases) of a Windows pre-built version, e.g. `alloydb-auth-proxy.x64.exe`.
+Prerequisites: A built binary for Windows of the AlloyDB Auth Proxy is required.
+Either build it from source or
+[download a release](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/releases)
+of a Windows pre-built version, e.g. `alloydb-auth-proxy.x64.exe`.
 
 First, install the binary by:
 
@@ -64,8 +67,8 @@ In this case, the local machine needs to be restarted.
 
 ### Why not running as the *System* user?
 
-Since the AlloyDB Auth Proxy does not require any file system access, besides the log files,
-extensive operating system access is not required.
+Since the AlloyDB Auth Proxy does not require any file system access,
+besides the log files, extensive operating system access is not required.
 
 The *Network Service* accounts allow binding ports while not granting
 access to file system resources.
