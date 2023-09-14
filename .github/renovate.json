@@ -1,6 +1,6 @@
 {
   "extends": [
-    "config:base"
+    "config:recommended"
   ],
   "commitMessagePrefix": "deps: ",
   "postUpdateOptions": [
@@ -9,8 +9,26 @@
   "packageRules": [
     {
       "description": "Group all dependencies for Samples",
-      "matchPaths": ["examples/**"],
+      "matchFileNames": ["examples/**"],
       "groupName": "Sample dependencies"
+    },
+    {
+      "matchPackagePatterns": [
+        "^actions/checkout",
+        "^actions/github-script",
+        "^actions/setup-go",
+        "^actions/upload-artifact",
+        "^dorny/paths-filter",
+        "^github/codeql-action",
+        "^golang/govulncheck-action",
+        "^golangci/golangci-lint-action",
+        "^google-github-actions/auth",
+        "^google-github-actions/get-secretmanager-secrets",
+        "^google-github-actions/setup-gcloud",
+        "^micnncim/action-label-syncer",
+        "^ossf/scorecard-action"
+      ],
+      "groupName": "dependencies for github"
     }
   ]
 }
