@@ -7,6 +7,7 @@ require (
 	contrib.go.opencensus.io/exporter/prometheus v0.4.2
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.14
 	github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e
+	github.com/coreos/go-systemd/v22 v22.5.0
 	github.com/google/go-cmp v0.5.9
 	github.com/hanwen/go-fuse/v2 v2.4.0
 	github.com/jackc/pgx/v5 v5.4.3
