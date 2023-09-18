@@ -39,7 +39,7 @@ import (
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/healthcheck"
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/log"
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/proxy"
-	"github.com/coreos/go-systemd/daemon"
+	"github.com/coreos/go-systemd/v22/daemon"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
