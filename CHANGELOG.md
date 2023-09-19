@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.4.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.3.2...v1.4.0) (2023-09-19)
+
+
+### Features
+
+* Add support for systemd notify ([#425](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/425)) ([71b2fae](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/71b2fae7e44f1bd278740789feec094700bbcfe9))
+* add Windows service support ([#429](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/429)) ([2ad57d6](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/2ad57d6625cd868e7d39b5a0578f3061334a2133))
+
 ## [1.3.2](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.3.1...v1.3.2) (2023-08-16)
 
 
