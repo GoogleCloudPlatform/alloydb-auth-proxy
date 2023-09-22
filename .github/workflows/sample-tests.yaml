@@ -90,7 +90,7 @@ jobs:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
 
       - name: Setup Maven Action
-        uses: s4u/setup-maven-action@94605e0cdfe442da48d603db22bbf4c7d203c076 # v1.7.0
+        uses: s4u/setup-maven-action@57ca7f1a813fd21035f9399bc015664601217110 # v1.10.0
         with:
           java-version: 17
 
