@@ -29,6 +29,13 @@
         "^ossf/scorecard-action"
       ],
       "groupName": "dependencies for github"
+    },
+    {
+      "matchPackagePatterns": [
+        "^debian:buster",
+        "^debian:bullseye"
+      ],
+      "groupName": "container images"
     }
   ]
 }
