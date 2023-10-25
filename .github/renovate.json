@@ -10,7 +10,7 @@
   "packageRules": [
     {
       "description": "Group all dependencies for Samples",
-      "matchFileNames": ["examples/**"],
+      "matchFileNames": ["examples/**", ".github/workflows/sample-tests.yaml"],
       "groupName": "Sample dependencies"
     },
     {
