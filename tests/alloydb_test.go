@@ -75,8 +75,8 @@ func TestPostgresTCP(t *testing.T) {
 	requirePostgresVars(t)
 
 	dsn := fmt.Sprintf(
-		"host=127.0.0.1 user=%v database=%v sslmode=disable",
-		*alloydbUser, *alloydbDB,
+		"host=127.0.0.1 user=%v password=%v database=%v sslmode=disable",
+		*alloydbUser, *alloydbPass, *alloydbDB,
 	)
 	proxyConnTest(t, []string{*alloydbInstanceName}, "pgx", dsn)
 }
@@ -87,8 +87,8 @@ func TestPostgresAutoIAMAuthN(t *testing.T) {
 	}
 	requirePostgresVars(t)
 
-	dsn := fmt.Sprintf("host=127.0.0.1 user=%v password=%v database=%v sslmode=disable",
-		*alloydbIAMUser, *alloydbPass, *alloydbDB)
+	dsn := fmt.Sprintf("host=127.0.0.1 user=%v database=%v sslmode=disable",
+		*alloydbIAMUser, *alloydbDB)
 	proxyConnTest(t, []string{*alloydbInstanceName, "--auto-iam-authn"}, "pgx", dsn)
 }
 
