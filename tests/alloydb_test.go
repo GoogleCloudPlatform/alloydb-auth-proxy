@@ -87,6 +87,7 @@ func TestPostgresAutoIAMAuthN(t *testing.T) {
 	}
 	requirePostgresVars(t)
 
+	fmt.Println("user is", *alloydbIAMUser)
 	dsn := fmt.Sprintf("host=127.0.0.1 user=%v database=%v sslmode=disable",
 		*alloydbIAMUser, *alloydbDB)
 	proxyConnTest(t, []string{*alloydbInstanceName, "--auto-iam-authn"}, "pgx", dsn)
