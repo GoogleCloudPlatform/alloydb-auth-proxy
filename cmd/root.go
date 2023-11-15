@@ -203,7 +203,7 @@ Instance Level Configuration
     instances, the proxy will ensure that the last path element is
     '.s.PGSQL.5432' appending it if necessary. For example,
 
-        ./alloydb-aith-proxy \
+        ./alloydb-auth-proxy \
             'projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE1?unix-socket-path=/path/to/socket'
 
     (*) indicates a flag that may be used as a query parameter

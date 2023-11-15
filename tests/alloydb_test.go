@@ -74,8 +74,10 @@ func TestPostgresTCP(t *testing.T) {
 	}
 	requirePostgresVars(t)
 
-	dsn := fmt.Sprintf("host=127.0.0.1 user=%v password=%v database=%v sslmode=disable",
-		*alloydbUser, *alloydbPass, *alloydbDB)
+	dsn := fmt.Sprintf(
+		"host=127.0.0.1 user=%v database=%v sslmode=disable",
+		*alloydbUser, *alloydbDB,
+	)
 	proxyConnTest(t, []string{*alloydbInstanceName}, "pgx", dsn)
 }
 
