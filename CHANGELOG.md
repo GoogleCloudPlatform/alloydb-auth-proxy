@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.4.1...v1.5.0) (2023-11-15)
+
+
+### Features
+
+* add support for Auto IAM AuthN ([#423](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/423)) ([e854766](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/e85476658496d2f3b2692d2885a02ba925fa0200))
+
 ## [1.4.1](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.4.0...v1.4.1) (2023-10-17)
 
 
