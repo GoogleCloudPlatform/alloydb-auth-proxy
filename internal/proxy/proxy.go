@@ -650,6 +650,7 @@ func (c *Client) serveSocketMount(_ context.Context, s *socketMount) error {
 
 			sConn, err := c.dialer.Dial(ctx, s.inst)
 			if err != nil {
+				fmt.Println("------------------", err)
 				c.logger.Errorf("[%s] failed to connect to instance: %v\n", s.instShort, err)
 				cConn.Close()
 				return
