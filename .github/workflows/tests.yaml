@@ -96,6 +96,7 @@ jobs:
             ALLOYDB_INSTANCE_NAME:${{ secrets.GOOGLE_CLOUD_PROJECT }}/ALLOYDB_INSTANCE_NAME
             ALLOYDB_CLUSTER_PASS:${{ secrets.GOOGLE_CLOUD_PROJECT }}/ALLOYDB_CLUSTER_PASS
             IMPERSONATED_USER:${{ secrets.GOOGLE_CLOUD_PROJECT }}/IMPERSONATED_USER
+            ALLOYDB_IAM_USER:${{ secrets.GOOGLE_CLOUD_PROJECT }}/ALLOYDB_PROXY_IAM_USER
 
       - name: Run tests
         env:
@@ -104,6 +105,7 @@ jobs:
           ALLOYDB_PASS: '${{ steps.secrets.outputs.ALLOYDB_CLUSTER_PASS }}'
           ALLOYDB_INSTANCE_NAME: '${{ steps.secrets.outputs.ALLOYDB_INSTANCE_NAME }}'
           IMPERSONATED_USER: '${{ steps.secrets.outputs.IMPERSONATED_USER }}'
+          ALLOYDB_IAM_USER: '${{ steps.secrets.outputs.ALLOYDB_IAM_USER }}'
         # specifying bash shell ensures a failure in a piped process isn't lost by using `set -eo pipefail`
         shell: bash
         run: |

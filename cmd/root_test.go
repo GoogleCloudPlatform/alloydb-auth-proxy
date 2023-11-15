@@ -143,6 +143,61 @@ func TestNewCommandArguments(t *testing.T) {
 			}),
 		},
 		{
+			desc: "Auto IAM AuthN",
+			args: []string{
+				"--auto-iam-authn",
+				"projects/proj/locations/region/clusters/clust/instances/inst",
+			},
+			want: withDefaults(&proxy.Config{
+				AutoIAMAuthN: true,
+				Instances:    []proxy.InstanceConnConfig{{Name: "projects/proj/locations/region/clusters/clust/instances/inst"}},
+			}),
+		},
+		{
+			desc: "Auto IAM AuthN query param (key only)",
+			args: []string{
+				"projects/proj/locations/region/clusters/clust/instances/inst?auto-iam-authn",
+			},
+			want: withDefaults(&proxy.Config{
+				Instances: []proxy.InstanceConnConfig{{
+					AutoIAMAuthN: true,
+					Name:         "projects/proj/locations/region/clusters/clust/instances/inst",
+				}},
+			}),
+		},
+		{
+			desc: "Auto IAM AuthN query param (t & f)",
+			args: []string{
+				"projects/proj/locations/region/clusters/clust/instances/inst1?auto-iam-authn=t",
+				"projects/proj/locations/region/clusters/clust/instances/inst2?auto-iam-authn=f",
+			},
+			want: withDefaults(&proxy.Config{
+				Instances: []proxy.InstanceConnConfig{{
+					AutoIAMAuthN: true,
+					Name:         "projects/proj/locations/region/clusters/clust/instances/inst1",
+				}, {
+					AutoIAMAuthN: false,
+					Name:         "projects/proj/locations/region/clusters/clust/instances/inst2",
+				}},
+			}),
+		},
+		{
+			desc: "Auto IAM AuthN query param (true & false)",
+			args: []string{
+				"projects/proj/locations/region/clusters/clust/instances/inst1?auto-iam-authn=true",
+				"projects/proj/locations/region/clusters/clust/instances/inst2?auto-iam-authn=false",
+			},
+			want: withDefaults(&proxy.Config{
+				Instances: []proxy.InstanceConnConfig{{
+					AutoIAMAuthN: true,
+					Name:         "projects/proj/locations/region/clusters/clust/instances/inst1",
+				}, {
+					AutoIAMAuthN: false,
+					Name:         "projects/proj/locations/region/clusters/clust/instances/inst2",
+				}},
+			}),
+		},
+		{
 			desc: "using the address flag",
 			args: []string{"--address", "0.0.0.0", "projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
