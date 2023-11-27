@@ -324,6 +324,38 @@ Localhost Admin Server
     /quitquitquit. The admin server exits gracefully when it receives a POST
     request at /quitquitquit.
 
+Waiting for Startup
+
+    Sometimes it is necessary to wait for the Proxy to start.
+
+    To help ensure the Proxy is up and ready, the Proxy includes a wait
+    subcommand with an optional --max flag to set the maximum time to wait.
+
+    Invoke the wait command, like this:
+
+    ./alloydb-auth-proxy wait
+
+    By default, the Proxy will wait up to the maximum time for the startup
+    endpoint to respond. The wait command requires that the Proxy be started in
+    another process with the HTTP health check enabled. If an alternate health
+    check port or address is used, as in:
+
+    ./alloydb-auth-proxy <INSTANCE_URI> \
+      --http-address 0.0.0.0 \
+      --http-port 9191
+
+    Then the wait command must also be told to use the same custom values:
+
+    ./alloydb-auth-proxy wait \
+      --http-address 0.0.0.0 \
+      --http-port 9191
+
+    By default the wait command will wait 30 seconds. To alter this value,
+    use:
+
+    ./alloydb-auth-proxy wait --max 10s
+
+(*) indicates a flag that may be used as a query parameter
 `
 
 const envPrefix = "ALLOYDB_PROXY"
@@ -356,9 +388,44 @@ func instanceFromEnv(args []string) []string {
 	return args
 }
 
+const (
+	waitMaxFlag     = "max"
+	httpAddressFlag = "http-address"
+	httpPortFlag    = "http-port"
+)
+
+func runWaitCmd(c *cobra.Command, _ []string) error {
+	a, _ := c.Flags().GetString(httpAddressFlag)
+	p, _ := c.Flags().GetString(httpPortFlag)
+	addr := fmt.Sprintf("http://%v:%v/startup", a, p)
+
+	wait, err := c.Flags().GetDuration(waitMaxFlag)
+	if err != nil {
+		// This error should always be nil. If the error occurs, it means the
+		// wait flag name has changed where it was registered.
+		return err
+	}
+	c.SilenceUsage = true
+
+	t := time.After(wait)
+	for {
+		select {
+		case <-t:
+			return errors.New("command failed to complete successfully")
+		default:
+			resp, err := http.Get(addr)
+			if err != nil || resp.StatusCode != http.StatusOK {
+				time.Sleep(time.Second)
+				break
+			}
+			return nil
+		}
+	}
+}
+
 // NewCommand returns a Command object representing an invocation of the proxy.
 func NewCommand(opts ...Option) *Command {
-	cmd := &cobra.Command{
+	rootCmd := &cobra.Command{
 		Use:     "alloydb-auth-proxy instance_uri...",
 		Version: versionString,
 		Short:   "alloydb-auth-proxy provides a secure way to authorize connections to AlloyDB.",
@@ -367,7 +434,7 @@ func NewCommand(opts ...Option) *Command {
 
 	logger := log.NewStdLogger(os.Stdout, os.Stderr)
 	c := &Command{
-		Command: cmd,
+		Command: rootCmd,
 		logger:  logger,
 		cleanup: func() error { return nil },
 		conf: &proxy.Config{
@@ -378,7 +445,19 @@ func NewCommand(opts ...Option) *Command {
 		o(c)
 	}
 
-	cmd.Args = func(cmd *cobra.Command, args []string) error {
+	var waitCmd = &cobra.Command{
+		Use:  "wait",
+		RunE: runWaitCmd,
+	}
+	waitFlags := waitCmd.PersistentFlags()
+	waitFlags.DurationP(
+		waitMaxFlag, "m",
+		30*time.Second,
+		"maximum amount of time to wait for startup",
+	)
+	rootCmd.AddCommand(waitCmd)
+
+	rootCmd.Args = func(cmd *cobra.Command, args []string) error {
 		// If args is not already populated, try to read from the environment.
 		if len(args) == 0 {
 			args = instanceFromEnv(args)
@@ -400,13 +479,13 @@ func NewCommand(opts ...Option) *Command {
 		return nil
 	}
 
-	cmd.RunE = func(*cobra.Command, []string) error { return runSignalWrapper(c) }
+	rootCmd.RunE = func(*cobra.Command, []string) error { return runSignalWrapper(c) }
 
-	pflags := cmd.PersistentFlags()
+	pflags := rootCmd.PersistentFlags()
 
 	// Global-only flags
 	pflags.StringVar(&c.conf.OtherUserAgents, "user-agent", "",
-		"Space separated list of additional user agents, e.g. cloud-sql-proxy-operator/0.0.1")
+		"Space separated list of additional user agents, e.g. custom-agent/0.0.1")
 	pflags.StringVarP(&c.conf.Token, "token", "t", "",
 		"Bearer token used for authorization.")
 	pflags.StringVarP(&c.conf.CredentialsFile, "credentials-file", "c", "",
@@ -440,7 +519,7 @@ the maximum time has passed. Defaults to 0s.`)
 	pflags.StringVar(&c.conf.ImpersonationChain, "impersonate-service-account", "",
 		`Comma separated list of service accounts to impersonate. Last value
 +is the target account.`)
-	cmd.PersistentFlags().BoolVar(&c.conf.Quiet, "quiet", false, "Log error messages only")
+	rootCmd.PersistentFlags().BoolVar(&c.conf.Quiet, "quiet", false, "Log error messages only")
 
 	pflags.StringVar(&c.conf.TelemetryProject, "telemetry-project", "",
 		"Enable Cloud Monitoring and Cloud Trace integration with the provided project ID.")
