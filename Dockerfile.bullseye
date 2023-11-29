@@ -15,6 +15,8 @@
 # Use the latest stable golang 1.x to compile to a binary
 FROM --platform=$BUILDPLATFORM golang:1 as build
 
+LABEL org.opencontainers.image.source="https://github.com/GoogleCloudPlatform/alloydb-auth-proxy"
+
 WORKDIR /go/src/alloydb-auth-proxy
 COPY . .
 
