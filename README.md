@@ -180,7 +180,7 @@ an AlloyDB instance. The proxy supports the following options:
 3. [Application Default Credentials (ADC)][adc] if neither of the above have
    been set.
 
-Note: Any account connecting to AlloyDB instance will the following
+Note: Any account connecting to AlloyDB instance will need the following
 IAM roles or equivalent permissions:
 
 - Cloud AlloyDB Client (`roles/alloydb.client`)
