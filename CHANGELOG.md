@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.5.0...v1.6.0) (2023-12-04)
+
+
+### Features
+
+* add wait command support ([#512](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/512)) ([a1506d1](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/a1506d129c4bc4c14884fd1f28f81782ce3e0313)), closes [#511](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/511)
+
 ## [1.5.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.4.1...v1.5.0) (2023-11-15)
 
 
