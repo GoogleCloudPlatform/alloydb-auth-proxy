@@ -108,7 +108,7 @@ jobs:
         uses: google-github-actions/get-secretmanager-secrets@4d6d3dfd94110800dda8d84109cb6da0f6a5919d # v1.0.1
         with:
           secrets: |-
-            ALLOYDB_CONN_NAME:alloydb-connector-testing/ALLOYDB_CONN_NAME
+            ALLOYDB_INSTANCE_NAME:alloydb-connector-testing/ALLOYDB_INSTANCE_NAME
             ALLOYDB_CLUSTER_PASS:alloydb-connector-testing/ALLOYDB_CLUSTER_PASS
 
       - name: Run lint
@@ -121,7 +121,7 @@ jobs:
           DB_NAME: 'postgres'
           DB_USER: 'postgres'
           DB_PASS: '${{ steps.secrets.outputs.ALLOYDB_CLUSTER_PASS }}'
-          ALLOYDB_CONNECTION_NAME: '${{ steps.secrets.outputs.ALLOYDB_CONN_NAME }}'
+          ALLOYDB_CONNECTION_NAME: '${{ steps.secrets.outputs.ALLOYDB_INSTANCE_NAME }}'
         run: |
           ./examples/java/run_tests.sh
   nodejs:
@@ -158,7 +158,7 @@ jobs:
         uses: google-github-actions/get-secretmanager-secrets@4d6d3dfd94110800dda8d84109cb6da0f6a5919d # v1.0.1
         with:
           secrets: |-
-            ALLOYDB_CONN_NAME:alloydb-connector-testing/ALLOYDB_CONN_NAME
+            ALLOYDB_INSTANCE_NAME:alloydb-connector-testing/ALLOYDB_INSTANCE_NAME
             ALLOYDB_CLUSTER_PASS:alloydb-connector-testing/ALLOYDB_CLUSTER_PASS
 
       - name: Run tests
@@ -166,7 +166,7 @@ jobs:
           DB_NAME: 'postgres'
           DB_USER: 'postgres'
           DB_PASS: '${{ steps.secrets.outputs.ALLOYDB_CLUSTER_PASS }}'
-          ALLOYDB_CONNECTION_NAME: '${{ steps.secrets.outputs.ALLOYDB_CONN_NAME }}'
+          ALLOYDB_CONNECTION_NAME: '${{ steps.secrets.outputs.ALLOYDB_INSTANCE_NAME }}'
         run: |
           ./examples/nodejs/run_tests.sh
   go:
@@ -202,7 +202,7 @@ jobs:
         uses: google-github-actions/get-secretmanager-secrets@4d6d3dfd94110800dda8d84109cb6da0f6a5919d # v1.0.1
         with:
           secrets: |-
-            ALLOYDB_CONN_NAME:alloydb-connector-testing/ALLOYDB_CONN_NAME
+            ALLOYDB_INSTANCE_NAME:alloydb-connector-testing/ALLOYDB_INSTANCE_NAME
             ALLOYDB_CLUSTER_PASS:alloydb-connector-testing/ALLOYDB_CLUSTER_PASS
 
       - name: Run tests
@@ -210,7 +210,7 @@ jobs:
           DB_NAME: 'postgres'
           DB_USER: 'postgres'
           DB_PASS: '${{ steps.secrets.outputs.ALLOYDB_CLUSTER_PASS }}'
-          ALLOYDB_CONNECTION_NAME: '${{ steps.secrets.outputs.ALLOYDB_CONN_NAME }}'
+          ALLOYDB_CONNECTION_NAME: '${{ steps.secrets.outputs.ALLOYDB_INSTANCE_NAME }}'
         run: |
           ./examples/go/run_tests.sh
   python:
@@ -243,7 +243,7 @@ jobs:
         uses: google-github-actions/get-secretmanager-secrets@4d6d3dfd94110800dda8d84109cb6da0f6a5919d # v1.0.1
         with:
           secrets: |-
-            ALLOYDB_CONN_NAME:alloydb-connector-testing/ALLOYDB_CONN_NAME
+            ALLOYDB_INSTANCE_NAME:alloydb-connector-testing/ALLOYDB_INSTANCE_NAME
             ALLOYDB_CLUSTER_PASS:alloydb-connector-testing/ALLOYDB_CLUSTER_PASS
 
       - name: Run lint
@@ -258,6 +258,6 @@ jobs:
           DB_NAME: 'postgres'
           DB_USER: 'postgres'
           DB_PASS: '${{ steps.secrets.outputs.ALLOYDB_CLUSTER_PASS }}'
-          ALLOYDB_CONNECTION_NAME: '${{ steps.secrets.outputs.ALLOYDB_CONN_NAME }}'
+          ALLOYDB_CONNECTION_NAME: '${{ steps.secrets.outputs.ALLOYDB_INSTANCE_NAME }}'
         run: |
           ./examples/python/run_tests.sh
