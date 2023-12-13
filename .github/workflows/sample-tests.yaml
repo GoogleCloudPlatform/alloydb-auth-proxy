@@ -229,6 +229,11 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
 
+      - name: Setup Python 3.11
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5.0.0
+        with:
+          python-version: '3.11'
+
       - name: Authenticate to Google Cloud
         id: 'auth'
         uses: google-github-actions/auth@67e9c72af6e0492df856527b474995862b7b6591 # v2.0.0
