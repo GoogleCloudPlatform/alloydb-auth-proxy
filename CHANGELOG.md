@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.1](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.6.0...v1.6.1) (2023-12-13)
+
+
+### Bug Fixes
+
+* correctly apply container image labels ([#524](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/524)) ([15bbe33](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/15bbe330e8cc42a9101dce72986957494b53c037))
+
 ## [1.6.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.5.0...v1.6.0) (2023-12-04)
 
 
