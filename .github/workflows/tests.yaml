@@ -68,7 +68,7 @@ jobs:
             }
 
       - name: Setup Go
-        uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
+        uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
         with:
           go-version: "1.21"
 
@@ -86,11 +86,11 @@ jobs:
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
 
       - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@e30db14379863a8c79331b04a9969f4c1e225e0b # v1.1.1
+        uses: google-github-actions/setup-gcloud@825196879a077b7efa50db2e88409f44de4635c2 # v2.0.0
 
       - name: Get Secrets
         id: 'secrets'
-        uses: google-github-actions/get-secretmanager-secrets@4d6d3dfd94110800dda8d84109cb6da0f6a5919d # v1.0.1
+        uses: google-github-actions/get-secretmanager-secrets@ae0d4054c32840e2ced71207a9df55161ae3debc # v2.0.0
         with:
           secrets: |-
             ALLOYDB_INSTANCE_NAME:${{ secrets.GOOGLE_CLOUD_PROJECT }}/ALLOYDB_INSTANCE_NAME
@@ -158,7 +158,7 @@ jobs:
             }
 
       - name: Setup Go
-        uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
+        uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
         with:
           go-version: "1.21"
 
