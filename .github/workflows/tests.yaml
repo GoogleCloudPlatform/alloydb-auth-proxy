@@ -170,6 +170,8 @@ jobs:
 
       - id: 'auth'
         name: Authenticate to Google Cloud
+        # only needed for Flakybot on periodic (schedule) and continuous (push) events
+        if: ${{ github.event_name == 'schedule' || github.event_name == 'push' }}
         uses: google-github-actions/auth@67e9c72af6e0492df856527b474995862b7b6591 # v2.0.0
         with:
           workload_identity_provider: ${{ secrets.PROVIDER_NAME }}
