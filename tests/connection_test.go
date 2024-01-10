@@ -31,6 +31,7 @@ const connTestTimeout = time.Minute
 // and then unsets GOOGLE_APPLICATION_CREDENTIALS. It returns a cleanup function
 // that restores the original setup.
 func removeAuthEnvVar(t *testing.T, wantToken bool) (*oauth2.Token, string, func()) {
+	t.Helper()
 	var tok *oauth2.Token
 	if wantToken {
 		ts, err := google.DefaultTokenSource(context.Background(),
@@ -57,6 +58,7 @@ func removeAuthEnvVar(t *testing.T, wantToken bool) (*oauth2.Token, string, func
 }
 
 func keyfile(t *testing.T) string {
+	t.Helper()
 	path := os.Getenv("GOOGLE_APPLICATION_CREDENTIALS")
 	if path == "" {
 		t.Fatal("GOOGLE_APPLICATION_CREDENTIALS not set")
@@ -70,10 +72,12 @@ func keyfile(t *testing.T) string {
 
 // proxyConnTest is a test helper to verify the proxy works with a basic connectivity test.
 func proxyConnTest(t *testing.T, args []string, driver, dsn string) {
+	t.Helper()
 	proxyConnTestWithReady(t, args, driver, dsn, func() error { return nil })
 }
 
 func proxyConnTestWithReady(t *testing.T, args []string, driver, dsn string, ready func() error) {
+	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), connTestTimeout)
 	defer cancel()
 	// Start the proxy
