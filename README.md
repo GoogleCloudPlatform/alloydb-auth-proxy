@@ -38,7 +38,7 @@ following instructions for your OS and CPU architecture.
 
 ``` sh
 # see Releases for other versions
-URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.2.2"
+URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.6.2"
 
 wget "$URL/alloydb-auth-proxy.linux.amd64" -O alloydb-auth-proxy
 
@@ -51,7 +51,7 @@ chmod +x alloydb-auth-proxy
 
 ``` sh
 # see Releases for other versions
-URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.2.2"
+URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.6.2"
 
 wget "$URL/alloydb-auth-proxy.linux.386" -O alloydb-auth-proxy
 
@@ -64,7 +64,7 @@ chmod +x alloydb-auth-proxy
 
 ``` sh
 # see Releases for other versions
-URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.2.2"
+URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.6.2"
 
 wget "$URL/alloydb-auth-proxy.linux.arm64" -O alloydb-auth-proxy
 
@@ -77,7 +77,7 @@ chmod +x alloydb-auth-proxy
 
 ``` sh
 # see Releases for other versions
-URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.2.2"
+URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.6.2"
 
 wget "$URL/alloydb-auth-proxy.linux.arm" -O alloydb-auth-proxy
 
@@ -90,7 +90,7 @@ chmod +x alloydb-auth-proxy
 
 ``` sh
 # see Releases for other versions
-URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.2.2"
+URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.6.2"
 
 wget "$URL/alloydb-auth-proxy.darwin.amd64" -O alloydb-auth-proxy
 
@@ -103,7 +103,7 @@ chmod +x alloydb-auth-proxy
 
 ``` sh
 # see Releases for other versions
-URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.2.2"
+URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.6.2"
 
 wget "$URL/alloydb-auth-proxy.darwin.arm64" -O alloydb-auth-proxy
 
@@ -116,7 +116,7 @@ chmod +x alloydb-auth-proxy
 
 ``` sh
 # see Releases for other versions
-wget https://storage.googleapis.com/alloydb-auth-proxy/v1.2.2/alloydb-auth-proxy-x64.exe -O alloydb-auth-proxy.exe
+wget https://storage.googleapis.com/alloydb-auth-proxy/v1.6.2/alloydb-auth-proxy-x64.exe -O alloydb-auth-proxy.exe
 ```
 </details>
 
@@ -125,7 +125,7 @@ wget https://storage.googleapis.com/alloydb-auth-proxy/v1.2.2/alloydb-auth-proxy
 
 ``` sh
 # see Releases for other versions
-wget https://storage.googleapis.com/alloydb-auth-proxy/v1.2.2/alloydb-auth-proxy-x86.exe -O alloydb-auth-proxy.exe
+wget https://storage.googleapis.com/alloydb-auth-proxy/v1.6.2/alloydb-auth-proxy-x86.exe -O alloydb-auth-proxy.exe
 ```
 </details>
 
