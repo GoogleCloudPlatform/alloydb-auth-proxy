@@ -571,7 +571,8 @@ status code.`)
 		`(*) Enables Unix sockets for all listeners using the provided directory.`)
 	localFlags.BoolVarP(&c.conf.AutoIAMAuthN, "auto-iam-authn", "i", false,
 		"(*) Enables Automatic IAM Authentication for all instances")
-
+	localFlags.BoolVar(&c.conf.PublicIP, "public-ip", false,
+		"(*) Connect to the public ip address for all instances")
 	v := viper.NewWithOptions(viper.EnvKeyReplacer(strings.NewReplacer("-", "_")))
 	v.SetEnvPrefix(envPrefix)
 	v.AutomaticEnv()
@@ -773,6 +774,10 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 			}
 
 			ic.AutoIAMAuthN, err = parseBoolOpt(q, "auto-iam-authn")
+			if err != nil {
+				return err
+			}
+			ic.PublicIP, err = parseBoolOpt(q, "public-ip")
 			if err != nil {
 				return err
 			}

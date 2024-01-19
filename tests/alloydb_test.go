@@ -196,3 +196,16 @@ func TestAuthWithGcloudAuth(t *testing.T) {
 		[]string{"--gcloud-auth", *alloydbInstanceName, "--port=10005"},
 		"pgx", dsn)
 }
+
+func TestPostgresPublicIP(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping Postgres integration tests")
+	}
+	requirePostgresVars(t)
+
+	dsn := fmt.Sprintf(
+		"host=127.0.0.1 port=10006 user=%v password=%v database=%v sslmode=disable",
+		*alloydbUser, *alloydbPass, *alloydbDB,
+	)
+	proxyConnTest(t, []string{*alloydbInstanceName, "--public-ip", "--port=10006"}, "pgx", dsn)
+}
