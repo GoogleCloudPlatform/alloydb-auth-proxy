@@ -36,6 +36,19 @@ import (
 
 const sampleURI = "projects/proj/locations/region/clusters/clust/instances/inst"
 
+// pointer returns the address of v and makes it easy to take the address of a
+// predeclared identifier. Compare:
+//
+//	t := true
+//	pt := &t
+//
+// vs
+//
+//	pt := pointer(true)
+func pointer[T any](v T) *T {
+	return &v
+}
+
 func invokeProxyCommand(args []string) (*Command, error) {
 	c := NewCommand()
 	// Keep the test output quiet
@@ -160,7 +173,7 @@ func TestNewCommandArguments(t *testing.T) {
 			},
 			want: withDefaults(&proxy.Config{
 				Instances: []proxy.InstanceConnConfig{{
-					AutoIAMAuthN: true,
+					AutoIAMAuthN: pointer(true),
 					Name:         "projects/proj/locations/region/clusters/clust/instances/inst",
 				}},
 			}),
@@ -173,10 +186,10 @@ func TestNewCommandArguments(t *testing.T) {
 			},
 			want: withDefaults(&proxy.Config{
 				Instances: []proxy.InstanceConnConfig{{
-					AutoIAMAuthN: true,
+					AutoIAMAuthN: pointer(true),
 					Name:         "projects/proj/locations/region/clusters/clust/instances/inst1",
 				}, {
-					AutoIAMAuthN: false,
+					AutoIAMAuthN: pointer(false),
 					Name:         "projects/proj/locations/region/clusters/clust/instances/inst2",
 				}},
 			}),
@@ -189,10 +202,10 @@ func TestNewCommandArguments(t *testing.T) {
 			},
 			want: withDefaults(&proxy.Config{
 				Instances: []proxy.InstanceConnConfig{{
-					AutoIAMAuthN: true,
+					AutoIAMAuthN: pointer(true),
 					Name:         "projects/proj/locations/region/clusters/clust/instances/inst1",
 				}, {
-					AutoIAMAuthN: false,
+					AutoIAMAuthN: pointer(false),
 					Name:         "projects/proj/locations/region/clusters/clust/instances/inst2",
 				}},
 			}),

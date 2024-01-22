@@ -59,7 +59,7 @@ type InstanceConnConfig struct {
 
 	// AutoIAMAuthN enables automatic IAM authentication on the instance only.
 	// See Config.AutoIAMAuthN for more details.
-	AutoIAMAuthN bool
+	AutoIAMAuthN *bool
 }
 
 // Config contains all the configuration provided by the caller.

@@ -766,14 +766,14 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 // parseBoolOpt parses a boolean option from the query string.
 // True is can be "t", "true" (case-insensitive).
 // False can be "f" or "false" (case-insensitive).
-func parseBoolOpt(q url.Values, name string) (bool, error) {
+func parseBoolOpt(q url.Values, name string) (*bool, error) {
 	v, ok := q[name]
 	if !ok {
-		return false, nil
+		return nil, nil
 	}
 
 	if len(v) != 1 {
-		return false, newBadCommandError(
+		return nil, newBadCommandError(
 			fmt.Sprintf("%v param should be only one value: %q", name, v),
 		)
 	}
@@ -782,12 +782,14 @@ func parseBoolOpt(q url.Values, name string) (bool, error) {
 	// if only the key is present (and the value is empty string), accept that
 	// as true.
 	case "true", "t", "":
-		return true, nil
+		enable := true
+		return &enable, nil
 	case "false", "f":
-		return false, nil
+		disable := false
+		return &disable, nil
 	default:
 		// value is not recognized
-		return false, newBadCommandError(
+		return nil, newBadCommandError(
 			fmt.Sprintf("%v query param should be true or false, got: %q",
 				name, v[0],
 			))
