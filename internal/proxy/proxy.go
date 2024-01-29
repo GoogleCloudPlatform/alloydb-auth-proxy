@@ -60,6 +60,10 @@ type InstanceConnConfig struct {
 	// AutoIAMAuthN enables automatic IAM authentication on the instance only.
 	// See Config.AutoIAMAuthN for more details.
 	AutoIAMAuthN *bool
+
+	// PublicIP tells the proxy to attempt to connect to the db instance's
+	// public IP address instead of the private IP address
+	PublicIP *bool
 }
 
 // Config contains all the configuration provided by the caller.
@@ -68,10 +72,14 @@ type Config struct {
 	// API.
 	UserAgent string
 
-	// AutoIAMAuthN enabled automatic IAM authentication which results in the
+	// AutoIAMAuthN enables automatic IAM authentication which results in the
 	// Proxy sending the IAM principal's OAuth2 token to the backend to enable
 	// a passwordless login for callers.
 	AutoIAMAuthN bool
+
+	// PublicIP enables connections via the database server's public IP address
+	// for all instances.
+	PublicIP bool
 
 	// Token is the Bearer token used for authorization.
 	Token string
@@ -179,6 +187,19 @@ type Config struct {
 	// RunConnectionTest determines whether the Proxy should attempt a connection
 	// to all specified instances to verify the network path is valid.
 	RunConnectionTest bool
+}
+
+// dialOptions interprets appropriate dial options for a particular instance
+// configuration
+func dialOptions(c Config, i InstanceConnConfig) []alloydbconn.DialOption {
+	var opts []alloydbconn.DialOption
+
+	// If public IP is enabled at the instance level, or public IP is enabled
+	// globally, add the option.
+	if i.PublicIP != nil && *i.PublicIP || i.PublicIP == nil && c.PublicIP {
+		opts = append(opts, alloydbconn.WithPublicIP())
+	}
+	return opts
 }
 
 func parseImpersonationChain(chain string) (string, []string) {
@@ -456,11 +477,11 @@ func (c *Client) CheckConnections(ctx context.Context) (int, error) {
 	if c.fuseDir != "" {
 		mnts = c.fuseMounts()
 	}
-	for _, m := range mnts {
+	for _, mnt := range mnts {
 		wg.Add(1)
-		go func(inst string) {
+		go func(m *socketMount) {
 			defer wg.Done()
-			conn, err := c.dialer.Dial(ctx, inst)
+			conn, err := c.dialer.Dial(ctx, m.inst, m.dialOpts...)
 			if err != nil {
 				errCh <- err
 				return
@@ -469,10 +490,10 @@ func (c *Client) CheckConnections(ctx context.Context) (int, error) {
 			if cErr != nil {
 				c.logger.Errorf(
 					"connection check failed to close connection for %v: %v",
-					inst, cErr,
+					m.inst, cErr,
 				)
 			}
-		}(m.inst)
+		}(mnt)
 	}
 	wg.Wait()
 
@@ -648,7 +669,7 @@ func (c *Client) serveSocketMount(_ context.Context, s *socketMount) error {
 			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 			defer cancel()
 
-			sConn, err := c.dialer.Dial(ctx, s.inst)
+			sConn, err := c.dialer.Dial(ctx, s.inst, s.dialOpts...)
 			if err != nil {
 				c.logger.Errorf("[%s] failed to connect to instance: %v\n", s.instShort, err)
 				cConn.Close()
@@ -664,6 +685,7 @@ type socketMount struct {
 	inst      string
 	instShort string
 	listener  net.Listener
+	dialOpts  []alloydbconn.DialOption
 }
 
 func newSocketMount(ctx context.Context, conf *Config, pc *portConfig, inst InstanceConnConfig) (*socketMount, error) {
@@ -726,11 +748,12 @@ func newSocketMount(ctx context.Context, conf *Config, pc *portConfig, inst Inst
 		// access.
 		_ = os.Chmod(address, 0777)
 	}
-
+	opts := dialOptions(*conf, inst)
 	m := &socketMount{
 		inst:      inst.Name,
 		instShort: shortInst,
 		listener:  ln,
+		dialOpts:  opts,
 	}
 	return m, nil
 }

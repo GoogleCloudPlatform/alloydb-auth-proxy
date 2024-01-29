@@ -3,7 +3,7 @@ module github.com/GoogleCloudPlatform/alloydb-auth-proxy
 go 1.20
 
 require (
-	cloud.google.com/go/alloydbconn v1.5.2
+	cloud.google.com/go/alloydbconn v1.6.0
 	contrib.go.opencensus.io/exporter/prometheus v0.4.2
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.14
 	github.com/coreos/go-systemd/v22 v22.5.0

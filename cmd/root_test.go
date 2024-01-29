@@ -211,6 +211,61 @@ func TestNewCommandArguments(t *testing.T) {
 			}),
 		},
 		{
+			desc: "Public IP",
+			args: []string{
+				"--public-ip",
+				"projects/proj/locations/region/clusters/clust/instances/inst",
+			},
+			want: withDefaults(&proxy.Config{
+				PublicIP:  true,
+				Instances: []proxy.InstanceConnConfig{{Name: "projects/proj/locations/region/clusters/clust/instances/inst"}},
+			}),
+		},
+		{
+			desc: "Public IP query param (key only)",
+			args: []string{
+				"projects/proj/locations/region/clusters/clust/instances/inst?public-ip",
+			},
+			want: withDefaults(&proxy.Config{
+				Instances: []proxy.InstanceConnConfig{{
+					PublicIP: pointer(true),
+					Name:     "projects/proj/locations/region/clusters/clust/instances/inst",
+				}},
+			}),
+		},
+		{
+			desc: "Public IP query param (t & f)",
+			args: []string{
+				"projects/proj/locations/region/clusters/clust/instances/inst1?public-ip=t",
+				"projects/proj/locations/region/clusters/clust/instances/inst2?public-ip=f",
+			},
+			want: withDefaults(&proxy.Config{
+				Instances: []proxy.InstanceConnConfig{{
+					PublicIP: pointer(true),
+					Name:     "projects/proj/locations/region/clusters/clust/instances/inst1",
+				}, {
+					PublicIP: pointer(false),
+					Name:     "projects/proj/locations/region/clusters/clust/instances/inst2",
+				}},
+			}),
+		},
+		{
+			desc: "Public IP query param (true & false)",
+			args: []string{
+				"projects/proj/locations/region/clusters/clust/instances/inst1?public-ip=true",
+				"projects/proj/locations/region/clusters/clust/instances/inst2?public-ip=false",
+			},
+			want: withDefaults(&proxy.Config{
+				Instances: []proxy.InstanceConnConfig{{
+					PublicIP: pointer(true),
+					Name:     "projects/proj/locations/region/clusters/clust/instances/inst1",
+				}, {
+					PublicIP: pointer(false),
+					Name:     "projects/proj/locations/region/clusters/clust/instances/inst2",
+				}},
+			}),
+		},
+		{
 			desc: "using the address flag",
 			args: []string{"--address", "0.0.0.0", "projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
@@ -478,6 +533,14 @@ func TestNewCommandWithEnvironmentConfig(t *testing.T) {
 			envValue: "true",
 			want: withDefaults(&proxy.Config{
 				GcloudAuth: true,
+			}),
+		},
+		{
+			desc:     "using the public-ip envvar",
+			envName:  "ALLOYDB_PROXY_PUBLIC_IP",
+			envValue: "true",
+			want: withDefaults(&proxy.Config{
+				PublicIP: true,
 			}),
 		},
 		{
