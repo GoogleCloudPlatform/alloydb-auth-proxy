@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.6.2...v1.7.0) (2024-01-29)
+
+
+### Features
+
+* add support for public IP connections ([#566](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/566)) ([ac21696](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/ac216965ef78f89cf1882a3bc822008bcab7e297))
+
 ## [1.6.2](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.6.1...v1.6.2) (2024-01-17)
 
 
