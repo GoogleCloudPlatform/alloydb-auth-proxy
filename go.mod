@@ -8,7 +8,7 @@ require (
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.14
 	github.com/coreos/go-systemd/v22 v22.5.0
 	github.com/google/go-cmp v0.6.0
-	github.com/hanwen/go-fuse/v2 v2.4.0
+	github.com/hanwen/go-fuse/v2 v2.5.0
 	github.com/jackc/pgx/v5 v5.5.2
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
