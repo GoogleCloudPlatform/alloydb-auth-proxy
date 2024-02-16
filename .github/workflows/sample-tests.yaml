@@ -61,7 +61,7 @@ jobs:
             console.log('Failed to remove label. Another job may have already removed it!');
           }
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-    - uses: dorny/paths-filter@4512585405083f25c027a35db413c2b3b9006d50 # v2.11.1
+    - uses: dorny/paths-filter@7267a8516b6f92bdb098633497bad573efdbf271 # v2.12.0
       id: filter
       with:
         filters: |
@@ -90,22 +90,22 @@ jobs:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
 
       - name: Setup Maven Action
-        uses: s4u/setup-maven-action@fa2c7e4517ed008b1f73e7e0195a9eecf5582cd4 # v1.11.0
+        uses: s4u/setup-maven-action@6d44c18d67d9e1549907b8815efa5e4dada1801b # v1.12.0
         with:
           java-version: 17
 
       - name: Authenticate to Google Cloud
         id: 'auth'
-        uses: google-github-actions/auth@f6de81663f7788d05bd15bcce18f0e57f23f0846 # v2.0.1
+        uses: google-github-actions/auth@a6e2e39c0a0331da29f7fd2c2a20a427e8d3ad1f # v2.1.1
         with:
           workload_identity_provider: ${{ secrets.PROVIDER_NAME }}
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
 
       - name: 'Set up Cloud SDK'
-        uses: google-github-actions/setup-gcloud@5a5f7b85fca43e76e53463acaa9d408a03c98d3a # v2.0.1
+        uses: google-github-actions/setup-gcloud@98ddc00a17442e89a24bbf282954a3b65ce6d200 # v2.1.0
       - name: Get Secrets
         id: 'secrets'
-        uses: google-github-actions/get-secretmanager-secrets@ae0d4054c32840e2ced71207a9df55161ae3debc # v2.0.0
+        uses: google-github-actions/get-secretmanager-secrets@61067887622dee4939d68e379b4264a57534fdf6 # v2.1.0
         with:
           secrets: |-
             ALLOYDB_INSTANCE_NAME:alloydb-connector-testing/ALLOYDB_INSTANCE_NAME
@@ -140,22 +140,22 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
       - name: Setup Node
-        uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v4.0.1
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
         with:
           node-version: 14
 
       - name: Authenticate to Google Cloud
         id: 'auth'
-        uses: google-github-actions/auth@f6de81663f7788d05bd15bcce18f0e57f23f0846 # v2.0.1
+        uses: google-github-actions/auth@a6e2e39c0a0331da29f7fd2c2a20a427e8d3ad1f # v2.1.1
         with:
           workload_identity_provider: ${{ secrets.PROVIDER_NAME }}
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
 
       - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@5a5f7b85fca43e76e53463acaa9d408a03c98d3a # v2.0.1
+        uses: google-github-actions/setup-gcloud@98ddc00a17442e89a24bbf282954a3b65ce6d200 # v2.1.0
       - name: Get Secrets
         id: 'secrets'
-        uses: google-github-actions/get-secretmanager-secrets@ae0d4054c32840e2ced71207a9df55161ae3debc # v2.0.0
+        uses: google-github-actions/get-secretmanager-secrets@61067887622dee4939d68e379b4264a57534fdf6 # v2.1.0
         with:
           secrets: |-
             ALLOYDB_INSTANCE_NAME:alloydb-connector-testing/ALLOYDB_INSTANCE_NAME
@@ -190,16 +190,16 @@ jobs:
           go-version: "1.21"
       - name: Authenticate to Google Cloud
         id: 'auth'
-        uses: google-github-actions/auth@f6de81663f7788d05bd15bcce18f0e57f23f0846 # v2.0.1
+        uses: google-github-actions/auth@a6e2e39c0a0331da29f7fd2c2a20a427e8d3ad1f # v2.1.1
         with:
           workload_identity_provider: ${{ secrets.PROVIDER_NAME }}
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
 
       - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@5a5f7b85fca43e76e53463acaa9d408a03c98d3a # v2.0.1
+        uses: google-github-actions/setup-gcloud@98ddc00a17442e89a24bbf282954a3b65ce6d200 # v2.1.0
       - name: Get Secrets
         id: 'secrets'
-        uses: google-github-actions/get-secretmanager-secrets@ae0d4054c32840e2ced71207a9df55161ae3debc # v2.0.0
+        uses: google-github-actions/get-secretmanager-secrets@61067887622dee4939d68e379b4264a57534fdf6 # v2.1.0
         with:
           secrets: |-
             ALLOYDB_INSTANCE_NAME:alloydb-connector-testing/ALLOYDB_INSTANCE_NAME
@@ -236,16 +236,16 @@ jobs:
 
       - name: Authenticate to Google Cloud
         id: 'auth'
-        uses: google-github-actions/auth@f6de81663f7788d05bd15bcce18f0e57f23f0846 # v2.0.1
+        uses: google-github-actions/auth@a6e2e39c0a0331da29f7fd2c2a20a427e8d3ad1f # v2.1.1
         with:
           workload_identity_provider: ${{ secrets.PROVIDER_NAME }}
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
      
       - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@5a5f7b85fca43e76e53463acaa9d408a03c98d3a # v2.0.1
+        uses: google-github-actions/setup-gcloud@98ddc00a17442e89a24bbf282954a3b65ce6d200 # v2.1.0
       - name: Get Secrets
         id: 'secrets'
-        uses: google-github-actions/get-secretmanager-secrets@ae0d4054c32840e2ced71207a9df55161ae3debc # v2.0.0
+        uses: google-github-actions/get-secretmanager-secrets@61067887622dee4939d68e379b4264a57534fdf6 # v2.1.0
         with:
           secrets: |-
             ALLOYDB_INSTANCE_NAME:alloydb-connector-testing/ALLOYDB_INSTANCE_NAME
