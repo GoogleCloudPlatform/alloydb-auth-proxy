@@ -260,6 +260,15 @@ with a query-string style syntax:
     '<INSTANCE_URI_2>?address=127.0.0.1&port=7000'
 ```
 
+For Auto IAM Authentication, make sure to run the Proxy as the same IAM
+principal as the user you want to log in as, and start the Proxy like so:
+
+``` bash
+./alloydb-auth-proxy \
+    --auto-iam-authn \
+    <INSTANCe_URI>
+```
+
 Note: when using the query-string syntax, the instance URI and query parameters
 must be wrapped in quotes.
 
