@@ -33,7 +33,8 @@ have access to it).
 Check for the latest version on the [releases page][releases] and use the
 following instructions for your OS and CPU architecture.
 
-<details>
+<!-- {x-release-please-start-version} -->
+<details open>
 <summary>Linux amd64</summary>
 
 ``` sh
@@ -129,6 +130,8 @@ wget https://storage.googleapis.com/alloydb-auth-proxy/v1.6.2/alloydb-auth-proxy
 ```
 </details>
 
+<!-- {x-release-please-end} -->
+
 
 ### Container Images
 
@@ -143,19 +146,30 @@ Google Cloud Container Registry repositories:
 Each image is tagged with the associated proxy version. The following tags are
 currently supported:
 
-* `$VERSION` - default image (recommended)
-* `$VERSION-alpine` - uses [`alpine:3`](https://hub.docker.com/_/alpine) as a
-  base image
-* `$VERSION-buster` - uses [`debian:buster`](https://hub.docker.com/_/debian) as
-* `$VERSION-bullseye` - uses [`debian:bullseye`](https://hub.docker.com/_/debian) as
-  a base image
+- `$VERSION` (default)
+- `$VERSION-alpine`
+- `$VERSION-buster`
+- `$VERSION-bullseye`
 
-We recommend using the latest version of the proxy and updating the version
-regularly. However, we also recommend pinning to a specific tag and avoid the
-latest tag. Note: the tagged version is only that of the proxy. Changes in base
-images may break specific setups, even on non-major version increments. As such,
-it's a best practice to test changes before deployment, and use automated
-rollbacks to revert potential failures.
+<!-- {x-release-please-start-version} -->
+The `$VERSION` is the Proxy version without the leading "v" (e.g.,
+`2.8.2`).
+
+For example, to pull a particular version, use a command like:
+
+``` shell
+# $VERSION is 2.8.2
+docker pull gcr.io/alloydb-connectors/alloydb-auth-proxy:2.8.2
+```
+
+<!-- {x-release-please-end} -->
+We recommend pinning to a specific version tag and using automation with a CI
+pipeline to update regularly.
+
+The default container image uses [distroless][] with a non-root user. If you
+need a shell or related tools, use the Alpine or Buster images listed above.
+
+[distroless]: https://github.com/GoogleContainerTools/distroless
 
 ### Install from Source
 
