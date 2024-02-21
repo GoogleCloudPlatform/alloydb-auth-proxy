@@ -16,3 +16,5 @@ handleGHRelease: true
 packageName: alloydb-auth-proxy
 releaseType: simple
 versionFile: 'cmd/version.txt'
+extraFiles:
+  - README.md
