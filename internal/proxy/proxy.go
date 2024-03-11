@@ -142,6 +142,10 @@ type Config struct {
 	// See https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry
 	StructuredLogs bool
 
+	// DebugLogs enables debug logging and is useful when diagnosing surprising
+	// Proxy behavior.
+	DebugLogs bool
+
 	// Quiet controls whether only error messages are logged.
 	Quiet bool
 
@@ -304,6 +308,10 @@ func (c *Config) DialerOptions(l alloydb.Logger) ([]alloydbconn.Option, error) {
 
 	if c.AutoIAMAuthN {
 		opts = append(opts, alloydbconn.WithIAMAuthN())
+	}
+
+	if c.DebugLogs {
+		opts = append(opts, alloydbconn.WithDebugLogger(l))
 	}
 
 	return opts, nil

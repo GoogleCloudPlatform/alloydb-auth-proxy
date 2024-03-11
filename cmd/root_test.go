@@ -464,6 +464,14 @@ func TestNewCommandArguments(t *testing.T) {
 				RunConnectionTest: true,
 			}),
 		},
+		{
+			desc: "using the debug logs flag",
+			args: []string{"--debug-logs",
+				"projects/proj/locations/region/clusters/clust/instances/inst"},
+			want: withDefaults(&proxy.Config{
+				DebugLogs: true,
+			}),
+		},
 	}
 
 	for _, tc := range tcs {

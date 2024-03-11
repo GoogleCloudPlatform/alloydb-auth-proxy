@@ -322,6 +322,14 @@ Localhost Admin Server
   /quitquitquit. The admin server exits gracefully when it receives a POST
   request at /quitquitquit.
 
+Debug logging
+
+  On occasion, it can help to enable debug logging which will report on
+  internal certificate refresh operations. To enable debug logging, use:
+
+      ./alloydb-auth-proxy <INSTANCE_URI> --debug-logs
+
+
 Waiting for Startup
 
   See the wait subcommand's help for details.
@@ -509,6 +517,8 @@ Instead prefer Application Default Credentials
 the Proxy will then pick-up automatically.`)
 	localFlags.BoolVarP(&c.conf.StructuredLogs, "structured-logs", "l", false,
 		"Enable structured logs using the LogEntry format")
+	localFlags.BoolVar(&c.conf.DebugLogs, "debug-logs", false,
+		"Enable debug logging")
 	localFlags.Uint64Var(&c.conf.MaxConnections, "max-connections", 0,
 		`Limits the number of connections by refusing any additional connections.
 When this flag is not set, there is no limit.`)
