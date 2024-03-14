@@ -339,10 +339,10 @@ Waiting for Startup
 
 Third Party Licenses
 
-  To view all licenses for third party dependencies used within this 
+  To view all licenses for third party dependencies used within this
   distribution please see:
 
-  https://storage.googleapis.com/alloydb-auth-proxy/v1.8.0/third_party
+  https://storage.googleapis.com/alloydb-auth-proxy/v1.8.0/third_party/licenses.tar.gz
 `
 
 // {x-release-please-end}
