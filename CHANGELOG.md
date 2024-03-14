@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.7.1...v1.8.0) (2024-03-14)
+
+
+### Features
+
+* add support for debug logs ([#596](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/596)) ([7586c15](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/7586c15b7d7b764806a43c1dc7ef27dc1b70df8a))
+
 ## [1.7.1](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.7.0...v1.7.1) (2024-02-21)
 
 
