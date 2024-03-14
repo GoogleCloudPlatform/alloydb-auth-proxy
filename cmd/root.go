@@ -109,6 +109,7 @@ func WithDialer(d alloydb.Dialer) Option {
 	}
 }
 
+// {x-release-please-start-version}
 var longHelp = `
 Overview
 
@@ -335,7 +336,16 @@ Waiting for Startup
   See the wait subcommand's help for details.
 
 (*) indicates a flag that may be used as a query parameter
+
+Third Party Licenses
+
+  To view all licenses for third party dependencies used within this 
+  distribution please see:
+
+  https://storage.googleapis.com/alloydb-auth-proxy/v1.8.0//third_party
 `
+
+// {x-release-please-end}
 
 var waitHelp = `
   Sometimes it is necessary to wait for the Proxy to start.
