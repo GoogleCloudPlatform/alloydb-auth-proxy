@@ -109,7 +109,6 @@ func WithDialer(d alloydb.Dialer) Option {
 	}
 }
 
-// {x-release-please-start-version}
 var longHelp = `
 Overview
 
@@ -342,10 +341,8 @@ Third Party Licenses
   To view all licenses for third party dependencies used within this
   distribution please see:
 
-  https://storage.googleapis.com/alloydb-auth-proxy/v1.8.0/third_party/licenses.tar.gz
+  https://storage.googleapis.com/alloydb-auth-proxy/v1.8.0/third_party/licenses.tar.gz {x-release-please-version}
 `
-
-// {x-release-please-end}
 
 var waitHelp = `
   Sometimes it is necessary to wait for the Proxy to start.
@@ -449,7 +446,8 @@ func NewCommand(opts ...Option) *Command {
 		Use:     "alloydb-auth-proxy instance_uri...",
 		Version: versionString,
 		Short:   "alloydb-auth-proxy provides a secure way to authorize connections to AlloyDB.",
-		Long:    longHelp,
+		//remove the inline annotation required by release-please to update version.
+		Long: strings.ReplaceAll(longHelp, "{x-release-please-version}", ""),
 	}
 
 	logger := log.NewStdLogger(os.Stdout, os.Stderr)
