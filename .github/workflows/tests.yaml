@@ -98,19 +98,21 @@ jobs:
         uses: google-github-actions/get-secretmanager-secrets@61067887622dee4939d68e379b4264a57534fdf6 # v2.1.0
         with:
           secrets: |-
-            ALLOYDB_INSTANCE_NAME:${{ secrets.GOOGLE_CLOUD_PROJECT }}/ALLOYDB_INSTANCE_NAME
+            ALLOYDB_INSTANCE_URI:${{ secrets.GOOGLE_CLOUD_PROJECT }}/ALLOYDB_INSTANCE_NAME
             ALLOYDB_CLUSTER_PASS:${{ secrets.GOOGLE_CLOUD_PROJECT }}/ALLOYDB_CLUSTER_PASS
             IMPERSONATED_USER:${{ secrets.GOOGLE_CLOUD_PROJECT }}/IMPERSONATED_USER
             ALLOYDB_IAM_USER:${{ secrets.GOOGLE_CLOUD_PROJECT }}/ALLOYDB_PROXY_IAM_USER
+            ALLOYDB_PSC_INSTANCE_URI:${{ secrets.GOOGLE_CLOUD_PROJECT }}/ALLOYDB_PSC_INSTANCE_URI
 
       - name: Run tests
         env:
           ALLOYDB_DB: 'postgres'
           ALLOYDB_USER: 'postgres'
           ALLOYDB_PASS: '${{ steps.secrets.outputs.ALLOYDB_CLUSTER_PASS }}'
-          ALLOYDB_INSTANCE_NAME: '${{ steps.secrets.outputs.ALLOYDB_INSTANCE_NAME }}'
+          ALLOYDB_INSTANCE_URI: '${{ steps.secrets.outputs.ALLOYDB_INSTANCE_URI }}'
           IMPERSONATED_USER: '${{ steps.secrets.outputs.IMPERSONATED_USER }}'
           ALLOYDB_IAM_USER: '${{ steps.secrets.outputs.ALLOYDB_IAM_USER }}'
+          ALLOYDB_PSC_INSTANCE_URI: '${{ steps.secrets.outputs.ALLOYDB_PSC_INSTANCE_URI }}'
         # specifying bash shell ensures a failure in a piped process isn't lost by using `set -eo pipefail`
         shell: bash
         run: |
