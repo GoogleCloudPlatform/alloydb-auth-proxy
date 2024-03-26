@@ -269,6 +269,33 @@ func TestNewCommandArguments(t *testing.T) {
 			}),
 		},
 		{
+			desc: "PSC",
+			args: []string{
+				"--psc",
+				"projects/proj/locations/region/clusters/clust/instances/inst",
+			},
+			want: withDefaults(&proxy.Config{
+				PSC:       true,
+				Instances: []proxy.InstanceConnConfig{{Name: "projects/proj/locations/region/clusters/clust/instances/inst"}},
+			}),
+		},
+		{
+			desc: "PSC query param (true & false)",
+			args: []string{
+				"projects/proj/locations/region/clusters/clust/instances/inst1?psc=true",
+				"projects/proj/locations/region/clusters/clust/instances/inst2?psc=false",
+			},
+			want: withDefaults(&proxy.Config{
+				Instances: []proxy.InstanceConnConfig{{
+					PSC:  pointer(true),
+					Name: "projects/proj/locations/region/clusters/clust/instances/inst1",
+				}, {
+					PSC:  pointer(false),
+					Name: "projects/proj/locations/region/clusters/clust/instances/inst2",
+				}},
+			}),
+		},
+		{
 			desc: "using the address flag",
 			args: []string{"--address", "0.0.0.0", "projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{

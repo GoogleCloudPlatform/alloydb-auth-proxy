@@ -603,9 +603,10 @@ status code.`)
 		"(*) Enables Automatic IAM Authentication for all instances")
 	localFlags.BoolVar(&c.conf.PublicIP, "public-ip", false,
 		"(*) Connect to the public ip address for all instances")
+	localFlags.BoolVar(&c.conf.PSC, "psc", false,
+		"(*) Connect to the PSC endpoint for all instances")
 
 	return c
-
 }
 
 func loadConfig(c *Command, args []string, opts []Option) error {
@@ -917,6 +918,10 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 				return err
 			}
 			ic.PublicIP, err = parseBoolOpt(q, "public-ip")
+			if err != nil {
+				return err
+			}
+			ic.PSC, err = parseBoolOpt(q, "psc")
 			if err != nil {
 				return err
 			}

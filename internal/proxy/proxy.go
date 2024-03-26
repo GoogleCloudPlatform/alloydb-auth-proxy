@@ -64,6 +64,9 @@ type InstanceConnConfig struct {
 	// PublicIP tells the proxy to attempt to connect to the db instance's
 	// public IP address instead of the private IP address
 	PublicIP *bool
+
+	// PSC enables the Proxy to connect to the instance's PSC endpoint.
+	PSC *bool
 }
 
 // Config contains all the configuration provided by the caller.
@@ -83,6 +86,9 @@ type Config struct {
 	// PublicIP enables connections via the database server's public IP address
 	// for all instances.
 	PublicIP bool
+
+	// PSC enables connections via the PSC endpoint for all instances.
+	PSC bool
 
 	// Token is the Bearer token used for authorization.
 	Token string
@@ -205,6 +211,9 @@ func dialOptions(c Config, i InstanceConnConfig) []alloydbconn.DialOption {
 	// globally, add the option.
 	if i.PublicIP != nil && *i.PublicIP || i.PublicIP == nil && c.PublicIP {
 		opts = append(opts, alloydbconn.WithPublicIP())
+	}
+	if i.PSC != nil && *i.PSC || i.PSC == nil && c.PSC {
+		opts = append(opts, alloydbconn.WithPSC())
 	}
 	return opts
 }
