@@ -1,0 +1,5 @@
+instance-uri = "projects/proj/locations/region/clusters/clust/instances/inst"
+debug = true
+port = "5555"
+debug-logs = true
+auto-iam-authn = true
