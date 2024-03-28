@@ -505,7 +505,7 @@ func NewCommand(opts ...Option) *Command {
 	)
 	rootCmd.AddCommand(waitCmd)
 
-	rootCmd.Args = func(cmd *cobra.Command, args []string) error {
+	rootCmd.Args = func(_ *cobra.Command, args []string) error {
 		return loadConfig(c, args, opts)
 	}
 
