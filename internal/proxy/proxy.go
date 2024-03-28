@@ -68,6 +68,9 @@ type InstanceConnConfig struct {
 
 // Config contains all the configuration provided by the caller.
 type Config struct {
+	//Filepath is the path to a configuration file.
+	Filepath string
+
 	// UserAgent is the user agent to use when sending requests to the Admin
 	// API.
 	UserAgent string

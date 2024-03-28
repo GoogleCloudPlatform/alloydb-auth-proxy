@@ -288,6 +288,30 @@ principal as the user you want to log in as, and start the Proxy like so:
 Note: when using the query-string syntax, the instance URI and query parameters
 must be wrapped in quotes.
 
+### Config file
+
+The Proxy supports a configuration file. Supported file types are TOML, JSON,
+and YAML. Load the file with the `--config-file` flag:
+
+```shell
+./alloydb-auth-proxy --config-file /path/to/config.[toml|json|yaml]
+```
+
+The configuration file format supports all flags. The key names should match
+the flag names. For example:
+
+``` toml
+# use instance-uri-0, instance-uri-1, etc.
+# for multiple instances
+instance-uri = "<INSTANCE_URI>"
+auto-iam-authn = true
+debug = true
+debug-logs = true
+```
+
+Run `./alloydb-auth-proxy --help` for more details.
+
+
 ## Running behind a Socks5 proxy
 
 The AlloyDB Auth Proxy includes support for sending requests through a SOCKS5

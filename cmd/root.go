@@ -305,6 +305,34 @@ Configuration using environment variables
       ALLOYDB_PROXY_INSTANCE_URI_1=projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE2 \
           ./alloydb-auth-proxy
 
+Configuration using a configuration file
+
+  Instead of using CLI flags, the Proxy may be configured using a configuration
+  file. The configuration file is a TOML, YAML or JSON file with the same keys
+  as the environment variables. The configuration file is specified with the
+  --config-file flag. An invocation of the Proxy using a configuration file
+  would look like the following:
+
+      ./alloydb-auth-proxy --config-file=config.toml
+
+  The configuration file may look like the following:
+
+      instance-uri = "<INSTANCE_URI>"
+      auto-iam-authn = true
+
+  If multiple instance URIs are used, add the index of the instance URI as a
+  suffix. For example:
+
+      instance-uri-0 = "<INSTANCe_URI_1>"
+      instance-uri-1 = "<INSTANCE_URI_2>"
+
+  The configuration file may also contain the same keys as the environment
+  variables and flags. For example:
+
+      auto-iam-authn = true
+      debug = true
+      max-connections = 5
+
 Localhost Admin Server
 
   The Proxy includes support for an admin server on localhost. By default,
@@ -478,25 +506,7 @@ func NewCommand(opts ...Option) *Command {
 	rootCmd.AddCommand(waitCmd)
 
 	rootCmd.Args = func(cmd *cobra.Command, args []string) error {
-		// If args is not already populated, try to read from the environment.
-		if len(args) == 0 {
-			args = instanceFromEnv(args)
-		}
-		// Handle logger separately from config
-		if c.conf.StructuredLogs {
-			c.logger, c.cleanup = log.NewStructuredLogger(c.conf.Quiet)
-		} else if c.conf.Quiet {
-			c.logger = log.NewStdLogger(io.Discard, os.Stderr)
-		}
-		err := parseConfig(c, c.conf, args)
-		if err != nil {
-			return err
-		}
-		// The arguments are parsed. Usage is no longer needed.
-		cmd.SilenceUsage = true
-		// Errors will be handled by logging from here on.
-		cmd.SilenceErrors = true
-		return nil
+		return loadConfig(c, args, opts)
 	}
 
 	rootCmd.RunE = func(*cobra.Command, []string) error { return runSignalWrapper(c) }
@@ -509,6 +519,8 @@ func NewCommand(opts ...Option) *Command {
 	localFlags.BoolP("help", "h", false, "Display help information for cloud-sql-proxy")
 	localFlags.BoolP("version", "v", false, "Print the cloud-sql-proxy version")
 
+	localFlags.StringVar(&c.conf.Filepath, "config-file", c.conf.Filepath,
+		"Path to a TOML file containing configuration options.")
 	localFlags.StringVar(&c.conf.OtherUserAgents, "user-agent", "",
 		"Space separated list of additional user agents, e.g. custom-agent/0.0.1")
 	localFlags.StringVarP(&c.conf.Token, "token", "t", "",
@@ -591,30 +603,139 @@ status code.`)
 		"(*) Enables Automatic IAM Authentication for all instances")
 	localFlags.BoolVar(&c.conf.PublicIP, "public-ip", false,
 		"(*) Connect to the public ip address for all instances")
-	v := viper.NewWithOptions(viper.EnvKeyReplacer(strings.NewReplacer("-", "_")))
-	v.SetEnvPrefix(envPrefix)
-	v.AutomaticEnv()
-	// Ignoring the error here since its only occurence is if one of the pflags
-	// is nil which is never the case here.
-	_ = v.BindPFlags(globalFlags)
-	_ = v.BindPFlags(localFlags)
-
-	// Override any unset flags with Viper values to use the pflags
-	// object as a single source of truth.
-	localFlags.VisitAll(func(f *pflag.Flag) {
-		if !f.Changed && v.IsSet(f.Name) {
-			val := v.Get(f.Name)
-			_ = localFlags.Set(f.Name, fmt.Sprintf("%v", val))
-		}
-	})
-	globalFlags.VisitAll(func(f *pflag.Flag) {
-		if !f.Changed && v.IsSet(f.Name) {
-			val := v.Get(f.Name)
-			_ = globalFlags.Set(f.Name, fmt.Sprintf("%v", val))
-		}
-	})
 
 	return c
+
+}
+
+func loadConfig(c *Command, args []string, opts []Option) error {
+	v, err := initViper(c)
+	if err != nil {
+		return err
+	}
+
+	c.Flags().VisitAll(func(f *pflag.Flag) {
+		// Override any unset flags with Viper values to use the pflags
+		// object as a single source of truth.
+		if !f.Changed && v.IsSet(f.Name) {
+			val := v.Get(f.Name)
+			_ = c.Flags().Set(f.Name, fmt.Sprintf("%v", val))
+		}
+	})
+
+	// If args is not already populated, try to read from the environment.
+	if len(args) == 0 {
+		args = instanceFromEnv(args)
+	}
+
+	// If no environment args are present, try to read from the config file.
+	if len(args) == 0 {
+		args = instanceFromConfigFile(v)
+	}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	// Handle logger separately from config
+	if c.conf.StructuredLogs {
+		c.logger, c.cleanup = log.NewStructuredLogger(c.conf.Quiet)
+	}
+
+	if c.conf.Quiet {
+		c.logger = log.NewStdLogger(io.Discard, os.Stderr)
+	}
+
+	err = parseConfig(c, c.conf, args)
+	if err != nil {
+		return err
+	}
+
+	// The arguments are parsed. Usage is no longer needed.
+	c.SilenceUsage = true
+
+	// Errors will be handled by logging from here on.
+	c.SilenceErrors = true
+
+	return nil
+}
+
+func initViper(c *Command) (*viper.Viper, error) {
+	v := viper.New()
+
+	if c.conf.Filepath != "" {
+		// Setup Viper configuration file. Viper will attempt to load
+		// configuration from the specified file if it exists. Otherwise, Viper
+		// will source all configuration from flags and then environment
+		// variables.
+		ext := filepath.Ext(c.conf.Filepath)
+
+		badExtErr := newBadCommandError(
+			fmt.Sprintf("config file %v should have extension of "+
+				"toml, yaml, or json", c.conf.Filepath,
+			))
+
+		if ext == "" {
+			return nil, badExtErr
+		}
+
+		if ext != ".toml" && ext != ".yaml" && ext != ".yml" && ext != ".json" {
+			return nil, badExtErr
+		}
+
+		conf := filepath.Base(c.conf.Filepath)
+		noExt := strings.ReplaceAll(conf, ext, "")
+		// argument must be the name of config file without extension
+		v.SetConfigName(noExt)
+		v.AddConfigPath(filepath.Dir(c.conf.Filepath))
+
+		// Attempt to load configuration from a file. If no file is found,
+		// assume configuration is provided by flags or environment variables.
+		if err := v.ReadInConfig(); err != nil {
+			// If the error is a ConfigFileNotFoundError, then ignore it.
+			// Otherwise, report the error to the user.
+			var cErr viper.ConfigFileNotFoundError
+			if !errors.As(err, &cErr) {
+				return nil, newBadCommandError(fmt.Sprintf(
+					"failed to load configuration from %v: %v",
+					c.conf.Filepath, err,
+				))
+			}
+		}
+	}
+
+	v.SetEnvPrefix(envPrefix)
+	v.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
+	v.AutomaticEnv()
+
+	return v, nil
+}
+
+func instanceFromConfigFile(v *viper.Viper) []string {
+	var args []string
+	inst := v.GetString("instance-uri")
+
+	if inst == "" {
+		inst = v.GetString("instance-uri-0")
+		if inst == "" {
+			return nil
+		}
+	}
+	args = append(args, inst)
+
+	i := 1
+	for {
+		instN := v.GetString(fmt.Sprintf("instance-uri-%d", i))
+		// if the next instance connection name is not defined, stop checking
+		// environment variables.
+		if instN == "" {
+			break
+		}
+		args = append(args, instN)
+		i++
+	}
+
+	return args
 }
 
 func userHasSetLocal(cmd *Command, f string) bool {
