@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.8.0...v1.9.0) (2024-03-28)
+
+
+### Features
+
+* use Google managed base images ([#611](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/611)) ([16ed6a8](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/16ed6a8a4822ebce770d74401e5480ff6e70213b))
+
 ## [1.8.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.7.1...v1.8.0) (2024-03-14)
 
 
