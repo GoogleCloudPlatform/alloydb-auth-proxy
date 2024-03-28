@@ -516,8 +516,8 @@ func NewCommand(opts ...Option) *Command {
 	// Flags that apply to all sub-commands
 	globalFlags := rootCmd.PersistentFlags()
 
-	localFlags.BoolP("help", "h", false, "Display help information for cloud-sql-proxy")
-	localFlags.BoolP("version", "v", false, "Print the cloud-sql-proxy version")
+	localFlags.BoolP("help", "h", false, "Display help information for alloydb-auth-proxy")
+	localFlags.BoolP("version", "v", false, "Print the alloydb-auth-proxy version")
 
 	localFlags.StringVar(&c.conf.Filepath, "config-file", c.conf.Filepath,
 		"Path to a TOML file containing configuration options.")
