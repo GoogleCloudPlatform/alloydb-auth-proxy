@@ -34,7 +34,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const sampleURI = "projects/proj/locations/region/clusters/clust/instances/inst"
+const (
+	sampleURI = "projects/proj/locations/region/clusters/clust/instances/inst"
+	altURI    = "projects/proj/locations/region/clusters/clust2/instances/inst2"
+)
 
 // pointer returns the address of v and makes it easy to take the address of a
 // predeclared identifier. Compare:
