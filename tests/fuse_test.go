@@ -36,7 +36,7 @@ func TestPostgresFUSEConnect(t *testing.T) {
 	tmpDir, cleanup := createTempDir(t)
 	defer cleanup()
 
-	host := proxy.UnixAddress(tmpDir, *alloydbInstanceName)
+	host := proxy.UnixAddress(tmpDir, *alloydbInstanceURI)
 	dsn := fmt.Sprintf(
 		"host=%s user=%s password=%s database=%s sslmode=disable",
 		host, *alloydbUser, *alloydbPass, *alloydbDB,
