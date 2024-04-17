@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.9.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.8.0...v1.9.0) (2024-04-17)
+
+
+### Features
+
+* add support for a config file ([#612](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/612)) ([d9f3845](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/d9f3845e56107bb35684e43cf1889787b37d51be))
+* add support for PSC ([#613](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/613)) ([1ef4f60](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/1ef4f60e7e6fad02d84c709b60731b436f80420a))
+* use Google managed base images ([#611](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/611)) ([16ed6a8](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/16ed6a8a4822ebce770d74401e5480ff6e70213b))
+
+
+### Bug Fixes
+
+* switch to public mirrors of base containers ([#627](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/627)) ([c433f43](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/c433f4320a98e8445fd76bf7156a40c3c07b83e8))
+
 ## [1.8.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.7.1...v1.8.0) (2024-03-14)
 
 
