@@ -510,6 +510,17 @@ func TestNewCommandArguments(t *testing.T) {
 				DebugLogs: true,
 			}),
 		},
+		{
+			desc: "using the static connection info flag",
+			args: []string{
+				"--static-connection-info",
+				"myfile.json",
+				"projects/proj/locations/region/clusters/clust/instances/inst",
+			},
+			want: withDefaults(&proxy.Config{
+				StaticConnectionInfo: "myfile.json",
+			}),
+		},
 	}
 
 	for _, tc := range tcs {

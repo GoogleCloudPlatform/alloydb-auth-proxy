@@ -370,6 +370,30 @@ Third Party Licenses
   distribution please see:
 
   https://storage.googleapis.com/alloydb-auth-proxy/v1.9.0/third_party/licenses.tar.gz {x-release-please-version}
+
+Static Connection Info
+
+  In development contexts, it can be helpful to populate the Proxy with static
+  connection info. This is a *dev-only* feature and NOT for use in production.
+  The file format is subject to breaking changes.
+
+  The format is:
+
+  {
+    "publicKey": "<PEM Encoded public RSA key>",
+    "privateKey": "<PEM Encoded private RSA key>",
+    "projects/<PROJECT>/locations/<REGION>/clusters/<CLUSTER>/instances/<INSTANCE>": {
+        "ipAddress": "<PSA-based private IP address>",
+        "publicIpAddress": "<public IP address>",
+        "pscInstanceConfig": {
+            "pscDnsName": "<PSC DNS name>"
+        },
+        "pemCertificateChain": [
+            "<client cert>", "<intermediate cert>", "<CA cert>"
+        ],
+        "caCert": "<CA cert>"
+    }
+  }
 `
 
 var waitHelp = `
@@ -597,6 +621,8 @@ the cached copy has expired. Use this setting in environments where the
 CPU may be throttled and a background refresh cannot run reliably
 (e.g., Cloud Run)`,
 	)
+	localFlags.StringVar(&c.conf.StaticConnectionInfo, "static-connection-info",
+		"", "JSON file with static connection info. See --help for format.")
 
 	// Global and per instance flags
 	localFlags.StringVarP(&c.conf.Addr, "address", "a", "127.0.0.1",
