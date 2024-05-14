@@ -17,7 +17,7 @@
 set -ex
 
 # download the proxy and run it in the background listening on 127.0.0.1:5432
-URL="https://storage.googleapis.com/alloydb-auth-proxy/v0.6.2"
+URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.9.0"
 wget "$URL/alloydb-auth-proxy.linux.amd64" -O alloydb-auth-proxy
 chmod +x alloydb-auth-proxy
 ./alloydb-auth-proxy "${ALLOYDB_CONNECTION_NAME}" &
