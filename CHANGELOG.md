@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.10.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.9.0...v1.10.0) (2024-05-15)
+
+
+### Features
+
+* add support for a lazy refresh ([#2184](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/2184)) ([#644](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/644)) ([b375d34](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/b375d34313190fd296010cb175c996d43485ab38)), closes [#625](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/625)
+* support static connection info ([#648](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/648)) ([78c3131](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/78c31319f85705d9f3eca4f030522f5088731412))
+
+
+### Bug Fixes
+
+* don't depend on downstream in readiness check ([#641](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/641)) ([3a7c789](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/3a7c789fd40fe7810b215d6f3b5b9341448800fc))
+* ensure graceful shutdown on fuse error ([#638](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/638)) ([eb4435b](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/eb4435bf74018107915d03d250a78f0fe7541ef3))
+
 ## [1.9.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.8.0...v1.9.0) (2024-04-17)
 
 
