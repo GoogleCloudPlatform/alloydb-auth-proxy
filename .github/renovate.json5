@@ -22,8 +22,8 @@
       "groupName": "container images"
     },
     {
+      "matchManagers": ["gomod"],
       "groupName": "Non-major dependency updates",
-      "matchLanguages": ["go"],
       "matchUpdateTypes": ["minor", "patch"],
     },
   ]
