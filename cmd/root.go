@@ -591,6 +591,12 @@ only. Uses the port specified by the http-port flag.`)
 	localFlags.BoolVar(&c.conf.RunConnectionTest, "run-connection-test", false, `Runs a connection test
 against all specified instances. If an instance is unreachable, the Proxy exits with a failure
 status code.`)
+	localFlags.BoolVar(&c.conf.LazyRefresh, "lazy-refresh", false,
+		`Configure a lazy refresh where connection info is retrieved only if
+the cached copy has expired. Use this setting in environments where the
+CPU may be throttled and a background refresh cannot run reliably
+(e.g., Cloud Run)`,
+	)
 
 	// Global and per instance flags
 	localFlags.StringVarP(&c.conf.Addr, "address", "a", "127.0.0.1",

@@ -90,6 +90,12 @@ type Config struct {
 	// PSC enables connections via the PSC endpoint for all instances.
 	PSC bool
 
+	// LazyRefresh configures the Go Connector to retrieve connection info
+	// lazily and as-needed. Otherwise, no background refresh cycle runs. This
+	// setting is useful in environments where the CPU may be throttled outside
+	// of a request context, e.g., Cloud Run.
+	LazyRefresh bool
+
 	// Token is the Bearer token used for authorization.
 	Token string
 
@@ -324,6 +330,10 @@ func (c *Config) DialerOptions(l alloydb.Logger) ([]alloydbconn.Option, error) {
 
 	if c.DebugLogs {
 		opts = append(opts, alloydbconn.WithDebugLogger(l))
+	}
+
+	if c.LazyRefresh {
+		opts = append(opts, alloydbconn.WithLazyRefresh())
 	}
 
 	return opts, nil
