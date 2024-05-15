@@ -15,6 +15,7 @@
 package proxy
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -206,6 +207,10 @@ type Config struct {
 	// RunConnectionTest determines whether the Proxy should attempt a connection
 	// to all specified instances to verify the network path is valid.
 	RunConnectionTest bool
+
+	// StaticConnectionInfo is the file path for a static connection info JSON
+	// file. See the proxy help message for details on its format.
+	StaticConnectionInfo string
 }
 
 // dialOptions interprets appropriate dial options for a particular instance
@@ -334,6 +339,20 @@ func (c *Config) DialerOptions(l alloydb.Logger) ([]alloydbconn.Option, error) {
 
 	if c.LazyRefresh {
 		opts = append(opts, alloydbconn.WithLazyRefresh())
+	}
+	if c.StaticConnectionInfo != "" {
+		f, err := os.Open(c.StaticConnectionInfo)
+		if err != nil {
+			return nil, err
+		}
+		defer f.Close()
+		data, err := io.ReadAll(f)
+		if err != nil {
+			return nil, err
+		}
+		opts = append(opts, alloydbconn.WithStaticConnectionInfo(
+			bytes.NewReader(data),
+		))
 	}
 
 	return opts, nil
