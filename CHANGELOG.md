@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.10.1](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.10.0...v1.10.1) (2024-06-13)
+
+
+### Bug Fixes
+
+* bump dependencies to latest ([#656](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/656)) ([1b605d6](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/1b605d6f85b8f6c6f5ecbaeefebd785c025381a8))
+
 ## [1.10.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.9.0...v1.10.0) (2024-05-15)
 
 
