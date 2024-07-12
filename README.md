@@ -150,8 +150,8 @@ currently supported:
 
 - `$VERSION` (default)
 - `$VERSION-alpine`
-- `$VERSION-buster`
 - `$VERSION-bullseye`
+- `$VERSION-bookworm`
 
 <!-- {x-release-please-start-version} -->
 The `$VERSION` is the Proxy version without the leading "v" (e.g.,
@@ -169,7 +169,8 @@ We recommend pinning to a specific version tag and using automation with a CI
 pipeline to update regularly.
 
 The default container image uses [distroless][] with a non-root user. If you
-need a shell or related tools, use the Alpine or Buster images listed above.
+need a shell or related tools, use the Alpine or Debian-based containers
+(bullseye or bookworm) images listed above.
 
 [distroless]: https://github.com/GoogleContainerTools/distroless
 
