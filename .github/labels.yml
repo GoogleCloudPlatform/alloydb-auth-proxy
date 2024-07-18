@@ -69,7 +69,3 @@
 - name: 'autorelease: tagged'
   color: ededed
   description: Release please has completed a release for this.
-
-- name: 'tests: run'
-  color: 3ded97
-  description: Label to trigger Github Action tests.
