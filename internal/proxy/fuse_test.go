@@ -309,7 +309,7 @@ func TestLookupIgnoresContext(t *testing.T) {
 	c, _ := newTestClient(t, d, randTmpDir(t), randTmpDir(t))
 
 	// invoke Lookup with cancelled context, should ignore context and succeed
-	_, err := c.Lookup(ctx, "proj:reg:mysql", nil)
+	_, err := c.Lookup(ctx, "proj.region.cluster.instance", nil)
 	if err != fs.OK {
 		t.Fatalf("proxy.Client.Lookup(): %v", err)
 	}
