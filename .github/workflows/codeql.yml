@@ -22,18 +22,12 @@ on:
     paths-ignore:
       - '**/*.md'
       - '**/*.txt'
-  pull_request_target:
-    types: [labeled]
-    paths-ignore:
-      - '**/*.md'
-      - '**/*.txt'
 
 # Declare default permissions as read only.
 permissions: read-all
 
 jobs:
   analyze:
-    if: "${{ github.event.action != 'labeled' || github.event.label.name == 'tests: run' }}"
     name: Analyze
     runs-on: ubuntu-latest
     permissions:
