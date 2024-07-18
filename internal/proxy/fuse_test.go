@@ -27,6 +27,7 @@ import (
 
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/alloydb"
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/proxy"
+	"github.com/hanwen/go-fuse/v2/fs"
 )
 
 func randTmpDir(t interface {
@@ -294,5 +295,26 @@ func TestFUSEWithBadDir(t *testing.T) {
 	_, err := proxy.NewClient(context.Background(), &fakeDialer{}, testLogger, conf)
 	if err == nil {
 		t.Fatal("proxy client should fail with bad dir")
+	}
+}
+
+func TestLookupIgnoresContext(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping fuse tests in short mode.")
+	}
+	// create context and cancel it immediately
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	d := &fakeDialer{}
+	c, _ := newTestClient(t, d, randTmpDir(t), randTmpDir(t))
+
+	// invoke Lookup with cancelled context, should ignore context and succeed
+	_, err := c.Lookup(ctx, "proj:reg:mysql", nil)
+	if err != fs.OK {
+		t.Fatalf("proxy.Client.Lookup(): %v", err)
+	}
+	// Close the client to close all open sockets.
+	if err := c.Close(); err != nil {
+		t.Fatalf("c.Close(): %v", err)
 	}
 }
