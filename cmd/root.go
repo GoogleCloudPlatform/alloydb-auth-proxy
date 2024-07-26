@@ -623,6 +623,8 @@ CPU may be throttled and a background refresh cannot run reliably
 	)
 	localFlags.StringVar(&c.conf.StaticConnectionInfo, "static-connection-info",
 		"", "JSON file with static connection info. See --help for format.")
+	localFlags.BoolVar(&c.conf.ExitZeroOnSigterm, "exit-zero-sigterm", false,
+		"Exit with 0 exit code when Sigterm received (default is 143)")
 
 	// Global and per instance flags
 	localFlags.StringVarP(&c.conf.Addr, "address", "a", "127.0.0.1",
@@ -1049,7 +1051,11 @@ func runSignalWrapper(cmd *Command) (err error) {
 		case syscall.SIGINT:
 			shutdownCh <- errSigInt
 		case syscall.SIGTERM:
-			shutdownCh <- errSigTerm
+			if cmd.conf.ExitZeroOnSigterm {
+				shutdownCh <- errSigTermZero
+			} else {
+				shutdownCh <- errSigTerm
+			}
 		}
 	}()
 
