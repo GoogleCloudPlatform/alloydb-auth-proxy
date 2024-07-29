@@ -211,6 +211,9 @@ type Config struct {
 	// StaticConnectionInfo is the file path for a static connection info JSON
 	// file. See the proxy help message for details on its format.
 	StaticConnectionInfo string
+
+	// ExitZeroOnSigterm exits with 0 exit code when Sigterm received
+	ExitZeroOnSigterm bool
 }
 
 // dialOptions interprets appropriate dial options for a particular instance
