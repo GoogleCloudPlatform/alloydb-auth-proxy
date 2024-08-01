@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.11.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.10.2...v1.11.0) (2024-08-01)
+
+
+### Features
+
+* replace buster with bookworm container ([#672](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/672)) ([d81b90d](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/d81b90dd0a6cf70e275b47c58178636450c2141f))
+* support for exit zero sigterm ([#684](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/684)) ([790b935](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/790b935e29fd687688faf885de3387f136d000a9))
+
+
+### Bug Fixes
+
+* ignore go-fuse ctx in Lookup ([#675](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/675)) ([57d3e80](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/57d3e802cab62ea747b8eb51b292d45402d64f49))
+
 ## [1.10.2](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.10.1...v1.10.2) (2024-07-10)
 
 
