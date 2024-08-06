@@ -68,16 +68,16 @@ jobs:
           go-version: "1.22"
       - name: Authenticate to Google Cloud
         id: 'auth'
-        uses: google-github-actions/auth@71fee32a0bb7e97b4d33d548e7d957010649d8fa # v2.1.3
+        uses: google-github-actions/auth@f112390a2df9932162083945e46d439060d66ec2 # v2.1.4
         with:
           workload_identity_provider: ${{ vars.PROVIDER_NAME }}
           service_account: ${{ vars.SERVICE_ACCOUNT }}
 
       - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@98ddc00a17442e89a24bbf282954a3b65ce6d200 # v2.1.0
+        uses: google-github-actions/setup-gcloud@f0990588f1e5b5af6827153b93673613abdc6ec7 # v2.1.1
       - name: Get Secrets
         id: 'secrets'
-        uses: google-github-actions/get-secretmanager-secrets@dc4a1392bad0fd60aee00bb2097e30ef07a1caae # v2.1.3
+        uses: google-github-actions/get-secretmanager-secrets@95a0b09b8348ef3d02c68c6ba5662a037e78d713 # v2.1.4
         with:
           secrets: |-
             ALLOYDB_INSTANCE_NAME:alloydb-connector-testing/ALLOYDB_INSTANCE_NAME
