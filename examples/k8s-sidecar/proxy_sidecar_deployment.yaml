@@ -1,0 +1,95 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: <YOUR-DEPLOYMENT-NAME>
+spec:
+  selector:
+    matchLabels:
+      app: <YOUR-APPLICATION-NAME>
+  template:
+    metadata:
+      labels:
+        app: <YOUR-APPLICATION-NAME>
+    spec:
+      serviceAccountName: <YOUR-KSA-NAME>
+      containers:
+      # Your application container goes here.
+      - name: <YOUR-APPLICATION-NAME>
+        image: <YOUR-APPLICATION-IMAGE-URL>
+        env:
+        - name: DB_HOST
+          # The port value here (5432) should match the --port flag below.
+          value: "localhost:5342"
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: <YOUR-DB-SECRET>
+              key: username
+        - name: DB_PASS
+          valueFrom:
+            secretKeyRef:
+              name: <YOUR-DB-SECRET>
+              key: password
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: <YOUR-DB-SECRET>
+              key: database
+      # The Auth Proxy sidecar goes here.
+      - name: alloydb-auth-proxy
+        # Make sure you have automation that upgrades this version regularly.
+        # A new version of the Proxy is released monthly with bug fixes,
+        # security updates, and new features.
+        image: gcr.io/alloydb-connectors/alloydb-auth-proxy:1.10.1
+        args:
+          # If you're connecting over public IP, enable this flag.
+          # - "--public-ip"
+
+          # If you're connecting with PSC, enable this flag:
+          # - "--psc"
+
+          # If you're using auto IAM authentication, enable this flag:
+          # - "--auto-iam-authn"
+
+          # Enable structured logging with Google's LogEntry format:
+          - "--structured-logs"
+
+          # Listen on localhost:5432 by default.
+          - "--port=5432"
+          # Specify your instance URI, e.g.,
+          # "projects/myproject/locations/us-central1/clusters/mycluster/instances/myinstance"
+          - "<INSTANCE-URI>"
+
+        securityContext:
+          # The default AlloyDB Auth Proxy image runs as the "nonroot" user and
+          # group (uid: 65532) by default.
+          runAsNonRoot: true
+        # You should use resource requests/limits as a best practice to prevent
+        # pods from consuming too many resources and affecting the execution of
+        # other pods. You should adjust the following values based on what your
+        # application needs. For details, see
+        # https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+        resources:
+          requests:
+            # The proxy's memory use scales linearly with the number of active
+            # connections. Fewer open connections will use less memory. Adjust
+            # this value based on your application's requirements.
+            memory: "2Gi"
+            # The proxy's CPU use scales linearly with the amount of IO between
+            # the database and the application. Adjust this value based on your
+            # application's requirements.
+            cpu:    "1"
