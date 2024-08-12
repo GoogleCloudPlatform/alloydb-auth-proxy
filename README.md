@@ -138,12 +138,17 @@ wget https://storage.googleapis.com/alloydb-auth-proxy/v1.10.2/alloydb-auth-prox
 ### Container Images
 
 There are containerized versions of the proxy available from the following
-Google Cloud Container Registry repositories:
+[Artifact Registry](https://cloud.google.com/artifact-registry) repositories:
 
 * `gcr.io/alloydb-connectors/alloydb-auth-proxy`
 * `us.gcr.io/alloydb-connectors/alloydb-auth-proxy`
 * `eu.gcr.io/alloydb-connectors/alloydb-auth-proxy`
 * `asia.gcr.io/alloydb-connectors/alloydb-auth-proxy`
+
+> [!NOTE]
+>
+> The above container images were migrated from Google Container Registry (deprecated)
+> to Artifact Registry which is why they begin with the old naming pattern (`gcr.io`)
 
 Each image is tagged with the associated proxy version. The following tags are
 currently supported:
