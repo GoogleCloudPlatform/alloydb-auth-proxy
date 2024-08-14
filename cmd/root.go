@@ -566,6 +566,9 @@ the Proxy will then pick-up automatically.`)
 	localFlags.Uint64Var(&c.conf.MaxConnections, "max-connections", 0,
 		`Limits the number of connections by refusing any additional connections.
 When this flag is not set, there is no limit.`)
+	localFlags.DurationVar(&c.conf.WaitBeforeClose, "min-sigterm-delay", 0,
+		`The number of seconds to accept new connections after receiving a TERM
+signal. Defaults to 0s.`)
 	localFlags.DurationVar(&c.conf.WaitOnClose, "max-sigterm-delay", 0,
 		`Maximum amount of time to wait after for any open connections
 to close after receiving a TERM signal. The proxy will shut
@@ -1179,8 +1182,10 @@ func runSignalWrapper(cmd *Command) (err error) {
 	switch {
 	case errors.Is(err, errSigInt):
 		cmd.logger.Infof("SIGINT signal received. Shutting down...")
+		time.Sleep(cmd.conf.WaitBeforeClose)
 	case errors.Is(err, errSigTerm):
 		cmd.logger.Infof("SIGTERM signal received. Shutting down...")
+		time.Sleep(cmd.conf.WaitBeforeClose)
 	default:
 		cmd.logger.Errorf("The proxy has encountered a terminal error: %v", err)
 	}

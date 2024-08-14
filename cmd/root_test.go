@@ -413,6 +413,13 @@ func TestNewCommandArguments(t *testing.T) {
 			}),
 		},
 		{
+			desc: "using min-sigterm-delay flag",
+			args: []string{"--min-sigterm-delay", "10s", "projects/proj/locations/region/clusters/clust/instances/inst"},
+			want: withDefaults(&proxy.Config{
+				WaitBeforeClose: 10 * time.Second,
+			}),
+		},
+		{
 			desc: "using wait after signterm flag",
 			args: []string{"--max-sigterm-delay", "10s", "projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
