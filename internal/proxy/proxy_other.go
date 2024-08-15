@@ -68,6 +68,7 @@ type fuseMount struct {
 	fuseServerMu *sync.Mutex
 	fuseServer   *fuse.Server
 	fuseWg       *sync.WaitGroup
+	fuseExitCh   chan error
 
 	// Inode adds support for FUSE operations.
 	fs.Inode
@@ -131,8 +132,18 @@ func (c *Client) Lookup(_ context.Context, instance string, _ *fuse.EntryOut) (*
 		sErr := c.serveSocketMount(ctx, s)
 		if sErr != nil {
 			c.fuseMu.Lock()
+			defer c.fuseMu.Unlock()
 			delete(c.fuseSockets, instance)
-			c.fuseMu.Unlock()
+			select {
+			// Best effort attempt to send error.
+			// If this send fails, it means the reading goroutine has
+			// already pulled a value out of the channel and is no longer
+			// reading any more values. In other words, we report only the
+			// first error.
+			case c.fuseExitCh <- sErr:
+			default:
+				return
+			}
 		}
 	}()
 
@@ -163,10 +174,15 @@ func (c *Client) serveFuse(ctx context.Context, notify func()) error {
 	}
 	c.fuseServerMu.Lock()
 	c.fuseServer = srv
+	c.fuseExitCh = make(chan error)
 	c.fuseServerMu.Unlock()
 	notify()
-	<-ctx.Done()
-	return ctx.Err()
+	select {
+	case err = <-c.fuseExitCh:
+		return err
+	case <-ctx.Done():
+		return ctx.Err()
+	}
 }
 
 func (c *Client) fuseMounts() []*socketMount {
