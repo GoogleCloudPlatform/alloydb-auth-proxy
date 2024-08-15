@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.11.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.10.2...v1.11.0) (2024-08-15)
+
+
+### Features
+
+* exit when FUSE errors on accept ([#694](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/694)) ([e0bd377](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/e0bd3772f3c30cf8a7da14ff940dd57c4a0ca97d))
+* replace buster with bookworm container ([#672](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/672)) ([d81b90d](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/d81b90dd0a6cf70e275b47c58178636450c2141f))
+* support for exit zero sigterm ([#684](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/684)) ([790b935](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/790b935e29fd687688faf885de3387f136d000a9))
+* support for min-sigterm-delay ([#693](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/693)) ([2b0de79](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/2b0de79d5d2f6b5365a3ac023ce5868302fe4127))
+
+
+### Bug Fixes
+
+* ignore go-fuse ctx in Lookup ([#675](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/675)) ([57d3e80](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/57d3e802cab62ea747b8eb51b292d45402d64f49))
+
 ## [1.10.2](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.10.1...v1.10.2) (2024-07-10)
 
 
