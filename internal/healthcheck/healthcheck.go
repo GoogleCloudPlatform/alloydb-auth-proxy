@@ -101,8 +101,8 @@ func (c *Check) HandleReadiness(w http.ResponseWriter, _ *http.Request) {
 		// Proxy has not stopped.
 	}
 
-	if open, max := c.proxy.ConnCount(); max > 0 && open == max {
-		err := fmt.Errorf("max connections reached (open = %v, max = %v)", open, max)
+	if open, maxCount := c.proxy.ConnCount(); maxCount > 0 && open == maxCount {
+		err := fmt.Errorf("max connections reached (open = %v, max = %v)", open, maxCount)
 		c.logger.Errorf("[Health Check] Readiness failed: %v", err)
 		w.WriteHeader(http.StatusServiceUnavailable)
 		w.Write([]byte(err.Error()))
