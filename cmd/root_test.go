@@ -1210,8 +1210,8 @@ func TestQuitQuitQuit(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to dial endpoint: %v", err)
 	}
-	if resp.StatusCode != http.StatusBadRequest {
-		t.Fatalf("expected a 400 status, got = %v", resp.StatusCode)
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("expected a 200 status, got = %v", resp.StatusCode)
 	}
 	resp, err = http.Post("http://localhost:9192/quitquitquit", "", nil)
 	if err != nil {
