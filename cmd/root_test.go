@@ -1192,7 +1192,7 @@ func TestPProfServer(t *testing.T) {
 	}
 }
 
-func TestQuitQuitQuit(t *testing.T) {
+func TestQuitQuitQuitHTTPPost(t *testing.T) {
 	c := NewCommand(WithDialer(&spyDialer{}))
 	c.SilenceUsage = true
 	c.SilenceErrors = true
@@ -1206,14 +1206,56 @@ func TestQuitQuitQuit(t *testing.T) {
 		err := c.ExecuteContext(ctx)
 		errCh <- err
 	}()
-	resp, err := tryDial("GET", "http://localhost:9192/quitquitquit")
+	resp, err := tryDial("HEAD", "http://localhost:9192/quitquitquit")
+	if err != nil {
+		t.Fatalf("failed to dial endpoint: %v", err)
+	}
+	if resp.StatusCode != http.StatusBadRequest {
+		t.Fatalf("expected a 400 status, got = %v", resp.StatusCode)
+	}
+	resp, err = tryDial("POST", "http://localhost:9192/quitquitquit")
 	if err != nil {
 		t.Fatalf("failed to dial endpoint: %v", err)
 	}
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("expected a 200 status, got = %v", resp.StatusCode)
 	}
-	resp, err = http.Post("http://localhost:9192/quitquitquit", "", nil)
+
+	var gotErr error
+	select {
+	case err := <-errCh:
+		gotErr = err
+	case <-time.After(30 * time.Second):
+		t.Fatal("timeout waiting for error")
+	}
+
+	if !errors.Is(gotErr, errQuitQuitQuit) {
+		t.Fatalf("want = %v, got = %v", errQuitQuitQuit, gotErr)
+	}
+}
+
+func TestQuitQuitQuitGet(t *testing.T) {
+	c := NewCommand(WithDialer(&spyDialer{}))
+	c.SilenceUsage = true
+	c.SilenceErrors = true
+	c.SetArgs([]string{"--quitquitquit", "--admin-port", "9192",
+		"projects/proj/locations/region/clusters/clust/instances/inst"})
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	errCh := make(chan error)
+	go func() {
+		err := c.ExecuteContext(ctx)
+		errCh <- err
+	}()
+	resp, err := tryDial("HEAD", "http://localhost:9192/quitquitquit")
+	if err != nil {
+		t.Fatalf("failed to dial endpoint: %v", err)
+	}
+	if resp.StatusCode != http.StatusBadRequest {
+		t.Fatalf("expected a 400 status, got = %v", resp.StatusCode)
+	}
+	resp, err = tryDial("GET", "http://localhost:9192/quitquitquit")
 	if err != nil {
 		t.Fatalf("failed to dial endpoint: %v", err)
 	}
