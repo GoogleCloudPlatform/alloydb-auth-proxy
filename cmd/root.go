@@ -1194,7 +1194,7 @@ func runSignalWrapper(cmd *Command) (err error) {
 
 func quitquitquit(quitOnce *sync.Once, shutdownCh chan<- error) http.HandlerFunc {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != http.MethodPost {
+		if req.Method != http.MethodPost && req.Method != http.MethodGet {
 			rw.WriteHeader(400)
 			return
 		}
