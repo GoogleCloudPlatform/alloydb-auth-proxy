@@ -17,10 +17,10 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/cmd"
 	"github.com/spf13/cobra/doc"
-	"k8s.io/kubernetes/cmd/genutils"
 )
 
 func main() {
@@ -32,7 +32,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	outDir, err := genutils.OutDir(path)
+	outDir, err := filepath.Abs(path)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to get output directory: %v\n", err)
 		os.Exit(1)

@@ -19,7 +19,6 @@ require (
 	golang.org/x/sys v0.27.0
 	google.golang.org/api v0.205.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
-	k8s.io/kubernetes v1.13.0
 )
 
 require (
