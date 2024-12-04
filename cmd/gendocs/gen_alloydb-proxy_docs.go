@@ -24,12 +24,14 @@ import (
 )
 
 func main() {
+	if len(os.Args) > 2 {
+		fmt.Fprintf(os.Stderr, "usage: %s [output directory]\n", os.Args[0])
+		os.Exit(1)
+	}
+
 	path := "docs/cmd"
 	if len(os.Args) == 2 {
 		path = os.Args[1]
-	} else if len(os.Args) > 2 {
-		fmt.Fprintf(os.Stderr, "usage: %s [output directory]\n", os.Args[0])
-		os.Exit(1)
 	}
 
 	outDir, err := filepath.Abs(path)
@@ -42,7 +44,7 @@ func main() {
 	// regardless of where we run.
 	os.Setenv("TMPDIR", "/tmp")
 
-	alloyDBAuthProxy := cmd.NewCommand()
-	alloyDBAuthProxy.Execute()
-	doc.GenMarkdownTree(alloyDBAuthProxy.Command, outDir)
+	c := cmd.NewCommand()
+	c.Execute()
+	doc.GenMarkdownTree(c.Command, outDir)
 }
