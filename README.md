@@ -315,7 +315,8 @@ debug = true
 debug-logs = true
 ```
 
-Run `./alloydb-auth-proxy --help` for more details.
+Run `./alloydb-auth-proxy --help` for more details. See the full documentation
+in [docs/cmd](docs/cmd).
 
 
 ## Running behind a Socks5 proxy
