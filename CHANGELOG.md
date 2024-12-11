@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.12.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.11.3...v1.12.0) (2024-12-11)
+
+
+### Features
+
+* accept GET method at /quitquitquit ([#726](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/726)) ([19b1ec8](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/19b1ec8be37e12cdfdd9b4d16153724b2d02e3d7))
+
 ## [1.11.3](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.11.2...v1.11.3) (2024-11-13)
 
 
