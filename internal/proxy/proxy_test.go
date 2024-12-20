@@ -342,10 +342,19 @@ func TestClientLimitsMaxConnections(t *testing.T) {
 	// it doesn't matter which is closed
 	wantEOF(t, conn1, conn2)
 
-	want := 1
-	if got := d.dialAttempts(); got != want {
+	tryDialAttempts := func(t *testing.T, want int) {
+		var got int
+		for i := 0; i < 10; i++ {
+			got = d.dialAttempts()
+			if got == want {
+				return
+			}
+			time.Sleep(100 * time.Millisecond)
+		}
 		t.Fatalf("dial attempts did not match expected, want = %v, got = %v", want, got)
 	}
+	want := 1
+	tryDialAttempts(t, want)
 }
 
 func tryTCPDial(t *testing.T, addr string) net.Conn {
