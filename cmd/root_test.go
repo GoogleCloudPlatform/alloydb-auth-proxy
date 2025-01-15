@@ -1238,7 +1238,7 @@ func TestQuitQuitQuitGet(t *testing.T) {
 	c := NewCommand(WithDialer(&spyDialer{}))
 	c.SilenceUsage = true
 	c.SilenceErrors = true
-	c.SetArgs([]string{"--quitquitquit", "--admin-port", "9192",
+	c.SetArgs([]string{"--quitquitquit", "--admin-port", "9193",
 		"projects/proj/locations/region/clusters/clust/instances/inst"})
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -1248,14 +1248,14 @@ func TestQuitQuitQuitGet(t *testing.T) {
 		err := c.ExecuteContext(ctx)
 		errCh <- err
 	}()
-	resp, err := tryDial("HEAD", "http://localhost:9192/quitquitquit")
+	resp, err := tryDial("HEAD", "http://localhost:9193/quitquitquit")
 	if err != nil {
 		t.Fatalf("failed to dial endpoint: %v", err)
 	}
 	if resp.StatusCode != http.StatusBadRequest {
 		t.Fatalf("expected a 400 status, got = %v", resp.StatusCode)
 	}
-	resp, err = tryDial("GET", "http://localhost:9192/quitquitquit")
+	resp, err = tryDial("GET", "http://localhost:9193/quitquitquit")
 	if err != nil {
 		t.Fatalf("failed to dial endpoint: %v", err)
 	}
@@ -1282,7 +1282,7 @@ func TestQuitQuitQuitWithErrors(t *testing.T) {
 	c.SilenceUsage = true
 	c.SilenceErrors = true
 	c.SetArgs([]string{
-		"--quitquitquit", "--admin-port", "9193",
+		"--quitquitquit", "--admin-port", "9194",
 		"projects/proj/locations/region/clusters/clust/instances/inst"})
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -1292,7 +1292,7 @@ func TestQuitQuitQuitWithErrors(t *testing.T) {
 		err := c.ExecuteContext(ctx)
 		errCh <- err
 	}()
-	resp, err := tryDial("POST", "http://localhost:9193/quitquitquit")
+	resp, err := tryDial("POST", "http://localhost:9194/quitquitquit")
 	if err != nil {
 		t.Fatalf("failed to dial endpoint: %v", err)
 	}
