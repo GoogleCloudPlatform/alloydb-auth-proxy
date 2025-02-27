@@ -428,9 +428,9 @@ considered publicly unsupported.
 
 ### Supported Go Versions
 
-We test and support at least the latest 3 Go versions. Changes in supported Go
-versions will be considered a minor change, and will be noted in the release
-notes.
+Our library is compatible with the two most recent major Go
+releases, the same [policy](https://go.dev/doc/devel/release#policy) the Go
+programming language follows.
 
 ### Release cadence
 
