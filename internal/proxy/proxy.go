@@ -219,6 +219,13 @@ type Config struct {
 
 	// ExitZeroOnSigterm exits with 0 exit code when Sigterm received
 	ExitZeroOnSigterm bool
+
+	// DisableBuiltInTelemetry disables the internal metric export. By
+	// default, the Dialer will report on its internal operations to the
+	// alloydb.googleapis.com system metric prefix. These metrics help AlloyDB
+	// improve performance and identify client connectivity problems. Presently,
+	// these metrics aren't public, but will be made public in the future.
+	DisableBuiltInTelemetry bool
 }
 
 // dialOptions interprets appropriate dial options for a particular instance
@@ -361,6 +368,10 @@ func (c *Config) DialerOptions(l alloydb.Logger) ([]alloydbconn.Option, error) {
 		opts = append(opts, alloydbconn.WithStaticConnectionInfo(
 			bytes.NewReader(data),
 		))
+	}
+
+	if c.DisableBuiltInTelemetry {
+		opts = append(opts, alloydbconn.WithOptOutOfBuiltInTelemetry())
 	}
 
 	return opts, nil

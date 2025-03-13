@@ -84,7 +84,9 @@ func TestPostgresTCP(t *testing.T) {
 		"host=127.0.0.1 port=10000 user=%v password=%v database=%v sslmode=disable",
 		*alloydbUser, *alloydbPass, *alloydbDB,
 	)
-	proxyConnTest(t, []string{*alloydbInstanceURI, "--port=10000"}, "pgx", dsn)
+	proxyConnTest(t, []string{*alloydbInstanceURI, "--port=10000",
+		"--disable-built-in-telemetry",
+	}, "pgx", dsn)
 }
 
 func TestPostgresAutoIAMAuthN(t *testing.T) {
@@ -97,6 +99,7 @@ func TestPostgresAutoIAMAuthN(t *testing.T) {
 		*alloydbIAMUser, *alloydbDB)
 	proxyConnTest(t, []string{
 		*alloydbInstanceURI, "--auto-iam-authn", "--port=10001",
+		"--disable-built-in-telemetry",
 	}, "pgx", dsn)
 }
 
@@ -129,7 +132,9 @@ func TestPostgresUnix(t *testing.T) {
 		*alloydbUser, *alloydbPass, *alloydbDB)
 
 	proxyConnTest(t,
-		[]string{"--unix-socket", tmpDir, *alloydbInstanceURI}, "pgx", dsn)
+		[]string{"--unix-socket", tmpDir, *alloydbInstanceURI,
+			"--disable-built-in-telemetry",
+		}, "pgx", dsn)
 }
 
 func TestPostgresAuthWithToken(t *testing.T) {
@@ -146,7 +151,7 @@ func TestPostgresAuthWithToken(t *testing.T) {
 	)
 	proxyConnTest(t,
 		[]string{"--token", tok.AccessToken, *alloydbInstanceURI,
-			"--port=10002",
+			"--port=10002", "--disable-built-in-telemetry",
 		},
 		"pgx", dsn)
 }
@@ -164,7 +169,7 @@ func TestPostgresAuthWithCredentialsFile(t *testing.T) {
 		*alloydbUser, *alloydbPass, *alloydbDB)
 	proxyConnTest(t,
 		[]string{"--credentials-file", path, *alloydbInstanceURI,
-			"--port=10003",
+			"--port=10003", "--disable-built-in-telemetry",
 		},
 		"pgx", dsn)
 }
@@ -183,9 +188,8 @@ func TestPostgresAuthWithCredentialsJSON(t *testing.T) {
 		*alloydbUser, *alloydbPass, *alloydbDB)
 	proxyConnTest(t,
 		[]string{"--json-credentials", string(creds), *alloydbInstanceURI,
-			"--port=10004",
-		},
-		"pgx", dsn)
+			"--port=10004", "--disable-built-in-telemetry",
+		}, "pgx", dsn)
 }
 
 func TestAuthWithGcloudAuth(t *testing.T) {
@@ -199,8 +203,9 @@ func TestAuthWithGcloudAuth(t *testing.T) {
 		*alloydbUser, *alloydbPass, *alloydbDB,
 	)
 	proxyConnTest(t,
-		[]string{"--gcloud-auth", *alloydbInstanceURI, "--port=10005"},
-		"pgx", dsn)
+		[]string{"--gcloud-auth", *alloydbInstanceURI, "--port=10005",
+			"--disable-built-in-telemetry",
+		}, "pgx", dsn)
 }
 
 func TestPostgresPublicIP(t *testing.T) {
@@ -213,7 +218,9 @@ func TestPostgresPublicIP(t *testing.T) {
 		"host=127.0.0.1 port=10006 user=%v password=%v database=%v sslmode=disable",
 		*alloydbUser, *alloydbPass, *alloydbDB,
 	)
-	proxyConnTest(t, []string{*alloydbInstanceURI, "--public-ip", "--port=10006"}, "pgx", dsn)
+	proxyConnTest(t, []string{*alloydbInstanceURI, "--public-ip", "--port=10006",
+		"--disable-built-in-telemetry",
+	}, "pgx", dsn)
 }
 
 func TestPostgresPSC(t *testing.T) {
@@ -227,6 +234,7 @@ func TestPostgresPSC(t *testing.T) {
 		*alloydbUser, *alloydbPass, *alloydbDB,
 	)
 	proxyConnTest(t, []string{
-		*alloydbPSCInstanceURI, "--psc", "--port=10007"}, "pgx", dsn,
-	)
+		*alloydbPSCInstanceURI, "--psc", "--port=10007",
+		"--disable-built-in-telemetry",
+	}, "pgx", dsn)
 }
