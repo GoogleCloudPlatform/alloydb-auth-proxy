@@ -306,6 +306,7 @@ alloydb-auth-proxy instance_uri... [flags]
   -c, --credentials-file string              Path to a service account key to use for authentication.
       --debug                                Enable pprof on the localhost admin server
       --debug-logs                           Enable debug logging
+      --disable-built-in-telemetry           Disables the internal metric reporter
       --disable-metrics                      Disable Cloud Monitoring integration (used with telemetry-project)
       --disable-traces                       Disable Cloud Trace integration (used with telemetry-project)
       --exit-zero-sigterm                    Exit with 0 exit code when Sigterm received (default is 143)

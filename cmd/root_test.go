@@ -528,6 +528,16 @@ func TestNewCommandArguments(t *testing.T) {
 				StaticConnectionInfo: "myfile.json",
 			}),
 		},
+		{
+			desc: "using the disable built-in telemetry flag",
+			args: []string{
+				"--disable-built-in-telemetry",
+				"projects/proj/locations/region/clusters/clust/instances/inst",
+			},
+			want: withDefaults(&proxy.Config{
+				DisableBuiltInTelemetry: true,
+			}),
+		},
 	}
 
 	for _, tc := range tcs {
