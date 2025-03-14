@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.13.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.12.2...v1.13.0) (2025-03-14)
+
+
+### Features
+
+* allow disabling built-in metrics ([#769](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/769)) ([8611c99](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/8611c99c746860ade7366c726ff55974de909f24))
+
 ## [1.12.2](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.12.1...v1.12.2) (2025-02-12)
 
 
