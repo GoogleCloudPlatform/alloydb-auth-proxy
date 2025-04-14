@@ -788,7 +788,7 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 	// If no instance connection names were provided AND FUSE isn't enabled,
 	// error.
 	if len(args) == 0 && conf.FUSEDir == "" {
-		return newBadCommandError("missing instance uri (e.g., projects/$PROJECTS/locations/$LOCTION/clusters/$CLUSTER/instances/$INSTANCES)")
+		return newBadCommandError("missing instance uri (e.g., projects/$PROJECT/locations/$LOCATION/clusters/$CLUSTER/instances/$INSTANCE)")
 	}
 
 	if conf.FUSEDir != "" {
