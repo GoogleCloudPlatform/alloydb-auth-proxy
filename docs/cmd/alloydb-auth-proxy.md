@@ -261,7 +261,7 @@ Third Party Licenses
   To view all licenses for third party dependencies used within this
   distribution please see:
 
-  https://storage.googleapis.com/alloydb-auth-proxy/v1.13.0/third_party/licenses.tar.gz 
+  https://storage.googleapis.com/alloydb-auth-proxy/v1.13.1/third_party/licenses.tar.gz 
 
 Static Connection Info
 
