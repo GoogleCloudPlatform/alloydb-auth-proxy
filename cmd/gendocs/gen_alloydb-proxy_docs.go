@@ -46,6 +46,6 @@ func main() {
 
 	c := cmd.NewCommand()
 	c.Execute()
-	c.Command.DisableAutoGenTag = true
+	c.DisableAutoGenTag = true
 	doc.GenMarkdownTree(c.Command, outDir)
 }
