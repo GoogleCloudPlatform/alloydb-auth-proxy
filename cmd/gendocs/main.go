@@ -45,7 +45,10 @@ func main() {
 	os.Setenv("TMPDIR", "/tmp")
 
 	c := cmd.NewCommand()
-	c.Execute()
 	c.DisableAutoGenTag = true
-	doc.GenMarkdownTree(c.Command, outDir)
+
+	if err := doc.GenMarkdownTree(c.Command, outDir); err != nil {
+		fmt.Fprintf(os.Stderr, "gendocs: %v", err)
+		os.Exit(1)
+	}
 }

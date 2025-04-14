@@ -359,6 +359,5 @@ alloydb-auth-proxy instance_uri... [flags]
 
 ### SEE ALSO
 
-* [alloydb-auth-proxy completion](alloydb-auth-proxy_completion.md)	 - Generate the autocompletion script for the specified shell
 * [alloydb-auth-proxy wait](alloydb-auth-proxy_wait.md)	 - Wait for another Proxy process to start
 

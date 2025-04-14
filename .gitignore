@@ -8,6 +8,9 @@
 /alloydb-auth-proxy
 /alloydb-auth-proxy.exe
 
+/gendocs
+/gendocs.exe
+
 /key.json
 /logs/
 
