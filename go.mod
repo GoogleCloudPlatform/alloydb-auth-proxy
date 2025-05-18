@@ -9,7 +9,7 @@ require (
 	github.com/coreos/go-systemd/v22 v22.5.0
 	github.com/google/go-cmp v0.7.0
 	github.com/hanwen/go-fuse/v2 v2.7.2
-	github.com/jackc/pgx/v5 v5.7.4
+	github.com/jackc/pgx/v5 v5.7.5
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/pflag v1.0.6
 	github.com/spf13/viper v1.20.1
