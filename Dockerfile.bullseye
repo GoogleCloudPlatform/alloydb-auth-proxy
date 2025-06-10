@@ -26,7 +26,7 @@ RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} \
     go build -ldflags "-X github.com/GoogleCloudPlatform/alloydb-auth-proxy/cmd.metadataString=container.bullseye"
 
 # Final stage
-FROM gcr.io/cloud-marketplace-containers/google/debian11@sha256:d56f1b124dea124fc9359fc3db62a1f19fb953d7459d2a6e8e1bbb418a787a54
+FROM gcr.io/cloud-marketplace-containers/google/debian11@sha256:80b80968e1ad7e0d0769ecd6d14b4fbd009284049b2b7b12f2853758cc2ff337
 
 LABEL org.opencontainers.image.source="https://github.com/GoogleCloudPlatform/alloydb-auth-proxy"
 
