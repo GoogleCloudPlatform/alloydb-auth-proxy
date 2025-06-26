@@ -1186,6 +1186,9 @@ func runSignalWrapper(cmd *Command) (err error) {
 	case errors.Is(err, errSigTerm):
 		cmd.logger.Infof("SIGTERM signal received. Shutting down...")
 		time.Sleep(cmd.conf.WaitBeforeClose)
+	case errors.Is(err, errQuitQuitQuit):
+		cmd.logger.Infof("/quitquitquit received request. Shutting down...")
+		time.Sleep(cmd.conf.WaitBeforeClose)
 	default:
 		cmd.logger.Errorf("The proxy has encountered a terminal error: %v", err)
 	}
