@@ -1077,7 +1077,12 @@ func runSignalWrapper(cmd *Command) (err error) {
 	var p *proxy.Client
 	select {
 	case err := <-shutdownCh:
-		cmd.logger.Errorf("The proxy has encountered a terminal error: %v", err)
+		if errors.Is(err, errQuitQuitQuit) {
+			// Intentionally using Info level log, for maintainability on GCP.
+			cmd.logger.Infof("The proxy has encountered a terminal error: %v", err)
+		} else {
+			cmd.logger.Errorf("The proxy has encountered a terminal error: %v", err)
+		}
 		// If running under systemd with Type=notify, it will send a message to the
 		// service manager that a failure occurred and it is terminating.
 		go func() {
