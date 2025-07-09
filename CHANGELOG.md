@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.13.4](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.13.3...v1.13.4) (2025-07-09)
+
+
+### Bug Fixes
+
+* quitquitquit logs info not error message ([#803](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/803)) ([0824d9d](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/0824d9d747fd0bb0a5d2d40f34d891ac35f09c62)), closes [#802](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/802)
+
 ## [1.13.3](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.13.2...v1.13.3) (2025-06-12)
 
 
