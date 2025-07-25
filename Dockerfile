@@ -13,16 +13,13 @@
 # limitations under the License.
 
 # Use the latest stable golang 1.x to compile to a binary
-FROM --platform=$BUILDPLATFORM golang:1 as build
+FROM golang:1 as build
 
 WORKDIR /go/src/alloydb-auth-proxy
 COPY . .
 
-ARG TARGETOS
-ARG TARGETARCH
-
 RUN go get ./...
-RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} \
+RUN CGO_ENABLED=0 GOOS=linux \
     go build -ldflags "-X github.com/GoogleCloudPlatform/alloydb-auth-proxy/cmd.metadataString=container"
 
 # Final Stage
