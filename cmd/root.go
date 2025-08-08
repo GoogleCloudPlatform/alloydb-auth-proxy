@@ -621,6 +621,11 @@ the cached copy has expired. Use this setting in environments where the
 CPU may be throttled and a background refresh cannot run reliably
 (e.g., Cloud Run)`,
 	)
+	localFlags.BoolVar(&c.conf.Serverless, "serverless", false,
+		`Configure the Proxy to route traffic through the AlloyDB control
+plane. Enabling this option allows you to reach your instance without
+configuring a network path to the same instance.`,
+	)
 	localFlags.StringVar(&c.conf.StaticConnectionInfo, "static-connection-info",
 		"", "JSON file with static connection info. See --help for format.")
 	localFlags.BoolVar(&c.conf.ExitZeroOnSigterm, "exit-zero-sigterm", false,

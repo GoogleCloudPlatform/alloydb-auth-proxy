@@ -97,6 +97,10 @@ type Config struct {
 	// of a request context, e.g., Cloud Run.
 	LazyRefresh bool
 
+	// Serverless uses the AlloyDB control plane to access the target instance,
+	// without requiring a network path to the dataplane.
+	Serverless bool
+
 	// Token is the Bearer token used for authorization.
 	Token string
 
@@ -461,6 +465,12 @@ func toFullURI(short string) (string, error) {
 	), nil
 }
 
+type dataplaneProxy interface {
+	proxyConn(ctx context.Context, instURI string, client net.Conn, opts ...alloydbconn.DialOption) error
+	checkConn(ctx context.Context, instURI string, opts ...alloydbconn.DialOption) error
+	io.Closer
+}
+
 // Client proxies connections from a local client to the remote server side
 // proxy for multiple AlloyDB instances.
 type Client struct {
@@ -470,7 +480,7 @@ type Client struct {
 
 	conf *Config
 
-	dialer alloydb.Dialer
+	proxy dataplaneProxy
 
 	// mnts is a list of all mounted sockets for this client
 	mnts []*socketMount
@@ -482,24 +492,21 @@ type Client struct {
 
 // NewClient completes the initial setup required to get the proxy to a "steady" state.
 func NewClient(ctx context.Context, d alloydb.Dialer, l alloydb.Logger, conf *Config) (*Client, error) {
-	// Check if the caller has configured a dialer.
-	// Otherwise, initialize a new one.
-	if d == nil {
-		dialerOpts, err := conf.DialerOptions(l)
-		if err != nil {
-			return nil, fmt.Errorf("error initializing dialer: %v", err)
-		}
-		d, err = alloydbconn.NewDialer(ctx, dialerOpts...)
-		if err != nil {
-			return nil, fmt.Errorf("error initializing dialer: %v", err)
-		}
+	var (
+		p   dataplaneProxy
+		err error
+	)
+	if conf.Serverless {
+		p, err = newControlPlaneProxy(ctx, l) // TODO wire admin api opts up
+	} else {
+		// Default uses the Go Connector and requires a network path.
+		p, err = newConnectorProxy(ctx, conf, d, l)
+	}
+	if err != nil {
+		return nil, err
 	}
 
-	c := &Client{
-		logger: l,
-		dialer: d,
-		conf:   conf,
-	}
+	c := &Client{logger: l, proxy: p, conf: conf}
 
 	if conf.FUSEDir != "" {
 		return configureFUSE(c, conf)
@@ -549,17 +556,9 @@ func (c *Client) CheckConnections(ctx context.Context) (int, error) {
 		wg.Add(1)
 		go func(m *socketMount) {
 			defer wg.Done()
-			conn, err := c.dialer.Dial(ctx, m.inst, m.dialOpts...)
-			if err != nil {
+			if err := c.proxy.checkConn(ctx, m.inst, m.dialOpts...); err != nil {
 				errCh <- err
 				return
-			}
-			cErr := conn.Close()
-			if cErr != nil {
-				c.logger.Errorf(
-					"connection check failed to close connection for %v: %v",
-					m.inst, cErr,
-				)
 			}
 		}(mnt)
 	}
@@ -669,7 +668,7 @@ func (c *Client) Close() error {
 		c.waitForFUSEMounts()
 	}
 	// Next, close the dialer to prevent any additional refreshes.
-	cErr := c.dialer.Close()
+	cErr := c.proxy.Close()
 	if cErr != nil {
 		mErr = append(mErr, cErr)
 	}
@@ -733,17 +732,12 @@ func (c *Client) serveSocketMount(_ context.Context, s *socketMount) error {
 				return
 			}
 
-			// give a max of 30 seconds to connect to the instance
-			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-			defer cancel()
-
-			sConn, err := c.dialer.Dial(ctx, s.inst, s.dialOpts...)
+			err := c.proxy.proxyConn(context.Background(), s.inst, cConn, s.dialOpts...)
 			if err != nil {
 				c.logger.Errorf("[%s] failed to connect to instance: %v\n", s.instShort, err)
 				cConn.Close()
 				return
 			}
-			c.proxyConn(s.instShort, cConn, sConn)
 		}()
 	}
 }
@@ -885,71 +879,4 @@ func (s *socketMount) Accept() (net.Conn, error) {
 // close stops the mount from listening for any more connections
 func (s *socketMount) Close() error {
 	return s.listener.Close()
-}
-
-// proxyConn sets up a bidirectional copy between two open connections
-func (c *Client) proxyConn(inst string, client, server net.Conn) {
-	// only allow the first side to give an error for terminating a connection
-	var o sync.Once
-	cleanup := func(errDesc string, isErr bool) {
-		o.Do(func() {
-			client.Close()
-			server.Close()
-			if isErr {
-				c.logger.Errorf(errDesc)
-			} else {
-				c.logger.Infof(errDesc)
-			}
-		})
-	}
-
-	// copy bytes from client to server
-	go func() {
-		buf := make([]byte, 8*1024) // 8kb
-		for {
-			n, cErr := client.Read(buf)
-			var sErr error
-			if n > 0 {
-				_, sErr = server.Write(buf[:n])
-			}
-			switch {
-			case cErr == io.EOF:
-				cleanup(fmt.Sprintf("[%s] client closed the connection", inst), false)
-				return
-			case cErr != nil:
-				cleanup(fmt.Sprintf("[%s] connection aborted - error reading from client: %v", inst, cErr), true)
-				return
-			case sErr == io.EOF:
-				cleanup(fmt.Sprintf("[%s] instance closed the connection", inst), false)
-				return
-			case sErr != nil:
-				cleanup(fmt.Sprintf("[%s] connection aborted - error writing to instance: %v", inst, cErr), true)
-				return
-			}
-		}
-	}()
-
-	// copy bytes from server to client
-	buf := make([]byte, 8*1024) // 8kb
-	for {
-		n, sErr := server.Read(buf)
-		var cErr error
-		if n > 0 {
-			_, cErr = client.Write(buf[:n])
-		}
-		switch {
-		case sErr == io.EOF:
-			cleanup(fmt.Sprintf("[%s] instance closed the connection", inst), false)
-			return
-		case sErr != nil:
-			cleanup(fmt.Sprintf("[%s] connection aborted - error reading from instance: %v", inst, sErr), true)
-			return
-		case cErr == io.EOF:
-			cleanup(fmt.Sprintf("[%s] client closed the connection", inst), false)
-			return
-		case cErr != nil:
-			cleanup(fmt.Sprintf("[%s] connection aborted - error writing to client: %v", inst, sErr), true)
-			return
-		}
-	}
 }
