@@ -247,8 +247,14 @@ Note: the following invocations assume you have downloaded the
 well-known location to have it available on your `PATH`.
 
 ``` bash
-# Starts the proxy listening on 127.0.0.1:5432
+# Starts the proxy listening on 127.0.0.1:5432, uses Private IP by default
 ./alloydb-auth-proxy <INSTANCE_URI>
+```
+
+To connect to an instance's public IP, use:
+
+``` bash
+./alloydb-auth-proxy <INSTANCE_URI> --public-ip
 ```
 
 To connect to multiple instances, use:
@@ -288,7 +294,7 @@ principal as the user you want to log in as, and start the Proxy like so:
 ``` bash
 ./alloydb-auth-proxy \
     --auto-iam-authn \
-    <INSTANCe_URI>
+    <INSTANCE_URI>
 ```
 
 Note: when using the query-string syntax, the instance URI and query parameters
