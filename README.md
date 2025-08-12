@@ -247,7 +247,7 @@ Note: the following invocations assume you have downloaded the
 well-known location to have it available on your `PATH`.
 
 ``` bash
-# Starts the proxy listening on 127.0.0.1:5432, uses Private IP by default
+# Starts the proxy listening on 127.0.0.1:5432, uses private IP by default
 ./alloydb-auth-proxy <INSTANCE_URI>
 ```
 
