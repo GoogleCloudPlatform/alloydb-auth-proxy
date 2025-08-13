@@ -7,9 +7,11 @@ following a [switchover operation][switchover].
 
 This document shows a workaround where you wrap the Auth Proxy in a
 script that polls a secret in Secret Manager. The secret holds the
-instance URI of your active primary instance. When that secret changes
-the Auth Proxy will automatically restart, minimizing the numbers of
-manual steps you need to take to complete a switchover operation.
+instance URI of your active primary instance. After a switchoever,
+you manually update the secret to your new active primary instance
+URI. When that secret changes the Auth Proxy will automatically
+restart, minimizing the numbers of manual steps you need to take 
+to complete a switchover operation.
 
 [switchover]: https://cloud.google.com/alloydb/docs/cross-region-replication/work-with-cross-region-replication#switchover-secondary
 
