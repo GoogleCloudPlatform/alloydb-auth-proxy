@@ -6,7 +6,7 @@ require (
 	cloud.google.com/go/alloydbconn v1.15.5
 	contrib.go.opencensus.io/exporter/prometheus v0.4.2
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.14
-	github.com/coreos/go-systemd/v22 v22.5.0
+	github.com/coreos/go-systemd/v22 v22.6.0
 	github.com/google/go-cmp v0.7.0
 	github.com/hanwen/go-fuse/v2 v2.8.0
 	github.com/jackc/pgx/v5 v5.7.5
@@ -17,16 +17,16 @@ require (
 	go.uber.org/zap v1.27.0
 	golang.org/x/oauth2 v0.30.0
 	golang.org/x/sys v0.35.0
-	google.golang.org/api v0.246.0
+	google.golang.org/api v0.248.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 )
 
 require (
 	cloud.google.com/go v0.120.0 // indirect
 	cloud.google.com/go/alloydb v1.18.0 // indirect
-	cloud.google.com/go/auth v0.16.3 // indirect
+	cloud.google.com/go/auth v0.16.5 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.8 // indirect
-	cloud.google.com/go/compute/metadata v0.7.0 // indirect
+	cloud.google.com/go/compute/metadata v0.8.0 // indirect
 	cloud.google.com/go/longrunning v0.6.7 // indirect
 	cloud.google.com/go/monitoring v1.24.2 // indirect
 	cloud.google.com/go/trace v1.11.6 // indirect
@@ -85,7 +85,7 @@ require (
 	golang.org/x/time v0.12.0 // indirect
 	google.golang.org/genproto v0.0.0-20250603155806-513f23925822 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250603155806-513f23925822 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20250811160224-6b04f9b4fc78 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250818200422-3122310a409c // indirect
 	google.golang.org/grpc v1.74.2 // indirect
 	google.golang.org/protobuf v1.36.7 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
