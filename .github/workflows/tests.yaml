@@ -77,17 +77,17 @@ jobs:
 
       - id: 'auth'
         name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@b7593ed2efd1c1617e1b0254da33b86225adb2a5 # v2.1.12
+        uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed # v2.1.13
         with:
           workload_identity_provider: ${{ vars.PROVIDER_NAME }}
           service_account: ${{ vars.SERVICE_ACCOUNT }}
 
       - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@cb1e50a9932213ecece00a606661ae9ca44f3397 # v2.2.0
+        uses: google-github-actions/setup-gcloud@e427ad8a34f8676edf47cf7d7925499adf3eb74f # v2.2.1
 
       - name: Get Secrets
         id: 'secrets'
-        uses: google-github-actions/get-secretmanager-secrets@50ec04d56ddf2740b0bde82926cc742f90e06d2b # v2.2.4
+        uses: google-github-actions/get-secretmanager-secrets@2b5f97c5a4b9c105e64646762ad4fc3f5128e6f5 # v2.2.5
         with:
           secrets: |-
             ALLOYDB_INSTANCE_URI:${{ vars.GOOGLE_CLOUD_PROJECT }}/ALLOYDB_INSTANCE_NAME
@@ -153,7 +153,7 @@ jobs:
         name: Authenticate to Google Cloud
         # only needed for Flakybot on periodic (schedule) and continuous (push) events
         if: ${{ github.event_name == 'schedule' || github.event_name == 'push' }}
-        uses: google-github-actions/auth@b7593ed2efd1c1617e1b0254da33b86225adb2a5 # v2.1.12
+        uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed # v2.1.13
         with:
           workload_identity_provider: ${{ vars.PROVIDER_NAME }}
           service_account: ${{ vars.SERVICE_ACCOUNT }}
