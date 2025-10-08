@@ -642,6 +642,8 @@ CPU may be throttled and a background refresh cannot run reliably
 		"(*) Connect to the public ip address for all instances")
 	localFlags.BoolVar(&c.conf.PSC, "psc", false,
 		"(*) Connect to the PSC endpoint for all instances")
+	localFlags.StringVar(&c.conf.OverrideIP, "override-ip", "",
+		"(*) Override the IP address used to connect to all instances")
 
 	return c
 }
@@ -818,6 +820,13 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 		return newBadCommandError(fmt.Sprintf("not a valid IP address: %q", conf.Addr))
 	}
 
+	// Validate override-ip if set
+	if conf.OverrideIP != "" {
+		if ip := net.ParseIP(conf.OverrideIP); ip == nil {
+			return newBadCommandError(fmt.Sprintf("--override-ip is not a valid IP address: %q", conf.OverrideIP))
+		}
+	}
+
 	// If more than one auth method is set, error.
 	if conf.Token != "" && conf.CredentialsFile != "" {
 		return newBadCommandError("cannot specify --token and --credentials-file flags at the same time")
@@ -961,6 +970,18 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 			ic.PSC, err = parseBoolOpt(q, "psc")
 			if err != nil {
 				return err
+			}
+
+			// Parse override-ip query parameter
+			if overrideIP, ok := q["override-ip"]; ok {
+				if len(overrideIP) != 1 {
+					return newBadCommandError(fmt.Sprintf("override-ip query param should be only one value: %q", overrideIP))
+				}
+				// Validate it's a valid IP address
+				if ip := net.ParseIP(overrideIP[0]); ip == nil {
+					return newBadCommandError(fmt.Sprintf("override-ip query param is not a valid IP address: %q", overrideIP[0]))
+				}
+				ic.OverrideIP = &overrideIP[0]
 			}
 		}
 		ics = append(ics, ic)
