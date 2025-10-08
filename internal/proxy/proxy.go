@@ -68,6 +68,10 @@ type InstanceConnConfig struct {
 
 	// PSC enables the Proxy to connect to the instance's PSC endpoint.
 	PSC *bool
+
+	// OverrideIP overrides the IP address used to connect to the instance.
+	// When set, this IP is used instead of the IP address returned by the API.
+	OverrideIP *string
 }
 
 // Config contains all the configuration provided by the caller.
@@ -90,6 +94,10 @@ type Config struct {
 
 	// PSC enables connections via the PSC endpoint for all instances.
 	PSC bool
+
+	// OverrideIP overrides the IP address used to connect to all instances.
+	// When set, this IP is used instead of the IP address returned by the API.
+	OverrideIP string
 
 	// LazyRefresh configures the Go Connector to retrieve connection info
 	// lazily and as-needed. Otherwise, no background refresh cycle runs. This
@@ -230,8 +238,30 @@ type Config struct {
 
 // dialOptions interprets appropriate dial options for a particular instance
 // configuration
-func dialOptions(c Config, i InstanceConnConfig) []alloydbconn.DialOption {
+func dialOptions(c Config, i InstanceConnConfig, l alloydb.Logger, instShort string) []alloydbconn.DialOption {
 	var opts []alloydbconn.DialOption
+
+	// If override IP is set at the instance level or globally, use a custom
+	// dial function that replaces the host with the override IP.
+	var overrideIP string
+	if i.OverrideIP != nil && *i.OverrideIP != "" {
+		overrideIP = *i.OverrideIP
+	} else if c.OverrideIP != "" {
+		overrideIP = c.OverrideIP
+	}
+
+	if overrideIP != "" {
+		l.Infof("[%s] Using override IP address: %s", instShort, overrideIP)
+		opts = append(opts, alloydbconn.WithOneOffDialFunc(func(ctx context.Context, network, addr string) (net.Conn, error) {
+			// Replace the host with the override IP, keeping the port
+			_, port, err := net.SplitHostPort(addr)
+			if err != nil {
+				return nil, err
+			}
+			overrideAddr := net.JoinHostPort(overrideIP, port)
+			return (&net.Dialer{}).DialContext(ctx, network, overrideAddr)
+		}))
+	}
 
 	// If public IP is enabled at the instance level, or public IP is enabled
 	// globally, add the option.
@@ -508,7 +538,7 @@ func NewClient(ctx context.Context, d alloydb.Dialer, l alloydb.Logger, conf *Co
 	var mnts []*socketMount
 	pc := newPortConfig(conf.Port)
 	for _, inst := range conf.Instances {
-		m, err := newSocketMount(ctx, conf, pc, inst)
+		m, err := newSocketMount(ctx, conf, pc, inst, l)
 		if err != nil {
 			for _, m := range mnts {
 				mErr := m.Close()
@@ -756,7 +786,7 @@ type socketMount struct {
 	dialOpts  []alloydbconn.DialOption
 }
 
-func newSocketMount(ctx context.Context, conf *Config, pc *portConfig, inst InstanceConnConfig) (*socketMount, error) {
+func newSocketMount(ctx context.Context, conf *Config, pc *portConfig, inst InstanceConnConfig, l alloydb.Logger) (*socketMount, error) {
 	shortInst, err := ShortInstURI(inst.Name)
 	if err != nil {
 		return nil, err
@@ -816,7 +846,7 @@ func newSocketMount(ctx context.Context, conf *Config, pc *portConfig, inst Inst
 		// access.
 		_ = os.Chmod(address, 0777)
 	}
-	opts := dialOptions(*conf, inst)
+	opts := dialOptions(*conf, inst, l, shortInst)
 	m := &socketMount{
 		inst:      inst.Name,
 		instShort: shortInst,

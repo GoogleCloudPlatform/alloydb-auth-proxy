@@ -120,6 +120,7 @@ func (c *Client) Lookup(_ context.Context, instance string, _ *fuse.EntryOut) (*
 	s, err := newSocketMount(
 		ctx, withUnixSocket(*c.conf, c.fuseTempDir),
 		nil, InstanceConnConfig{Name: instanceURI},
+		c.logger,
 	)
 	if err != nil {
 		c.logger.Errorf("could not create socket for %q: %v", instance, err)
