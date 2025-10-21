@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.13.7](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.13.6...v1.13.7) (2025-10-21)
+
+
+### Bug Fixes
+
+* log error correctly on unexpected disconnect ([#840](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/840)) ([0af4191](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/0af4191a0cf3310fc9cad5bbe7b155f3150cbb8e))
+
 ## [1.13.6](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.13.5...v1.13.6) (2025-09-09)
 
 
