@@ -226,6 +226,10 @@ type Config struct {
 	// improve performance and identify client connectivity problems. Presently,
 	// these metrics aren't public, but will be made public in the future.
 	DisableBuiltInTelemetry bool
+
+	// DynamicConfig enables the Proxy to start up without any instance URIs and
+	// instead look for the URIs in the client's startup message.
+	DynamicConfig bool
 }
 
 // dialOptions interprets appropriate dial options for a particular instance
@@ -480,16 +484,24 @@ type Client struct {
 	fuseMount
 }
 
+func defaultDialerInit(ctx context.Context, opts ...alloydbconn.Option) (alloydb.Dialer, error) {
+	return alloydbconn.NewDialer(ctx, opts...)
+}
+
 // NewClient completes the initial setup required to get the proxy to a "steady" state.
 func NewClient(ctx context.Context, d alloydb.Dialer, l alloydb.Logger, conf *Config) (*Client, error) {
 	// Check if the caller has configured a dialer.
 	// Otherwise, initialize a new one.
 	if d == nil {
+		initFunc := defaultDialerInit
+		if conf.DynamicConfig {
+			initFunc = NewDynamicDialer
+		}
 		dialerOpts, err := conf.DialerOptions(l)
 		if err != nil {
 			return nil, fmt.Errorf("error initializing dialer: %v", err)
 		}
-		d, err = alloydbconn.NewDialer(ctx, dialerOpts...)
+		d, err = initFunc(ctx, dialerOpts...)
 		if err != nil {
 			return nil, fmt.Errorf("error initializing dialer: %v", err)
 		}
@@ -757,9 +769,17 @@ type socketMount struct {
 }
 
 func newSocketMount(ctx context.Context, conf *Config, pc *portConfig, inst InstanceConnConfig) (*socketMount, error) {
-	shortInst, err := ShortInstURI(inst.Name)
-	if err != nil {
-		return nil, err
+	var (
+		shortInst string
+		err       error
+	)
+	if conf.DynamicConfig {
+		shortInst = "dynamic"
+	} else {
+		shortInst, err = ShortInstURI(inst.Name)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	var (
@@ -923,7 +943,7 @@ func (c *Client) proxyConn(inst string, client, server net.Conn) {
 				cleanup(fmt.Sprintf("[%s] instance closed the connection", inst), false)
 				return
 			case sErr != nil:
-				cleanup(fmt.Sprintf("[%s] connection aborted - error writing to instance: %v", inst, cErr), true)
+				cleanup(fmt.Sprintf("[%s] connection aborted - error writing to instance: %v", inst, sErr), true)
 				return
 			}
 		}

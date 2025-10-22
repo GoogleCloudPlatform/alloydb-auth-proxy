@@ -628,6 +628,8 @@ CPU may be throttled and a background refresh cannot run reliably
 	localFlags.BoolVar(&c.conf.DisableBuiltInTelemetry,
 		"disable-built-in-telemetry", false,
 		"Disables the internal metric reporter")
+	localFlags.BoolVar(&c.conf.DynamicConfig, "dynamic-config", false,
+		"Connect to AlloyDB instances based on client parameters")
 
 	// Global and per instance flags
 	localFlags.StringVarP(&c.conf.Addr, "address", "a", "127.0.0.1",
@@ -787,8 +789,12 @@ func userHasSetGlobal(cmd *Command, f string) bool {
 func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 	// If no instance connection names were provided AND FUSE isn't enabled,
 	// error.
-	if len(args) == 0 && conf.FUSEDir == "" {
+	if !conf.DynamicConfig && len(args) == 0 && conf.FUSEDir == "" {
 		return newBadCommandError("missing instance uri (e.g., projects/$PROJECT/locations/$LOCATION/clusters/$CLUSTER/instances/$INSTANCE)")
+	}
+
+	if conf.DynamicConfig && cmd.dialer != nil {
+		return newBadCommandError("WithDialer may not be used with dynamic config")
 	}
 
 	if conf.FUSEDir != "" {
@@ -803,7 +809,7 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 		}
 	}
 
-	if len(args) == 0 && conf.FUSEDir == "" && conf.FUSETempDir != "" {
+	if !conf.DynamicConfig && len(args) == 0 && conf.FUSEDir == "" && conf.FUSETempDir != "" {
 		return newBadCommandError("cannot specify --fuse-tmp-dir without --fuse")
 	}
 
@@ -872,12 +878,20 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 	}
 
 	var ics []proxy.InstanceConnConfig
+	if conf.DynamicConfig {
+		ics = append(ics, proxy.InstanceConnConfig{Name: "dynamic"})
+		conf.Instances = ics
+		return nil
+	}
+
 	for _, a := range args {
 		// split into instance uri and query parameters
 		res := strings.SplitN(a, "?", 2)
-		_, _, _, _, err := proxy.ParseInstanceURI(res[0])
-		if err != nil {
-			return newBadCommandError(fmt.Sprintf("could not parse instance uri: %q", res[0]))
+		if !conf.DynamicConfig {
+			_, _, _, _, err := proxy.ParseInstanceURI(res[0])
+			if err != nil {
+				return newBadCommandError(fmt.Sprintf("could not parse instance uri: %q", res[0]))
+			}
 		}
 		ic := proxy.InstanceConnConfig{Name: res[0]}
 		// If there are query params, update instance config.
