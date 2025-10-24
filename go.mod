@@ -8,7 +8,7 @@ require (
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.14
 	github.com/coreos/go-systemd/v22 v22.6.0
 	github.com/google/go-cmp v0.7.0
-	github.com/hanwen/go-fuse/v2 v2.8.0
+	github.com/hanwen/go-fuse/v2 v2.9.0
 	github.com/jackc/pgx/v5 v5.7.6
 	github.com/spf13/cobra v1.10.1
 	github.com/spf13/pflag v1.0.10
@@ -16,7 +16,7 @@ require (
 	go.opencensus.io v0.24.0
 	golang.org/x/oauth2 v0.32.0
 	golang.org/x/sys v0.37.0
-	google.golang.org/api v0.252.0
+	google.golang.org/api v0.253.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 )
 
