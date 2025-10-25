@@ -33,6 +33,7 @@ import (
 	"syscall"
 	"time"
 
+	"cloud.google.com/go/alloydbconn/instance"
 	"contrib.go.opencensus.io/exporter/prometheus"
 	"contrib.go.opencensus.io/exporter/stackdriver"
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/alloydb"
@@ -875,7 +876,7 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 	for _, a := range args {
 		// split into instance uri and query parameters
 		res := strings.SplitN(a, "?", 2)
-		_, _, _, _, err := proxy.ParseInstanceURI(res[0])
+		_, err := instance.ParseURI(res[0])
 		if err != nil {
 			return newBadCommandError(fmt.Sprintf("could not parse instance uri: %q", res[0]))
 		}

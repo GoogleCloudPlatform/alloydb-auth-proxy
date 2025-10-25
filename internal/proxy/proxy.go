@@ -30,6 +30,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/alloydbconn"
+	"cloud.google.com/go/alloydbconn/instance"
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/alloydb"
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/gcloud"
 	"golang.org/x/oauth2"
@@ -395,38 +396,24 @@ func (c *portConfig) nextPort() int {
 }
 
 var (
-	// Instance URI is in the format:
-	// 'projects/<PROJECT>/locations/<REGION>/clusters/<CLUSTER>/instances/<INSTANCE>'
-	// Additionally, we have to support legacy "domain-scoped" projects (e.g. "google.com:PROJECT")
-	instURIRegex = regexp.MustCompile("projects/([^:]+(?::[^:]+)?)/locations/(.+)/clusters/(.+)/instances/(.+)")
 	// unixRegex is the expected format for a Unix socket
 	// e.g. project.region.cluster.instance
 	unixRegex = regexp.MustCompile(`([^:]+(?:-[^:]+)?)\.(.+)\.(.+)\.(.+)`)
 )
 
-// ParseInstanceURI validates the instance uri is in the proper format and
-// returns the project, region, cluster, and instance name.
-func ParseInstanceURI(inst string) (string, string, string, string, error) {
-	m := instURIRegex.FindSubmatch([]byte(inst))
-	if m == nil {
-		return "", "", "", "", fmt.Errorf("invalid instance name: %v", inst)
-	}
-	return string(m[1]), string(m[2]), string(m[3]), string(m[4]), nil
-}
-
 // ShortInstURI shortens the instance URI into project.region.cluster.instance.
 func ShortInstURI(inst string) (string, error) {
-	p, r, c, i, err := ParseInstanceURI(inst)
+	u, err := instance.ParseURI(inst)
 	if err != nil {
 		return "", err
 	}
-	return strings.Join([]string{p, r, c, i}, "."), nil
+	return u.String(), nil
 }
 
 // UnixSocketDir returns a shorted instance connection name to prevent
 // exceeding the Unix socket length, e.g., project.region.cluster.instance
 func UnixSocketDir(dir, inst string) (string, error) {
-	project, region, cluster, name, err := ParseInstanceURI(strings.ToLower(inst))
+	u, err := instance.ParseURI(strings.ToLower(inst))
 	if err != nil {
 		return "", err
 	}
@@ -435,8 +422,8 @@ func UnixSocketDir(dir, inst string) (string, error) {
 	// support Windows. Underscores are not allowed in project names. So use an
 	// underscore to have a Windows-friendly delimitor that can serve as a
 	// marker to recover the legacy project name when necessary (e.g., FUSE).
-	project = strings.ReplaceAll(project, ":", "_")
-	shortName := strings.Join([]string{project, region, cluster, name}, ".")
+	project := strings.ReplaceAll(u.Project, ":", "_")
+	shortName := strings.Join([]string{project, u.Region, u.Cluster, u.Name}, ".")
 	return filepath.Join(dir, shortName), nil
 }
 
