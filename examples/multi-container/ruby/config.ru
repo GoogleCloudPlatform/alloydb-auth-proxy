@@ -14,4 +14,7 @@
 
 require './app'
 
+# Without setting this field, all non-localhost requests will fail.
+set :environment, :production
+
 run Sinatra::Application
