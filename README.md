@@ -41,7 +41,7 @@ following instructions for your OS and CPU architecture.
 
 ``` sh
 # see Releases for other versions
-URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.13.8"
+URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.13.9"
 
 wget "$URL/alloydb-auth-proxy.linux.amd64" -O alloydb-auth-proxy
 
@@ -54,7 +54,7 @@ chmod +x alloydb-auth-proxy
 
 ``` sh
 # see Releases for other versions
-URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.13.8"
+URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.13.9"
 
 wget "$URL/alloydb-auth-proxy.linux.386" -O alloydb-auth-proxy
 
@@ -67,7 +67,7 @@ chmod +x alloydb-auth-proxy
 
 ``` sh
 # see Releases for other versions
-URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.13.8"
+URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.13.9"
 
 wget "$URL/alloydb-auth-proxy.linux.arm64" -O alloydb-auth-proxy
 
@@ -80,7 +80,7 @@ chmod +x alloydb-auth-proxy
 
 ``` sh
 # see Releases for other versions
-URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.13.8"
+URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.13.9"
 
 wget "$URL/alloydb-auth-proxy.linux.arm" -O alloydb-auth-proxy
 
@@ -93,7 +93,7 @@ chmod +x alloydb-auth-proxy
 
 ``` sh
 # see Releases for other versions
-URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.13.8"
+URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.13.9"
 
 wget "$URL/alloydb-auth-proxy.darwin.amd64" -O alloydb-auth-proxy
 
@@ -106,7 +106,7 @@ chmod +x alloydb-auth-proxy
 
 ``` sh
 # see Releases for other versions
-URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.13.8"
+URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.13.9"
 
 wget "$URL/alloydb-auth-proxy.darwin.arm64" -O alloydb-auth-proxy
 
@@ -119,7 +119,7 @@ chmod +x alloydb-auth-proxy
 
 ``` sh
 # see Releases for other versions
-wget https://storage.googleapis.com/alloydb-auth-proxy/v1.13.8/alloydb-auth-proxy-x64.exe -O alloydb-auth-proxy.exe
+wget https://storage.googleapis.com/alloydb-auth-proxy/v1.13.9/alloydb-auth-proxy-x64.exe -O alloydb-auth-proxy.exe
 ```
 </details>
 
@@ -128,7 +128,7 @@ wget https://storage.googleapis.com/alloydb-auth-proxy/v1.13.8/alloydb-auth-prox
 
 ``` sh
 # see Releases for other versions
-wget https://storage.googleapis.com/alloydb-auth-proxy/v1.13.8/alloydb-auth-proxy-x86.exe -O alloydb-auth-proxy.exe
+wget https://storage.googleapis.com/alloydb-auth-proxy/v1.13.9/alloydb-auth-proxy-x86.exe -O alloydb-auth-proxy.exe
 ```
 </details>
 
@@ -160,13 +160,13 @@ currently supported:
 
 <!-- {x-release-please-start-version} -->
 The `$VERSION` is the Proxy version without the leading "v" (e.g.,
-`1.13.8`).
+`1.13.9`).
 
 For example, to pull a particular version, use a command like:
 
 ``` shell
-# $VERSION is 1.13.8
-docker pull gcr.io/alloydb-connectors/alloydb-auth-proxy:1.13.8
+# $VERSION is 1.13.9
+docker pull gcr.io/alloydb-connectors/alloydb-auth-proxy:1.13.9
 ```
 
 <!-- {x-release-please-end} -->
