@@ -26,7 +26,7 @@ RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} \
     go build -ldflags "-X github.com/GoogleCloudPlatform/alloydb-auth-proxy/cmd.metadataString=container.bookworm"
 
 # Final stage
-FROM gcr.io/cloud-marketplace-containers/google/debian12@sha256:3cef00be948efeaf7086f0a229e3c2c381d1d2157549f0d6d4552b069f6b166d
+FROM gcr.io/cloud-marketplace-containers/google/debian12@sha256:bd8802be0e00e051782b020afea09b2e2794d403b95124afa1ebd6f9ad2a1cf9
 LABEL org.opencontainers.image.source="https://github.com/GoogleCloudPlatform/alloydb-auth-proxy"
 
 RUN apt-get update && apt-get install -y ca-certificates
