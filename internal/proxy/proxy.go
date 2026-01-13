@@ -272,10 +272,10 @@ func credentialsOpt(c Config, l alloydb.Logger) (alloydbconn.Option, error) {
 			))
 		case c.CredentialsFile != "":
 			l.Infof("Impersonating service account with the credentials file at %q", c.CredentialsFile)
-			iopts = append(iopts, option.WithCredentialsFile(c.CredentialsFile))
+			iopts = append(iopts, option.WithAuthCredentialsFile(option.ImpersonatedServiceAccount, c.CredentialsFile))
 		case c.CredentialsJSON != "":
 			l.Infof("Impersonating service account with JSON credentials environment variable")
-			iopts = append(iopts, option.WithCredentialsJSON([]byte(c.CredentialsJSON)))
+			iopts = append(iopts, option.WithAuthCredentialsJSON(option.ImpersonatedServiceAccount, []byte(c.CredentialsJSON)))
 		case c.GcloudAuth:
 			l.Infof("Impersonating service account with gcloud user credentials")
 			ts, err := gcloud.TokenSource()
