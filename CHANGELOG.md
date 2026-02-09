@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.13.11](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.13.10...v1.13.11) (2026-02-09)
+
+
+### Bug Fixes
+
+* updated versions for base images in the Dockerfile to be aligned with other components ([#872](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/872)) ([01ea388](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/01ea388c975494e1054b233d4242f67856c1a7ef))
+
 ## [1.13.10](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.13.9...v1.13.10) (2026-01-13)
 
 
