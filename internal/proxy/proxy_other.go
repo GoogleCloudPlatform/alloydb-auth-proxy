@@ -125,9 +125,7 @@ func (c *Client) Lookup(_ context.Context, instance string, _ *fuse.EntryOut) (*
 		return nil, syscall.ENOENT
 	}
 
-	c.fuseWg.Add(1)
-	go func() {
-		defer c.fuseWg.Done()
+	c.fuseWg.Go(func() {
 		sErr := c.serveSocketMount(ctx, s)
 		if sErr != nil {
 			c.fuseMu.Lock()
@@ -144,7 +142,7 @@ func (c *Client) Lookup(_ context.Context, instance string, _ *fuse.EntryOut) (*
 				return
 			}
 		}
-	}()
+	})
 
 	// Return a symlink that points to the actual Unix socket within the
 	// temporary directory. For Postgres, return a symlink that points to the

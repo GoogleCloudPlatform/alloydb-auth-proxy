@@ -45,7 +45,7 @@ func proxyAddr() string {
 }
 
 func dialTCP(t *testing.T, addr string) net.Conn {
-	for i := 0; i < 10; i++ {
+	for range 10 {
 		conn, err := net.Dial("tcp", addr)
 		if err == nil {
 			return conn
@@ -202,7 +202,7 @@ func TestHandleReadinessForMaxConns(t *testing.T) {
 	// The proxy calls the dialer in a separate goroutine. So wait for that
 	// goroutine to run before asserting on the readiness response.
 	waitForConnect := func(t *testing.T, wantCode int) *http.Response {
-		for i := 0; i < 10; i++ {
+		for range 10 {
 			rec := httptest.NewRecorder()
 			check.HandleReadiness(rec, &http.Request{URL: &url.URL{}})
 			resp := rec.Result()
