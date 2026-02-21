@@ -344,7 +344,7 @@ func TestClientLimitsMaxConnections(t *testing.T) {
 
 	tryDialAttempts := func(t *testing.T, want int) {
 		var got int
-		for i := 0; i < 10; i++ {
+		for range 10 {
 			got = d.dialAttempts()
 			if got == want {
 				return
@@ -363,7 +363,7 @@ func tryTCPDial(t *testing.T, addr string) net.Conn {
 		conn net.Conn
 		err  error
 	)
-	for i := 0; i < attempts; i++ {
+	for range attempts {
 		conn, err = net.Dial("tcp", addr)
 		if err != nil {
 			time.Sleep(100 * time.Millisecond)
@@ -579,7 +579,7 @@ func TestClientNotifiesCallerOnServe(t *testing.T) {
 	go c.Serve(ctx, notify)
 
 	verifyNotification := func(t *testing.T, ch <-chan struct{}) {
-		for i := 0; i < 10; i++ {
+		for range 10 {
 			select {
 			case <-ch:
 				return
@@ -622,7 +622,7 @@ func TestClientConnCount(t *testing.T) {
 
 	verifyOpen := func(t *testing.T, want uint64) {
 		var got uint64
-		for i := 0; i < 10; i++ {
+		for range 10 {
 			got, _ = c.ConnCount()
 			if got == want {
 				return

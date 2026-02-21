@@ -71,10 +71,7 @@ func (*readme) Getattr(_ context.Context, _ fs.FileHandle, out *fuse.AttrOut) sy
 
 // Read implements fs.NodeReader and supports incremental reads.
 func (*readme) Read(_ context.Context, _ fs.FileHandle, dest []byte, off int64) (fuse.ReadResult, syscall.Errno) {
-	end := int(off) + len(dest)
-	if end > len(readmeText) {
-		end = len(readmeText)
-	}
+	end := min(int(off)+len(dest), len(readmeText))
 	return fuse.ReadResultData([]byte(readmeText[off:end])), fs.OK
 }
 

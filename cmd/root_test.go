@@ -1091,8 +1091,7 @@ func TestCommandWithCustomDialer(t *testing.T) {
 	c.SilenceErrors = true
 	c.SetArgs([]string{"--port", "10000", want})
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := t.Context()
 
 	go c.ExecuteContext(ctx)
 
@@ -1189,8 +1188,7 @@ func TestPProfServer(t *testing.T) {
 	c.SilenceErrors = true
 	c.SetArgs([]string{"--debug", "--admin-port", "9191",
 		"projects/proj/locations/region/clusters/clust/instances/inst?port=5323"})
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := t.Context()
 
 	go c.ExecuteContext(ctx)
 	resp, err := tryDial("GET", "http://localhost:9191/debug/pprof/")
@@ -1208,8 +1206,7 @@ func TestQuitQuitQuitHTTPPost(t *testing.T) {
 	c.SilenceErrors = true
 	c.SetArgs([]string{"--quitquitquit", "--admin-port", "9192",
 		"projects/proj/locations/region/clusters/clust/instances/inst"})
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := t.Context()
 
 	errCh := make(chan error)
 	go func() {
@@ -1250,8 +1247,7 @@ func TestQuitQuitQuitGet(t *testing.T) {
 	c.SilenceErrors = true
 	c.SetArgs([]string{"--quitquitquit", "--admin-port", "9193",
 		"projects/proj/locations/region/clusters/clust/instances/inst"})
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := t.Context()
 
 	errCh := make(chan error)
 	go func() {
@@ -1294,8 +1290,7 @@ func TestQuitQuitQuitWithErrors(t *testing.T) {
 	c.SetArgs([]string{
 		"--quitquitquit", "--admin-port", "9194",
 		"projects/proj/locations/region/clusters/clust/instances/inst"})
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := t.Context()
 
 	errCh := make(chan error)
 	go func() {

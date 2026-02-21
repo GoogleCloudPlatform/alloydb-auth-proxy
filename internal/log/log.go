@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//revive:disable-next-line:var-naming
 package log
 
 import (
@@ -42,17 +43,17 @@ func NewStdLogger(out, err io.Writer) alloydb.Logger {
 }
 
 // Infof logs informational messages.
-func (l *StdLogger) Infof(format string, v ...interface{}) {
+func (l *StdLogger) Infof(format string, v ...any) {
 	l.stdLog.Printf(format, v...)
 }
 
 // Errorf logs error messages.
-func (l *StdLogger) Errorf(format string, v ...interface{}) {
+func (l *StdLogger) Errorf(format string, v ...any) {
 	l.errLog.Printf(format, v...)
 }
 
 // Debugf logs debug messages.
-func (l *StdLogger) Debugf(format string, v ...interface{}) {
+func (l *StdLogger) Debugf(format string, v ...any) {
 	l.stdLog.Printf(format, v...)
 }
 
@@ -63,17 +64,17 @@ type StructuredLogger struct {
 }
 
 // Infof logs informational messages.
-func (l *StructuredLogger) Infof(format string, v ...interface{}) {
+func (l *StructuredLogger) Infof(format string, v ...any) {
 	l.stdLog.Info(fmt.Sprintf(format, v...))
 }
 
 // Errorf logs error messages.
-func (l *StructuredLogger) Errorf(format string, v ...interface{}) {
+func (l *StructuredLogger) Errorf(format string, v ...any) {
 	l.errLog.Error(fmt.Sprintf(format, v...))
 }
 
 // Debugf logs debug messages.
-func (l *StructuredLogger) Debugf(format string, v ...interface{}) {
+func (l *StructuredLogger) Debugf(format string, v ...any) {
 	l.stdLog.Debug(fmt.Sprintf(format, v...))
 }
 
