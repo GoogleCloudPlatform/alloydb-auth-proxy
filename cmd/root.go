@@ -1009,6 +1009,11 @@ func runSignalWrapper(cmd *Command) (err error) {
 	ctx, cancel := context.WithCancel(cmd.Context())
 	defer cancel()
 
+	// Redirect gRPC's internal logger to the proxy's debug logger so that
+	// low-signal messages (e.g. monitoring.timeSeries.create permission errors)
+	// don't surface in normal output.
+	log.SetGRPCLogger(cmd.logger)
+
 	// Configure collectors before the proxy has started to ensure we are
 	// collecting metrics before *ANY* AlloyDB Admin API calls are made.
 	enableMetrics := !cmd.conf.DisableMetrics
