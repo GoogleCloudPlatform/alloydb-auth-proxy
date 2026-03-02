@@ -393,6 +393,30 @@ Static Connection Info
   }
 `
 
+var shutdownHelp = `
+Shutting Down the Proxy
+
+  The shutdown command signals a running Proxy process to gracefully shut
+  down. This is useful for scripting and for Kubernetes environments.
+
+  The shutdown command requires that the Proxy be started in another process
+  with the admin server enabled. For example:
+
+  ./alloydb-auth-proxy <INSTANCE_URI> --quitquitquit
+
+  Invoke the shutdown command like this:
+
+  # signals another Proxy process to shut down
+  ./alloydb-auth-proxy shutdown
+
+Configuration
+
+  If the running Proxy is configured with a non-default admin port, the
+  shutdown command must also be told to use the same custom value:
+
+  ./alloydb-auth-proxy shutdown --admin-port 9192
+`
+
 var waitHelp = `
   Sometimes it is necessary to wait for the Proxy to start.
 
@@ -456,9 +480,33 @@ func instanceFromEnv(args []string) []string {
 
 const (
 	waitMaxFlag     = "max"
+	adminPortFlag   = "admin-port"
 	httpAddressFlag = "http-address"
 	httpPortFlag    = "http-port"
 )
+
+func runShutdownCmd(c *cobra.Command, _ []string) error {
+	p, _ := c.Flags().GetString(adminPortFlag)
+	addr := fmt.Sprintf("http://127.0.0.1:%v/quitquitquit", p)
+	c.SilenceUsage = true
+
+	req, err := http.NewRequestWithContext(c.Context(), "POST", addr, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create shutdown request: %w", err)
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to send shutdown request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("shutdown request failed: status code %v, %v", resp.StatusCode, resp.Status)
+	}
+
+	return nil
+}
 
 func runWaitCmd(c *cobra.Command, _ []string) error {
 	a, _ := c.Flags().GetString(httpAddressFlag)
@@ -525,6 +573,20 @@ func NewCommand(opts ...Option) *Command {
 		"maximum amount of time to wait for startup",
 	)
 	rootCmd.AddCommand(waitCmd)
+
+	var shutdownCmd = &cobra.Command{
+		Use:   "shutdown",
+		Short: "Signal a running Proxy process to shut down",
+		Long:  shutdownHelp,
+		RunE:  runShutdownCmd,
+	}
+	shutdownFlags := shutdownCmd.Flags()
+	shutdownFlags.String(
+		adminPortFlag,
+		"9091",
+		"port for the admin server",
+	)
+	rootCmd.AddCommand(shutdownCmd)
 
 	rootCmd.Args = func(_ *cobra.Command, args []string) error {
 		return loadConfig(c, args, opts)
@@ -606,7 +668,7 @@ the maximum time has passed. Defaults to 0s.`)
 		"Enable pprof on the localhost admin server")
 	localFlags.BoolVar(&c.conf.QuitQuitQuit, "quitquitquit", false,
 		"Enable quitquitquit endpoint on the localhost admin server")
-	localFlags.StringVar(&c.conf.AdminPort, "admin-port", "9091",
+	localFlags.StringVar(&c.conf.AdminPort, adminPortFlag, "9091",
 		"Port for localhost-only admin server")
 	localFlags.BoolVar(&c.conf.HealthCheck, "health-check", false,
 		`Enables HTTP endpoints /startup, /liveness, and /readiness

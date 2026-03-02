@@ -359,5 +359,6 @@ alloydb-auth-proxy instance_uri... [flags]
 
 ### SEE ALSO
 
+* [alloydb-auth-proxy shutdown](alloydb-auth-proxy_shutdown.md)	 - Signal a running Proxy process to shut down
 * [alloydb-auth-proxy wait](alloydb-auth-proxy_wait.md)	 - Wait for another Proxy process to start
 
