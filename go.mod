@@ -1,6 +1,6 @@
 module github.com/GoogleCloudPlatform/alloydb-auth-proxy
 
-go 1.25
+go 1.25.0
 
 require (
 	cloud.google.com/go/alloydbconn v1.17.3
@@ -78,7 +78,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.40.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/crypto v0.48.0 // indirect
-	golang.org/x/net v0.50.0 // indirect
+	golang.org/x/net v0.51.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect
 	golang.org/x/text v0.34.0 // indirect
 	golang.org/x/time v0.14.0 // indirect
