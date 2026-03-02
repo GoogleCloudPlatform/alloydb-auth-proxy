@@ -690,7 +690,7 @@ func TestCheckConnections(t *testing.T) {
 func TestRunConnectionCheck(t *testing.T) {
 	in := &proxy.Config{
 		Addr: "127.0.0.1",
-		Port: 50002,
+		Port: 0,
 		Instances: []proxy.InstanceConnConfig{
 			{Name: "projects/proj/locations/region/clusters/clust/instances/inst1"},
 		},
