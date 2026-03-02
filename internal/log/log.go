@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/alloydb"
+	"google.golang.org/grpc/grpclog"
 )
 
 // StdLogger is the standard logger that distinguishes between info and error
@@ -100,6 +101,32 @@ func NewStructuredLogger(quiet bool) alloydb.Logger {
 	}
 	return l
 }
+
+// grpcLogger adapts an alloydb.Logger to the grpclog.LoggerV2 interface,
+// routing all gRPC log output to Debugf so it stays hidden unless debug
+// logging is enabled.
+type grpcLogger struct {
+	l alloydb.Logger
+}
+
+// SetGRPCLogger installs l as the gRPC library logger.
+func SetGRPCLogger(l alloydb.Logger) {
+	grpclog.SetLoggerV2(&grpcLogger{l: l})
+}
+
+func (g *grpcLogger) Info(args ...any)                    { g.l.Debugf(fmt.Sprint(args...)) }
+func (g *grpcLogger) Infoln(args ...any)                  { g.l.Debugf(fmt.Sprintln(args...)) }
+func (g *grpcLogger) Infof(format string, args ...any)    { g.l.Debugf(format, args...) }
+func (g *grpcLogger) Warning(args ...any)                 { g.l.Debugf(fmt.Sprint(args...)) }
+func (g *grpcLogger) Warningln(args ...any)               { g.l.Debugf(fmt.Sprintln(args...)) }
+func (g *grpcLogger) Warningf(format string, args ...any) { g.l.Debugf(format, args...) }
+func (g *grpcLogger) Error(args ...any)                   { g.l.Debugf(fmt.Sprint(args...)) }
+func (g *grpcLogger) Errorln(args ...any)                 { g.l.Debugf(fmt.Sprintln(args...)) }
+func (g *grpcLogger) Errorf(format string, args ...any)   { g.l.Debugf(format, args...) }
+func (g *grpcLogger) Fatal(args ...any)                   { g.l.Debugf(fmt.Sprint(args...)); os.Exit(1) }
+func (g *grpcLogger) Fatalln(args ...any)                 { g.l.Debugf(fmt.Sprintln(args...)); os.Exit(1) }
+func (g *grpcLogger) Fatalf(format string, args ...any)   { g.l.Debugf(format, args...); os.Exit(1) }
+func (g *grpcLogger) V(int) bool                          { return false }
 
 // replaceAttr remaps default Go logging keys to adhere to LogEntry format
 // https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry
