@@ -8,95 +8,47 @@
 [pkg-badge]: https://pkg.go.dev/badge/github.com/GoogleCloudPlatform/alloydb-auth-proxy.svg
 [pkg-docs]: https://pkg.go.dev/github.com/GoogleCloudPlatform/alloydb-auth-proxy
 
-The AlloyDB Auth Proxy is a binary that provides IAM-based authorization and
-encryption when connecting to an AlloyDB instance.
+The AlloyDB Auth Proxy is the recommended way to connect to AlloyDB. It provides:
 
-See the [Connecting Overview][connection-overview] page for more information on
-connecting to an AlloyDB instance, or the [About the proxy][about-proxy] page
-for details on how the AlloyDB Auth Proxy works.
+- **Secure connections** — TLS 1.3 encryption and identity verification, independent of the database protocol
+- **IAM-based authorization** — controls who can connect to your AlloyDB instances using Google Cloud IAM
+- **No certificate management** — no SSL certificates, firewall rules, or IP allowlisting required
+- **IAM database authentication** — optional support for automatic IAM DB authentication
 
-If you're using Go, Python, or Java, consider using the corresponding AlloyDB
-Connector which does everything the Proxy does, but in a native process:
+> **Note:** The proxy does not configure the network. You must ensure it can
+> reach your AlloyDB instance (e.g., by running the proxy inside the same VPC
+> as your AlloyDB instance).
 
-- [AlloyDB Go Connector][go connector]
-- [AlloyDB Python Connector][python connector]
-- [AlloyDB Java Connector][java connector]
+If you're using Go, Python, or Java, consider using the language connectors
+instead—they embed the same functionality directly in your process:
 
-Note: The Proxy *cannot* provide a network path to an AlloyDB instance if one is
-not already present (e.g., the proxy cannot access a VPC if it does not already
-have access to it).
+| Language | Connector |
+|----------|-----------|
+| Go | [alloydb-go-connector][] |
+| Python | [alloydb-python-connector][] |
+| Java | [alloydb-java-connector][] |
 
-[go connector]: https://github.com/GoogleCloudPlatform/alloydb-go-connector
-[python connector]: https://github.com/GoogleCloudPlatform/alloydb-python-connector
-[java connector]: https://github.com/GoogleCloudPlatform/alloydb-java-connector
+[alloydb-go-connector]: https://github.com/GoogleCloudPlatform/alloydb-go-connector
+[alloydb-python-connector]: https://github.com/GoogleCloudPlatform/alloydb-python-connector
+[alloydb-java-connector]: https://github.com/GoogleCloudPlatform/alloydb-java-connector
 
-## Installation
+---
 
-Check for the latest version on the [releases page][releases] and use the
-following instructions for your OS and CPU architecture.
+## Quickstart
+
+Get connected in five steps.
+
+### 1. Install the proxy
+
+Pick your platform below, or see [all installation options](#installation).
 
 <!-- {x-release-please-start-version} -->
 <details open>
-<summary>Linux amd64</summary>
+<summary>Linux (amd64)</summary>
 
-``` sh
-# see Releases for other versions
+```sh
 URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.13.11"
-
 wget "$URL/alloydb-auth-proxy.linux.amd64" -O alloydb-auth-proxy
-
-chmod +x alloydb-auth-proxy
-```
-</details>
-
-<details>
-<summary>Linux 386</summary>
-
-``` sh
-# see Releases for other versions
-URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.13.11"
-
-wget "$URL/alloydb-auth-proxy.linux.386" -O alloydb-auth-proxy
-
-chmod +x alloydb-auth-proxy
-```
-</details>
-
-<details>
-<summary>Linux arm64</summary>
-
-``` sh
-# see Releases for other versions
-URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.13.11"
-
-wget "$URL/alloydb-auth-proxy.linux.arm64" -O alloydb-auth-proxy
-
-chmod +x alloydb-auth-proxy
-```
-</details>
-
-<details>
-<summary>Linux arm</summary>
-
-``` sh
-# see Releases for other versions
-URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.13.11"
-
-wget "$URL/alloydb-auth-proxy.linux.arm" -O alloydb-auth-proxy
-
-chmod +x alloydb-auth-proxy
-```
-</details>
-
-<details>
-<summary>Mac (Intel)</summary>
-
-``` sh
-# see Releases for other versions
-URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.13.11"
-
-wget "$URL/alloydb-auth-proxy.darwin.amd64" -O alloydb-auth-proxy
-
 chmod +x alloydb-auth-proxy
 ```
 </details>
@@ -104,12 +56,214 @@ chmod +x alloydb-auth-proxy
 <details>
 <summary>Mac (Apple Silicon)</summary>
 
-``` sh
-# see Releases for other versions
+```sh
 URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.13.11"
-
 wget "$URL/alloydb-auth-proxy.darwin.arm64" -O alloydb-auth-proxy
+chmod +x alloydb-auth-proxy
+```
+</details>
 
+<details>
+<summary>Mac (Intel)</summary>
+
+```sh
+URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.13.11"
+wget "$URL/alloydb-auth-proxy.darwin.amd64" -O alloydb-auth-proxy
+chmod +x alloydb-auth-proxy
+```
+</details>
+
+<details>
+<summary>Windows (x64)</summary>
+
+```powershell
+Invoke-WebRequest -Uri "https://storage.googleapis.com/alloydb-auth-proxy/v1.13.11/alloydb-auth-proxy-x64.exe" -OutFile "alloydb-auth-proxy.exe"
+```
+</details>
+
+<details>
+<summary>Container image</summary>
+
+```sh
+docker pull gcr.io/alloydb-connectors/alloydb-auth-proxy:1.13.11
+```
+</details>
+<!-- {x-release-please-end} -->
+
+### 2. Authenticate
+
+The proxy uses [Application Default Credentials (ADC)][adc] by default. Set
+them up with gcloud:
+
+```sh
+gcloud auth application-default login
+```
+
+In Google-managed environments (Cloud Run, GKE, Compute Engine), ADC is
+available automatically—no additional setup needed.
+
+### 3. Find your instance URI
+
+```sh
+gcloud alloydb instances describe INSTANCE_NAME \
+    --region=REGION \
+    --cluster=CLUSTER_NAME \
+    --format='value(name)'
+```
+
+The URI has the form:
+```
+projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE
+```
+
+### 4. Start the proxy
+
+<details open>
+<summary>Binary (Linux / Mac)</summary>
+
+```sh
+# By default, the proxy connects over Private Service Access—a private
+# connection within the same VPC as your AlloyDB instance. Add --public-ip
+# if your instance has a public IP and you are not connecting from within
+# the VPC.
+./alloydb-auth-proxy projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE
+```
+</details>
+
+<details>
+<summary>Binary (Windows)</summary>
+
+```powershell
+.\alloydb-auth-proxy.exe projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE
+```
+</details>
+
+<!-- {x-release-please-start-version} -->
+<details>
+<summary>Container image</summary>
+
+```sh
+# Mounts your local gcloud credentials into the container
+docker run --rm \
+  -v "$HOME/.config/gcloud:/gcloud" \
+  -e GOOGLE_APPLICATION_CREDENTIALS=/gcloud/application_default_credentials.json \
+  -p 127.0.0.1:5432:5432 \
+  gcr.io/alloydb-connectors/alloydb-auth-proxy:1.13.11 \
+  --address 0.0.0.0 \
+  projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE
+```
+</details>
+<!-- {x-release-please-end} -->
+
+You should see output like:
+```
+Authorizing with Application Default Credentials
+Listening on 127.0.0.1:5432
+The proxy has started successfully and is ready for new connections!
+```
+
+### 5. Connect
+
+In a separate terminal, connect with any Postgres client:
+
+```sh
+psql "host=127.0.0.1 port=5432 user=DB_USER dbname=DB_NAME"
+```
+
+## Table of contents
+
+- [Installation](#installation)
+  - [Binary](#binary)
+  - [Container image](#container-image)
+  - [Build from source](#build-from-source)
+- [Authentication](#authentication)
+- [Usage](#usage)
+  - [Basic usage](#basic-usage)
+  - [Multiple instances](#multiple-instances)
+  - [Custom address and port](#custom-address-and-port)
+  - [Public IP](#public-ip)
+  - [Auto IAM Authentication](#auto-iam-authentication)
+  - [Per-instance configuration](#per-instance-configuration)
+  - [Unix sockets](#unix-sockets)
+  - [Config file](#config-file)
+  - [Environment variables](#environment-variables)
+- [Running behind a SOCKS5 proxy](#running-behind-a-socks5-proxy)
+- [Observability](#observability)
+  - [Health checks](#health-checks)
+  - [Prometheus metrics](#prometheus-metrics)
+  - [Cloud Monitoring and Cloud Trace](#cloud-monitoring-and-cloud-trace)
+  - [Debug logging](#debug-logging)
+  - [Admin server (pprof / graceful shutdown)](#admin-server-pprof--graceful-shutdown)
+- [Reference](#reference)
+- [Support policy](#support-policy)
+- [Contributing](#contributing)
+
+---
+
+## Installation
+
+### Binary
+
+Download the latest binary for your OS and architecture from
+[releases][releases].
+
+<!-- {x-release-please-start-version} -->
+<details open>
+<summary>Linux amd64</summary>
+
+```sh
+URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.13.11"
+wget "$URL/alloydb-auth-proxy.linux.amd64" -O alloydb-auth-proxy
+chmod +x alloydb-auth-proxy
+```
+</details>
+
+<details>
+<summary>Linux 386</summary>
+
+```sh
+URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.13.11"
+wget "$URL/alloydb-auth-proxy.linux.386" -O alloydb-auth-proxy
+chmod +x alloydb-auth-proxy
+```
+</details>
+
+<details>
+<summary>Linux arm64</summary>
+
+```sh
+URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.13.11"
+wget "$URL/alloydb-auth-proxy.linux.arm64" -O alloydb-auth-proxy
+chmod +x alloydb-auth-proxy
+```
+</details>
+
+<details>
+<summary>Linux arm</summary>
+
+```sh
+URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.13.11"
+wget "$URL/alloydb-auth-proxy.linux.arm" -O alloydb-auth-proxy
+chmod +x alloydb-auth-proxy
+```
+</details>
+
+<details>
+<summary>Mac (Intel)</summary>
+
+```sh
+URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.13.11"
+wget "$URL/alloydb-auth-proxy.darwin.amd64" -O alloydb-auth-proxy
+chmod +x alloydb-auth-proxy
+```
+</details>
+
+<details>
+<summary>Mac (Apple Silicon)</summary>
+
+```sh
+URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.13.11"
+wget "$URL/alloydb-auth-proxy.darwin.arm64" -O alloydb-auth-proxy
 chmod +x alloydb-auth-proxy
 ```
 </details>
@@ -117,340 +271,382 @@ chmod +x alloydb-auth-proxy
 <details>
 <summary>Windows x64</summary>
 
-``` sh
-# see Releases for other versions
-wget https://storage.googleapis.com/alloydb-auth-proxy/v1.13.11/alloydb-auth-proxy-x64.exe -O alloydb-auth-proxy.exe
+```powershell
+Invoke-WebRequest -Uri "https://storage.googleapis.com/alloydb-auth-proxy/v1.13.11/alloydb-auth-proxy-x64.exe" -OutFile "alloydb-auth-proxy.exe"
 ```
 </details>
 
 <details>
 <summary>Windows x86</summary>
 
-``` sh
-# see Releases for other versions
-wget https://storage.googleapis.com/alloydb-auth-proxy/v1.13.11/alloydb-auth-proxy-x86.exe -O alloydb-auth-proxy.exe
+```powershell
+Invoke-WebRequest -Uri "https://storage.googleapis.com/alloydb-auth-proxy/v1.13.11/alloydb-auth-proxy-x86.exe" -OutFile "alloydb-auth-proxy.exe"
 ```
 </details>
-
 <!-- {x-release-please-end} -->
 
+### Container image
 
-### Container Images
+Container images are available from [Artifact Registry][]:
 
-There are containerized versions of the proxy available from the following
-[Artifact Registry](https://cloud.google.com/artifact-registry) repositories:
-
-* `gcr.io/alloydb-connectors/alloydb-auth-proxy`
-* `us.gcr.io/alloydb-connectors/alloydb-auth-proxy`
-* `eu.gcr.io/alloydb-connectors/alloydb-auth-proxy`
-* `asia.gcr.io/alloydb-connectors/alloydb-auth-proxy`
+- [`gcr.io/alloydb-connectors/alloydb-auth-proxy`](https://gcr.io/alloydb-connectors/alloydb-auth-proxy)
+- [`us.gcr.io/alloydb-connectors/alloydb-auth-proxy`](https://us.gcr.io/alloydb-connectors/alloydb-auth-proxy)
+- [`eu.gcr.io/alloydb-connectors/alloydb-auth-proxy`](https://eu.gcr.io/alloydb-connectors/alloydb-auth-proxy)
+- [`asia.gcr.io/alloydb-connectors/alloydb-auth-proxy`](https://asia.gcr.io/alloydb-connectors/alloydb-auth-proxy)
 
 > [!NOTE]
->
-> The above container images were migrated from Google Container Registry (deprecated)
-> to Artifact Registry which is why they begin with the old naming pattern (`gcr.io`)
+> These images were migrated from Google Container Registry (deprecated) to
+> Artifact Registry, which is why they still use the `gcr.io` naming prefix.
 
-Each image is tagged with the associated proxy version. The following tags are
-currently supported:
+Each image is tagged with the proxy version. Available tag variants:
 
-- `$VERSION` (default)
-- `$VERSION-alpine`
-- `$VERSION-bullseye`
-- `$VERSION-bookworm`
+| Tag | Base image |
+|-----|------------|
+| `VERSION` | [distroless][] (default, non-root, minimal) |
+| `VERSION-alpine` | Alpine |
+| `VERSION-bullseye` | Debian Bullseye |
+| `VERSION-bookworm` | Debian Bookworm |
+
+Use Alpine or Debian variants when you need a shell or debugging tools.
 
 <!-- {x-release-please-start-version} -->
-The `$VERSION` is the Proxy version without the leading "v" (e.g.,
-`1.13.11`).
-
-For example, to pull a particular version, use a command like:
-
-``` shell
-# $VERSION is 1.13.11
+```sh
+# Pull a specific version (recommended over :latest)
 docker pull gcr.io/alloydb-connectors/alloydb-auth-proxy:1.13.11
 ```
-
 <!-- {x-release-please-end} -->
-We recommend pinning to a specific version tag and using automation with a CI
-pipeline to update regularly.
 
-The default container image uses [distroless][] with a non-root user. If you
-need a shell or related tools, use the Alpine or Debian-based containers
-(bullseye or bookworm) images listed above.
+Pin to a specific version tag and use CI automation to keep it updated.
 
-[distroless]: https://github.com/GoogleContainerTools/distroless
+**Running with Docker:**
 
-### Install from Source
-
-To install from source, ensure you have the latest version of [Go
-installed](https://go.dev/doc/install).
-
-Then, simply run:
-
+```sh
+docker run --rm \
+  -v "$HOME/.config/gcloud:/gcloud" \
+  -e GOOGLE_APPLICATION_CREDENTIALS=/gcloud/application_default_credentials.json \
+  -p 127.0.0.1:5432:5432 \
+  gcr.io/alloydb-connectors/alloydb-auth-proxy:1.13.11 \
+  projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE \
+  --address 0.0.0.0
 ```
+
+### Build from source
+
+Requires the latest version of [Go](https://go.dev/doc/install).
+
+```sh
 go install github.com/GoogleCloudPlatform/alloydb-auth-proxy@latest
 ```
 
-The `alloydb-auth-proxy` will be placed in `$GOPATH/bin` or `$HOME/go/bin`.
+The binary is placed in `$GOPATH/bin` or `$HOME/go/bin`.
 
-## Credentials
+[Artifact Registry]: https://cloud.google.com/artifact-registry
+[distroless]: https://github.com/GoogleContainerTools/distroless
 
-The AlloyDB Auth Proxy uses a Cloud IAM account to authorize connections against
-an AlloyDB instance. The proxy supports the following options:
+---
 
-1. A `-credential-file` flag for a service account key file.
-2. A `-token` flag for a OAuth2 Bearer token
-3. [Application Default Credentials (ADC)][adc] if neither of the above have
-   been set.
+## Authentication
 
-Any principal connecting to an AlloyDB instance will need the following
-IAM roles or equivalent permissions:
+The proxy uses [Application Default Credentials (ADC)][adc] by default and
+this is the recommended approach for most use cases. ADC automatically picks
+up credentials from the environment—no flags needed:
 
-- Cloud AlloyDB Client (`roles/alloydb.client`)
-- Service Usage Consumer (`roles/serviceusage.serviceUsageConsumer`)
+```sh
+# One-time setup on a developer machine
+gcloud auth application-default login
+```
+
+In Google-managed environments (Cloud Run, GKE, Compute Engine), ADC is
+already available and requires no additional configuration.
+
+For less-common scenarios, the proxy also accepts explicit credentials via flags:
+
+| Flag | Description |
+|------|-------------|
+| `--credentials-file PATH` | Path to a service account key JSON file |
+| `--token TOKEN` | An OAuth2 Bearer token |
+
+**Required IAM roles** for any principal connecting through the proxy:
+
+- `roles/alloydb.client` (Cloud AlloyDB Client)
+- `roles/serviceusage.serviceUsageConsumer` (Service Usage Consumer)
 
 See [Roles and Permissions in AlloyDB][roles-and-permissions] for details.
 
-When the proxy authenticates under the Compute Engine VM's default service
-account, the VM must have the `cloud-platform` API scope (i.e.,
-"https://www.googleapis.com/auth/cloud-platform") and the associated project
-must have the AlloyDB API enabled. The default service account must also
-have at least writer or editor privileges to any projects of target AlloyDB
-instances.
+**Service account impersonation** is also supported:
+
+```sh
+./alloydb-auth-proxy \
+    --impersonate-service-account=SA@PROJECT.iam.gserviceaccount.com \
+    projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE
+```
+
+For delegation chains, supply a comma-separated list where the first entry is
+the target and each subsequent entry is a delegate:
+
+```sh
+./alloydb-auth-proxy \
+    --impersonate-service-account=TARGET_SA,DELEGATE_SA \
+    projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE
+```
+
+---
 
 ## Usage
 
-All the following invocations assume valid credentials are present in the
-environment. The following examples all reference an `INSTANCE_URI`,
-which takes the form:
+All examples below assume valid credentials are present. Replace
+`INSTANCE_URI` with the full instance path:
 
 ```
-projects/<PROJECT>/locations/<REGION>/clusters/<CLUSTER>/instances/<INSTANCE>
+projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE
 ```
 
-To find the `INSTANCE_URI`, take the name from:
+### Basic usage
 
-```
-# To find your instance in among all instances
-gcloud alpha alloydb instances list
-
-# or to describe your particular instance
-gcloud alpha alloydb instances describe \
-    --cluster <CLUSTER_NAME> \
-    --region <REGION> \
-    <INSTANCE_NAME>
+```sh
+# Listens on 127.0.0.1:5432 using private IP
+./alloydb-auth-proxy INSTANCE_URI
 ```
 
-### Example invocations
+### Multiple instances
 
-Note: the following invocations assume you have downloaded the
-`alloydb-auth-proxy` into the same directory. Consider moving the proxy into a
-well-known location to have it available on your `PATH`.
-
-``` bash
-# Starts the proxy listening on 127.0.0.1:5432, uses private IP by default
-./alloydb-auth-proxy <INSTANCE_URI>
+```sh
+# First instance: 127.0.0.1:5432, second: 127.0.0.1:5433
+./alloydb-auth-proxy INSTANCE_URI_1 INSTANCE_URI_2
 ```
 
-To connect to an instance's public IP, use:
+### Custom address and port
 
-``` bash
-./alloydb-auth-proxy <INSTANCE_URI> --public-ip
+```sh
+# Listen on all interfaces, port 6000
+./alloydb-auth-proxy --address 0.0.0.0 --port 6000 INSTANCE_URI
 ```
 
-To connect to multiple instances, use:
+### Public IP
 
-``` bash
-# For instance 1, the proxy listens on 127.0.0.1:5432
-# For instance 2, the proxy listens on 127.0.0.1:5433
-./alloydb-auth-proxy <INSTANCE_URI_1> <INSTANCE_URI_2>
+```sh
+./alloydb-auth-proxy --public-ip INSTANCE_URI
 ```
 
-To override the default address the proxy listens on, use the `--address` flag:
+### Auto IAM Authentication
 
-``` bash
-# Starts the proxy listening on 0.0.0.0:5432
-./alloydb-auth-proxy --address 0.0.0.0 <INSTANCE_URI>
+Lets the proxy supply the IAM principal's OAuth2 token as the database
+password—no password prompt needed for the client.
+
+```sh
+./alloydb-auth-proxy --auto-iam-authn INSTANCE_URI
 ```
 
-To override the default port, use the `--port` flag:
+### Per-instance configuration
 
-``` bash
-# Starts the proxy listening on 127.0.0.1:6000
-./alloydb-auth-proxy --port 6000 <INSTANCE_URI>
-```
+Override address, port, or other settings for individual instances using a
+query-string appended to the instance URI (wrap in quotes to protect `&` from
+the shell):
 
-In addition, both `address` and `port` may be overrided on a per-instance level
-with a query-string style syntax:
-
-``` bash
+```sh
 ./alloydb-auth-proxy \
-    '<INSTANCE_URI_1>?address=0.0.0.0&port=6000' \
-    '<INSTANCE_URI_2>?address=127.0.0.1&port=7000'
+    'INSTANCE_URI_1?address=0.0.0.0&port=6000' \
+    'INSTANCE_URI_2?address=127.0.0.1&port=7000&auto-iam-authn=true'
 ```
 
-For Auto IAM Authentication, make sure to run the Proxy as the same IAM
-principal as the user you want to log in as, and start the Proxy like so:
+### Unix sockets
 
-``` bash
-./alloydb-auth-proxy \
-    --auto-iam-authn \
-    <INSTANCE_URI>
+```sh
+# All instances use a Unix socket under /run/alloydb
+./alloydb-auth-proxy --unix-socket /run/alloydb INSTANCE_URI
+
+# Per-instance path (Postgres appends .s.PGSQL.5432 automatically)
+./alloydb-auth-proxy 'INSTANCE_URI?unix-socket-path=/path/to/socket'
 ```
-
-Note: when using the query-string syntax, the instance URI and query parameters
-must be wrapped in quotes.
 
 ### Config file
 
-The Proxy supports a configuration file. Supported file types are TOML, JSON,
-and YAML. Load the file with the `--config-file` flag:
+Instead of flags, you can supply a TOML, YAML, or JSON config file:
 
-```shell
-./alloydb-auth-proxy --config-file /path/to/config.[toml|json|yaml]
+```sh
+./alloydb-auth-proxy --config-file config.toml
 ```
 
-The configuration file format supports all flags. The key names should match
-the flag names. For example:
+Example `config.toml`:
 
-``` toml
-# use instance-uri-0, instance-uri-1, etc.
-# for multiple instances
-instance-uri = "<INSTANCE_URI>"
+```toml
+instance-uri   = "projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE"
 auto-iam-authn = true
-debug = true
-debug-logs = true
+debug-logs     = true
 ```
 
-Run `./alloydb-auth-proxy --help` for more details. See the full documentation
-in [docs/cmd](docs/cmd).
+Multiple instances:
 
-
-## Running behind a Socks5 proxy
-
-The AlloyDB Auth Proxy includes support for sending requests through a SOCKS5
-proxy. If a SOCKS5 proxy is running on `localhost:8000`, the command to start
-the AlloyDB Auth Proxy would look like:
-
+```toml
+instance-uri-0 = "INSTANCE_URI_1"
+instance-uri-1 = "INSTANCE_URI_2"
 ```
+
+### Environment variables
+
+Every flag has an environment variable equivalent using the
+`ALLOYDB_PROXY_` prefix (uppercase, underscores):
+
+```sh
+# Equivalent to --structured-logs
+ALLOYDB_PROXY_STRUCTURED_LOGS=true ./alloydb-auth-proxy INSTANCE_URI
+
+# Single instance via env var
+ALLOYDB_PROXY_INSTANCE_URI=INSTANCE_URI ./alloydb-auth-proxy
+
+# Multiple instances via env vars
+ALLOYDB_PROXY_INSTANCE_URI_0=INSTANCE_URI_1 \
+ALLOYDB_PROXY_INSTANCE_URI_1=INSTANCE_URI_2 \
+    ./alloydb-auth-proxy
+```
+
+---
+
+## Running behind a SOCKS5 proxy
+
+```sh
 ALL_PROXY=socks5://localhost:8000 \
 HTTPS_PROXY=socks5://localhost:8000 \
-    ./alloydb-auth-proxy <INSTANCE_URI>
+    ./alloydb-auth-proxy INSTANCE_URI
 ```
 
-The `ALL_PROXY` environment variable specifies the proxy for all TCP traffic to
-and from a AlloyDB instance. The `ALL_PROXY` environment variable supports
-`socks5` and `socks5h` protocols. To route DNS lookups through a proxy, use the
-`socks5h` protocol.
+`ALL_PROXY` routes TCP traffic to AlloyDB (supports `socks5` and `socks5h`).
+Use `socks5h` to route DNS lookups through the proxy. `HTTPS_PROXY` routes
+HTTP(S) traffic to the AlloyDB Admin API (optional).
 
-The `HTTPS_PROXY` (or `HTTP_PROXY`) specifies the proxy for all HTTP(S) traffic
-to the AlloyDB Admin API. Specifying `HTTPS_PROXY` or `HTTP_PROXY` is only necessary
-when you want to proxy this traffic. Otherwise, it is optional. See
-[`http.ProxyFromEnvironment`](https://pkg.go.dev/net/http@go1.17.3#ProxyFromEnvironment)
-for possible values.
+---
 
-## Support for Metrics and Tracing
+## Observability
 
-The Proxy supports [Cloud Monitoring][], [Cloud Trace][], and [Prometheus][].
+### Health checks
 
-Supported metrics include:
+Enable HTTP health check endpoints (useful for Kubernetes probes):
 
-- `alloydbconn/dial_latency`: The distribution of dialer latencies (ms)
-- `alloydbconn/open_connections`: The current number of open AlloyDB
-  connections
-- `alloydbconn/dial_failure_count`: The number of failed dial attempts
-- `alloydbconn/refresh_success_count`: The number of successful certificate
-  refresh operations
-- `alloydbconn/refresh_failure_count`: The number of failed refresh
-  operations.
+```sh
+./alloydb-auth-proxy --health-check INSTANCE_URI
+```
 
-Supported traces include:
+| Endpoint | Returns 200 when... |
+|----------|---------------------|
+| `/startup` | Proxy has finished starting up |
+| `/readiness` | Proxy is started, has available connections, and can reach all instances |
+| `/liveness` | Always 200 — if unresponsive, restart the proxy |
 
-- `cloud.google.com/go/alloydbconn.Dial`: The dial operation including
-  refreshing an ephemeral certificate and connecting to the instance
-- `cloud.google.com/go/alloydbconn/internal.InstanceInfo`: The call to retrieve
-  instance metadata (e.g., IP address, etc)
-- `cloud.google.com/go/alloydbconn/internal.Connect`: The connection attempt
-  using the ephemeral certificate
-- AlloyDB API client operations
+Configure address and port with `--http-address` and `--http-port` (default:
+`localhost:9090`).
 
-To enable Cloud Monitoring and Cloud Trace, use the `--telemetry-project` flag
-with the project where you want to view metrics and traces. To configure the
-metrics prefix used by Cloud Monitoring, use the `--telemetry-prefix` flag. When
-enabling telementry, both Cloud Monitoring and Cloud Trace are enabled. To
-disable Cloud Monitoring, use `--disable-metrics`. To disable Cloud Trace, use
-`--disable-traces`.
+### Prometheus metrics
 
-To enable Prometheus, use the `--prometheus` flag. This will start an HTTP
-server on localhost with a `/metrics` endpoint. The Prometheus namespace may
-optionally be set with `--prometheus-namespace`.
+```sh
+./alloydb-auth-proxy --prometheus INSTANCE_URI
+# Metrics available at http://localhost:9090/metrics
+```
 
-[cloud monitoring]: https://cloud.google.com/monitoring
-[cloud trace]: https://cloud.google.com/trace
-[prometheus]: https://prometheus.io/
+Use `--prometheus-namespace` to set a custom namespace prefix.
 
-## Debug logging
+### Cloud Monitoring and Cloud Trace
 
-To enable debug logging to report on internal certificate refresh operations,
-use the `--debug-logs` flag. Typical use of the Proxy should not require debug
-logs, but if you are surprised by the Proxy's behavior, debug logging should
-provide insight into internal operations and can help when reporting issues.
+```sh
+./alloydb-auth-proxy --telemetry-project=PROJECT_ID INSTANCE_URI
+```
 
-## Localhost Admin Server
+Use `--disable-metrics` or `--disable-traces` to opt out of either. Use
+`--telemetry-prefix` to customize the Cloud Monitoring metric prefix.
 
-The Proxy includes support for an admin server on localhost. By default,
-the admin server is not enabled. To enable the server, pass the --debug or
---quitquitquit flag. This will start the server on localhost at port 9091.
-To change the port, use the --admin-port flag.
+**Supported metrics:**
 
-When --debug is set, the admin server enables Go's profiler available at
-/debug/pprof/.
+| Metric | Description |
+|--------|-------------|
+| `alloydbconn/dial_latency` | Distribution of dialer latencies (ms) |
+| `alloydbconn/open_connections` | Current number of open AlloyDB connections |
+| `alloydbconn/dial_failure_count` | Number of failed dial attempts |
+| `alloydbconn/refresh_success_count` | Successful certificate refresh operations |
+| `alloydbconn/refresh_failure_count` | Failed certificate refresh operations |
 
-See the [documentation on pprof][pprof] for details on how to use the
-profiler.
+### Debug logging
 
-When --quitquitquit is set, the admin server adds an endpoint at
-/quitquitquit. The admin server exits gracefully when it receives a POST
-request at /quitquitquit.
+```sh
+./alloydb-auth-proxy --debug-logs INSTANCE_URI
+```
 
-[pprof]: https://pkg.go.dev/net/http/pprof.
+Logs internal certificate refresh operations. Useful when diagnosing
+unexpected proxy behavior.
+
+### Admin server (pprof / graceful shutdown)
+
+The admin server runs on `localhost:9091` and is disabled by default.
+
+```sh
+# Enable Go profiler at /debug/pprof/
+./alloydb-auth-proxy --debug INSTANCE_URI
+
+# Enable graceful shutdown via POST /quitquitquit
+./alloydb-auth-proxy --quitquitquit INSTANCE_URI
+```
+
+Change the port with `--admin-port`. See the [pprof documentation][pprof] for
+profiler usage.
+
+---
+
+## Reference
+
+Run `./alloydb-auth-proxy --help` for full flag documentation, or browse the
+rendered docs in [docs/cmd](docs/cmd).
+
+**Commonly used flags:**
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `-a, --address` | `127.0.0.1` | Address for instance listeners |
+| `-p, --port` | `5432` | Starting port; subsequent instances increment |
+| `-i, --auto-iam-authn` | false | Enable Auto IAM Authentication |
+| `-c, --credentials-file` | | Path to service account key JSON |
+| `-t, --token` | | OAuth2 Bearer token |
+| `--public-ip` | false | Connect via public IP |
+| `--psc` | false | Connect via Private Service Connect |
+| `-u, --unix-socket` | | Directory for Unix socket listeners |
+| `--lazy-refresh` | false | Refresh certs on-demand (for throttled CPUs) |
+| `--health-check` | false | Enable `/startup`, `/liveness`, `/readiness` |
+| `--prometheus` | false | Enable Prometheus `/metrics` endpoint |
+| `--structured-logs` | false | Emit logs in LogEntry JSON format |
+| `--max-connections` | 0 (unlimited) | Maximum simultaneous connections |
+| `--config-file` | | Path to TOML/YAML/JSON config file |
+
+---
 
 ## Support policy
 
 ### Major version lifecycle
 
-This project uses [semantic versioning](https://semver.org/), and uses the
-following lifecycle regarding support for a major version:
+This project follows [semantic versioning](https://semver.org/).
 
-**Active** - Active versions get all new features and security fixes (that
-wouldn’t otherwise introduce a breaking change). New major versions are
-guaranteed to be "active" for a minimum of 1 year.
-
-**Deprecated** - Deprecated versions continue to receive security and critical
-bug fixes, but do not receive new features. Deprecated versions will be publicly
-supported for 1 year.
-
-**Unsupported** - Any major version that has been deprecated for >=1 year is
-considered publicly unsupported.
+| Status | Description |
+|--------|-------------|
+| **Active** | Receives all new features and security fixes. Guaranteed for at least 1 year. |
+| **Deprecated** | Security and critical bug fixes only. Publicly supported for 1 year after deprecation. |
+| **Unsupported** | Major versions deprecated for ≥ 1 year. |
 
 ### Release cadence
 
-The AlloyDB Auth Proxy aims for a minimum monthly release cadence. If no new
-features or fixes have been added, a new PATCH version with the latest
-dependencies is released.
+The proxy targets a monthly release cadence. If no new features or fixes are
+added, a new PATCH version is released with the latest dependencies.
+
+---
 
 ## Contributing
 
-Contributions are welcome. Please, see the [CONTRIBUTING][contributing] document
-for details.
+Contributions are welcome. See the [CONTRIBUTING][contributing] document for
+details.
 
-Please note that this project is released with a Contributor Code of Conduct. By
-participating in this project you agree to abide by its terms.  See [Contributor
-Code of Conduct][code-of-conduct] for more information.
+This project is released with a [Contributor Code of Conduct][code-of-conduct].
+By participating, you agree to abide by its terms.
+
+---
 
 [adc]:                   https://cloud.google.com/docs/authentication
-[about-proxy]:           https://cloud.google.com/alloydb/docs/auth-proxy/overview
 [code-of-conduct]:       CONTRIBUTING.md#contributor-code-of-conduct
-[connection-overview]:   https://cloud.google.com/alloydb/docs/auth-proxy/connect
 [contributing]:          CONTRIBUTING.md
+[pprof]:                 https://pkg.go.dev/net/http/pprof
 [releases]:              https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/releases
 [roles-and-permissions]: https://cloud.google.com/alloydb/docs/auth-proxy/overview#how-authorized
