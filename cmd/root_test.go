@@ -470,6 +470,19 @@ func TestNewCommandArguments(t *testing.T) {
 			}),
 		},
 		{
+			desc: "using impersonation with query param",
+			args: []string{
+				"--impersonate-service-account", "sv1@developer.gserviceaccount.com",
+				"projects/proj/locations/region/clusters/clust/instances/inst?auto-iam-authn=true"},
+			want: withDefaults(&proxy.Config{
+				ImpersonationChain: "sv1@developer.gserviceaccount.com",
+				Instances: []proxy.InstanceConnConfig{{
+					Name:         "projects/proj/locations/region/clusters/clust/instances/inst",
+					AutoIAMAuthN: pointer(true),
+				}},
+			}),
+		},
+		{
 			desc: "using the debug flag",
 			args: []string{"--debug",
 				"projects/proj/locations/region/clusters/clust/instances/inst"},
