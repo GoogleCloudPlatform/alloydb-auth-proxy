@@ -328,6 +328,20 @@ func credentialsOpt(c Config, l alloydb.Logger) (alloydbconn.Option, error) {
 	}
 }
 
+// autoIAMAuthNEnabled returns true if IAM authentication is enabled globally
+// or for any instance in the configuration.
+func (c *Config) autoIAMAuthNEnabled() bool {
+	if c.AutoIAMAuthN {
+		return true
+	}
+	for _, inst := range c.Instances {
+		if inst.AutoIAMAuthN != nil && *inst.AutoIAMAuthN {
+			return true
+		}
+	}
+	return false
+}
+
 // DialerOptions builds appropriate list of options from the Config
 // values for use by alloydbconn.NewClient()
 func (c *Config) DialerOptions(l alloydb.Logger) ([]alloydbconn.Option, error) {
@@ -344,7 +358,7 @@ func (c *Config) DialerOptions(l alloydb.Logger) ([]alloydbconn.Option, error) {
 		opts = append(opts, alloydbconn.WithAdminAPIEndpoint(c.APIEndpointURL))
 	}
 
-	if c.AutoIAMAuthN {
+	if c.autoIAMAuthNEnabled() {
 		opts = append(opts, alloydbconn.WithIAMAuthN())
 	}
 

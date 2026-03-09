@@ -103,6 +103,21 @@ func TestPostgresAutoIAMAuthN(t *testing.T) {
 	}, "pgx", dsn)
 }
 
+func TestPostgresAutoIAMAuthNQueryParam(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping Postgres integration tests")
+	}
+	requirePostgresVars(t)
+
+	dsn := fmt.Sprintf("host=127.0.0.1 port=10008 user=%v database=%v sslmode=disable",
+		*alloydbIAMUser, *alloydbDB)
+	proxyConnTest(t, []string{
+		fmt.Sprintf("%s?auto-iam-authn=true", *alloydbInstanceURI),
+		"--port=10008",
+		"--disable-built-in-telemetry",
+	}, "pgx", dsn)
+}
+
 func createTempDir(t *testing.T) (string, func()) {
 	testDir, err := os.MkdirTemp("", "*")
 	if err != nil {
