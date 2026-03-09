@@ -300,12 +300,11 @@ Container images are available from [Artifact Registry][]:
 
 Each image is tagged with the proxy version. Available tag variants:
 
-| Tag | Base image |
-|-----|------------|
-| `VERSION` | [distroless][] (default, non-root, minimal) |
-| `VERSION-alpine` | Alpine |
-| `VERSION-bullseye` | Debian Bullseye |
-| `VERSION-bookworm` | Debian Bookworm |
+Tag                | Base image
+------------------ | -------------------------------------------
+`VERSION`          | [distroless][] (default, non-root, minimal)
+`VERSION-alpine`   | Alpine
+`VERSION-bookworm` | Debian Bookworm
 
 Use Alpine or Debian variants when you need a shell or debugging tools.
 
