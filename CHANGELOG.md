@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.14.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.13.11...v1.14.0) (2026-03-10)
+
+
+### Features
+
+* add shutdown command ([#883](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/883)) ([0b6ac47](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/0b6ac4713efbac5ba9c9928a625b99cb1b1cd472))
+* remove bullseye container ([#893](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/893)) ([ecf26e8](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/ecf26e83ac2f45c97b0e4b3c69bbe14a0483daf0))
+* use marketplace.gcr.io/google for Debian base images ([#892](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/892)) ([5f6e36b](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/5f6e36b919c9a9d09298964789364db89aae97ef))
+
+
+### Bug Fixes
+
+* correctly handle Auto IAM with impersonated SA ([#891](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/891)) ([fd5102f](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/fd5102f36c02caaaceb8c2333134625c22c7d151))
+
 ## [1.13.11](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.13.10...v1.13.11) (2026-02-09)
 
 
