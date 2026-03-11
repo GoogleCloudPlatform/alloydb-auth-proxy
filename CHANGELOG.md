@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.14.1](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.14.0...v1.14.1) (2026-03-11)
+
+
+### Bug Fixes
+
+* restore gcr.io base container ([#897](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/897)) ([66a5c54](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/66a5c54ff508421d26f193092505f1c5fe708b6a))
+
 ## [1.14.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.13.11...v1.14.0) (2026-03-10)
 
 
