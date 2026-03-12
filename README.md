@@ -239,16 +239,6 @@ chmod +x alloydb-auth-proxy
 </details>
 
 <details>
-<summary>Linux arm</summary>
-
-```sh
-URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.14.1"
-wget "$URL/alloydb-auth-proxy.linux.arm" -O alloydb-auth-proxy
-chmod +x alloydb-auth-proxy
-```
-</details>
-
-<details>
 <summary>Mac (Intel)</summary>
 
 ```sh
