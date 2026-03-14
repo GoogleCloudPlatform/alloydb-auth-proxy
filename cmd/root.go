@@ -44,6 +44,7 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"go.opencensus.io/trace"
+	"go.opentelemetry.io/otel"
 )
 
 var (
@@ -1070,6 +1071,14 @@ func runSignalWrapper(cmd *Command) (err error) {
 	defer cmd.cleanup()
 	ctx, cancel := context.WithCancel(cmd.Context())
 	defer cancel()
+
+	// Disable OTel's error logging for built-in metrics. For now, the errors
+	// aren't actionable and create noise in the logs.
+	// In the future, when the Auth Proxy supports customer facing OTel metrics,
+	// this should be restored to debug logs. Until then, keep the logs clean.
+	otel.SetErrorHandler(otel.ErrorHandlerFunc(func(err error) {
+		// No-op
+	}))
 
 	// Configure collectors before the proxy has started to ensure we are
 	// collecting metrics before *ANY* AlloyDB Admin API calls are made.
