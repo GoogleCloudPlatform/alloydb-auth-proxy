@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.14.2](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.14.1...v1.14.2) (2026-03-24)
+
+
+### Bug Fixes
+
+* remove noisy error log ([#904](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/904)) ([688a64a](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/688a64a995e54d0c38b2427c11aa2b30b139818a))
+
 ## [1.14.1](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.14.0...v1.14.1) (2026-03-11)
 
 
