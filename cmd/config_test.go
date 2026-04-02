@@ -80,7 +80,7 @@ func TestNewCommandWithConfigFile(t *testing.T) {
 		},
 		{
 			desc: "environment variable takes precedence over config file",
-			args: []string{"--config-file", "testdata/config.json"},
+			args: []string{"--config-file", "testdata/config-json.json"},
 			setup: func() {
 				t.Setenv("ALLOYDB_PROXY_INSTANCE_URI", altURI)
 			},
@@ -102,7 +102,7 @@ func TestNewCommandWithConfigFile(t *testing.T) {
 			desc: "CLI flag takes precedence over config file",
 			args: []string{
 				sampleURI,
-				"--config-file", "testdata/config.toml",
+				"--config-file", "testdata/config-toml.toml",
 				"--debug=false",
 			},
 			setup: func() {},
@@ -114,7 +114,7 @@ func TestNewCommandWithConfigFile(t *testing.T) {
 			desc: "environment variable takes precedence over config file",
 			args: []string{
 				sampleURI,
-				"--config-file", "testdata/config.toml",
+				"--config-file", "testdata/config-toml.toml",
 			},
 			setup: func() {
 				t.Setenv("ALLOYDB_PROXY_DEBUG", "false")
