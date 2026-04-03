@@ -692,6 +692,21 @@ CPU may be throttled and a background refresh cannot run reliably
 		"disable-built-in-telemetry", false,
 		"Disables the internal metric reporter")
 
+	// SSH tunnel flags
+	localFlags.StringVar(&c.conf.SSHKey, "ssh-key", "",
+		"Path to an SSH private key for establishing a tunnel through a bastion host. "+
+			"When omitted, the SSH agent (SSH_AUTH_SOCK) is used for authentication.")
+	localFlags.StringVar(&c.conf.SSHAddress, "ssh-address", "",
+		"Hostname or IP of the SSH bastion host (without port).")
+	localFlags.StringVar(&c.conf.SSHUser, "ssh-user", "",
+		"Username for the SSH bastion host.")
+	localFlags.IntVar(&c.conf.SSHPort, "ssh-port", 22,
+		"Port of the SSH bastion host.")
+	localFlags.StringVar(&c.conf.SSHKnownHosts, "ssh-known-hosts", "",
+		`Path to a known_hosts file for verifying the bastion host key. `+
+			`By default, ~/.ssh/known_hosts is used if it exists. `+
+			`Set to "none" to explicitly disable host key verification.`)
+
 	// Global and per instance flags
 	localFlags.StringVarP(&c.conf.Addr, "address", "a", "127.0.0.1",
 		"(*) Address on which to bind AlloyDB instance listeners.")
@@ -899,6 +914,42 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 	}
 	if conf.CredentialsJSON != "" && conf.GcloudAuth {
 		return newBadCommandError("cannot specify --json-credentials and --gcloud-auth flags at the same time")
+	}
+
+	// Validate SSH tunnel flags: --ssh-address and --ssh-user are always
+	// required together. --ssh-key is optional (when omitted, the SSH agent
+	// is used for authentication).
+	sshRequired := 0
+	if conf.SSHAddress != "" {
+		sshRequired++
+	}
+	if conf.SSHUser != "" {
+		sshRequired++
+	}
+	if sshRequired == 1 {
+		return newBadCommandError("--ssh-address and --ssh-user must be specified together")
+	}
+	if conf.SSHKey != "" && sshRequired == 0 {
+		return newBadCommandError("--ssh-key requires --ssh-address and --ssh-user")
+	}
+	// Validate that --ssh-address does not contain a port. Users should use
+	// --ssh-port to specify the port separately. We check for a colon only
+	// when the value is not a bracketed IPv6 literal (e.g., "[::1]") and
+	// is not a bare IPv6 address (contains multiple colons).
+	if conf.SSHAddress != "" {
+		if strings.HasPrefix(conf.SSHAddress, "[") {
+			// Bracketed IPv6: reject if it has a port suffix like [::1]:22.
+			if _, _, err := net.SplitHostPort(conf.SSHAddress); err == nil {
+				return newBadCommandError("--ssh-address should not include a port; use --ssh-port instead")
+			}
+		} else if strings.Count(conf.SSHAddress, ":") == 1 {
+			// Single colon means host:port — reject.
+			return newBadCommandError("--ssh-address should not include a port; use --ssh-port instead")
+		}
+	}
+	// Validate that --ssh-port is a valid port number.
+	if conf.SSHPort < 1 || conf.SSHPort > 65535 {
+		return newBadCommandError("--ssh-port must be a valid port number (1-65535)")
 	}
 
 	if userHasSetLocal(cmd, "alloydbadmin-api-endpoint") {

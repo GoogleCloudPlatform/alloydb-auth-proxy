@@ -188,6 +188,11 @@ psql "host=127.0.0.1 port=5432 user=DB_USER dbname=DB_NAME"
   - [Config file](#config-file)
   - [Environment variables](#environment-variables)
 - [Running behind a SOCKS5 proxy](#running-behind-a-socks5-proxy)
+- [Connecting through an SSH tunnel](#connecting-through-an-ssh-tunnel)
+  - [SSH tunnel flags](#ssh-tunnel-flags)
+  - [SSH agent support](#ssh-agent-support)
+  - [Host key verification](#host-key-verification)
+  - [Keepalive and reconnection](#keepalive-and-reconnection)
 - [Observability](#observability)
   - [Health checks](#health-checks)
   - [Prometheus metrics](#prometheus-metrics)
@@ -505,6 +510,97 @@ HTTP(S) traffic to the AlloyDB Admin API (optional).
 
 ---
 
+## Connecting through an SSH tunnel
+
+If your AlloyDB instance is in a VPC that you can only reach through a bastion
+host (jump box), the proxy can tunnel all traffic over SSH automatically. This
+removes the need to manage a separate `ssh -L` port-forward — just point the
+proxy at your bastion and it handles the rest.
+
+```sh
+./alloydb-auth-proxy \
+    --ssh-key ~/.ssh/id_ed25519 \
+    --ssh-address 10.0.0.5 \
+    --ssh-user my-user \
+    INSTANCE_URI
+```
+
+The proxy opens one SSH connection to the bastion and multiplexes all AlloyDB
+traffic through it. The AlloyDB connection inside the tunnel is still secured
+with mTLS — the SSH layer adds defense-in-depth, not a replacement for it.
+
+### SSH tunnel flags
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--ssh-key` | *(optional)* | Path to an SSH private key (e.g., `~/.ssh/id_ed25519`). When omitted, the SSH agent is used. |
+| `--ssh-address` | *(required)* | Hostname or IP of the bastion host (without port) |
+| `--ssh-user` | *(required)* | Username to authenticate as on the bastion |
+| `--ssh-port` | `22` | SSH port on the bastion host |
+| `--ssh-known-hosts` | auto-detect | Path to a `known_hosts` file (see [Host key verification](#host-key-verification)) |
+
+`--ssh-address` and `--ssh-user` must always be specified together.
+`--ssh-key` is optional — see [SSH agent support](#ssh-agent-support) below.
+
+### SSH agent support
+
+The proxy can authenticate to the bastion host using a running SSH agent
+instead of (or in addition to) a key file on disk. This is the recommended
+approach when your SSH key is passphrase-protected or stored on a hardware
+token (e.g., a FIDO2 security key).
+
+The proxy uses the agent in two situations:
+
+1. **No `--ssh-key` provided** — the proxy connects to the agent directly:
+
+   ```sh
+   # Load your key into the agent first:
+   ssh-add ~/.ssh/id_ed25519
+
+   # Then run the proxy without --ssh-key:
+   ./alloydb-auth-proxy \
+       --ssh-address 10.0.0.5 \
+       --ssh-user my-user \
+       INSTANCE_URI
+   ```
+
+2. **`--ssh-key` points to a passphrase-protected key** — the proxy detects
+   the encrypted key, logs a message, and falls back to the agent
+   automatically. If no agent is available, the proxy exits with a clear error
+   explaining the options.
+
+The proxy discovers the agent via the standard `SSH_AUTH_SOCK` environment
+variable. If `SSH_AUTH_SOCK` is not set or the socket is unreachable, the
+proxy returns an error.
+
+### Host key verification
+
+By default, the proxy looks for `~/.ssh/known_hosts` (the standard OpenSSH
+location on Linux, macOS, and Windows). If that file exists and contains an
+entry for your bastion host, the connection is verified automatically — no
+extra flags needed.
+
+| Scenario | What to do |
+|----------|------------|
+| You have a standard `~/.ssh/known_hosts` | Nothing. It works automatically. |
+| Your `known_hosts` is in a custom location | Pass `--ssh-known-hosts /path/to/known_hosts` |
+| You want to skip host key verification | Pass `--ssh-known-hosts none` |
+
+> **Note:** Skipping host key verification is acceptable when the SSH tunnel
+> is used purely for network reachability and the inner connection is
+> independently authenticated (as is the case with AlloyDB's mTLS). However,
+> using a `known_hosts` file is still recommended to prevent
+> man-in-the-middle attacks from observing connection metadata.
+
+### Keepalive and reconnection
+
+The proxy sends SSH keepalive probes every 30 seconds to detect stale
+connections quickly. If the bastion becomes unreachable, the proxy
+automatically attempts to re-establish the SSH connection with exponential
+backoff so that new database connections can proceed without a restart.
+
+---
+
 ## Observability
 
 ### Health checks
@@ -600,6 +696,11 @@ rendered docs in [docs/cmd](docs/cmd).
 | `--prometheus` | false | Enable Prometheus `/metrics` endpoint |
 | `--structured-logs` | false | Emit logs in LogEntry JSON format |
 | `--max-connections` | 0 (unlimited) | Maximum simultaneous connections |
+| `--ssh-key` | | SSH private key for bastion tunnel |
+| `--ssh-address` | | Bastion host address (no port) |
+| `--ssh-user` | | Bastion SSH username |
+| `--ssh-port` | `22` | Bastion SSH port |
+| `--ssh-known-hosts` | auto-detect | `known_hosts` file, or `none` to skip |
 | `--config-file` | | Path to TOML/YAML/JSON config file |
 
 ---

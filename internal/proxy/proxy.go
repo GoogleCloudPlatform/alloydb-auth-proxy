@@ -30,11 +30,13 @@ import (
 	"time"
 
 	"cloud.google.com/go/alloydbconn"
-	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/alloydb"
-	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/gcloud"
 	"golang.org/x/oauth2"
 	"google.golang.org/api/impersonate"
 	"google.golang.org/api/option"
+
+	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/alloydb"
+	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/gcloud"
+	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/ssh"
 )
 
 // InstanceConnConfig holds the configuration for an individual instance
@@ -226,6 +228,24 @@ type Config struct {
 	// improve performance and identify client connectivity problems. Presently,
 	// these metrics aren't public, but will be made public in the future.
 	DisableBuiltInTelemetry bool
+
+	// SSHKey is the path to an SSH private key used to establish an SSH
+	// tunnel to a bastion host.
+	SSHKey string
+
+	// SSHAddress is the hostname or IP of the bastion host (without port).
+	SSHAddress string
+
+	// SSHUser is the username to use when connecting to the bastion host.
+	SSHUser string
+
+	// SSHPort is the port of the bastion host. Defaults to 22.
+	SSHPort int
+
+	// SSHKnownHosts is the path to a known_hosts file for verifying the
+	// bastion host's key. When empty, ~/.ssh/known_hosts is used if it
+	// exists. Set to "none" to explicitly disable host key verification.
+	SSHKnownHosts string
 }
 
 // dialOptions interprets appropriate dial options for a particular instance
@@ -491,11 +511,23 @@ type Client struct {
 
 	logger alloydb.Logger
 
+	// sshTunnel is the SSH tunnel used to connect to the AlloyDB instance
+	// through a bastion host. It is nil when SSH tunneling is not configured.
+	sshTunnel *ssh.Tunnel
+
 	fuseMount
 }
 
 // NewClient completes the initial setup required to get the proxy to a "steady" state.
 func NewClient(ctx context.Context, d alloydb.Dialer, l alloydb.Logger, conf *Config) (*Client, error) {
+	var tunnel *ssh.Tunnel
+
+	// SSH flags are incompatible with a custom dialer because the tunnel
+	// must be wired into the dialer's dial function.
+	if d != nil && conf.SSHAddress != "" {
+		return nil, fmt.Errorf("cannot use SSH tunnel flags with a custom dialer")
+	}
+
 	// Check if the caller has configured a dialer.
 	// Otherwise, initialize a new one.
 	if d == nil {
@@ -503,16 +535,35 @@ func NewClient(ctx context.Context, d alloydb.Dialer, l alloydb.Logger, conf *Co
 		if err != nil {
 			return nil, fmt.Errorf("error initializing dialer: %v", err)
 		}
+
+		// If SSH tunneling is configured, create the tunnel and add
+		// WithDialFunc so all connections go through the bastion host.
+		if conf.SSHAddress != "" {
+			addr := net.JoinHostPort(conf.SSHAddress, fmt.Sprintf("%d", conf.SSHPort))
+			tunnel, err = ssh.NewTunnel(
+				l, conf.SSHKey, conf.SSHUser, addr, conf.SSHKnownHosts,
+			)
+			if err != nil {
+				return nil, fmt.Errorf("error initializing SSH tunnel: %v", err)
+			}
+			l.Infof("SSH tunnel established to %s", addr)
+			dialerOpts = append(dialerOpts, alloydbconn.WithDialFunc(tunnel.Dial))
+		}
+
 		d, err = alloydbconn.NewDialer(ctx, dialerOpts...)
 		if err != nil {
+			if tunnel != nil {
+				tunnel.Close()
+			}
 			return nil, fmt.Errorf("error initializing dialer: %v", err)
 		}
 	}
 
 	c := &Client{
-		logger: l,
-		dialer: d,
-		conf:   conf,
+		logger:    l,
+		dialer:    d,
+		conf:      conf,
+		sshTunnel: tunnel,
 	}
 
 	if conf.FUSEDir != "" {
@@ -686,6 +737,12 @@ func (c *Client) Close() error {
 	cErr := c.dialer.Close()
 	if cErr != nil {
 		mErr = append(mErr, cErr)
+	}
+	// Close the SSH tunnel if one was established.
+	if c.sshTunnel != nil {
+		if err := c.sshTunnel.Close(); err != nil {
+			mErr = append(mErr, err)
+		}
 	}
 	if c.conf.WaitOnClose == 0 {
 		if len(mErr) > 0 {

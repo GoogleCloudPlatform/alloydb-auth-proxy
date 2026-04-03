@@ -104,6 +104,9 @@ func withDefaults(c *proxy.Config) *proxy.Config {
 	if c.APIEndpointURL == "" {
 		c.APIEndpointURL = "https://alloydb.googleapis.com"
 	}
+	if c.SSHPort == 0 {
+		c.SSHPort = 22
+	}
 	return c
 }
 
@@ -549,6 +552,50 @@ func TestNewCommandArguments(t *testing.T) {
 			},
 			want: withDefaults(&proxy.Config{
 				DisableBuiltInTelemetry: true,
+			}),
+		},
+		{
+			desc: "using SSH tunnel flags",
+			args: []string{
+				"--ssh-key", "/path/to/key",
+				"--ssh-address", "10.0.0.1",
+				"--ssh-user", "myuser",
+				"--ssh-port", "2222",
+				"projects/proj/locations/region/clusters/clust/instances/inst",
+			},
+			want: withDefaults(&proxy.Config{
+				SSHKey:     "/path/to/key",
+				SSHAddress: "10.0.0.1",
+				SSHUser:    "myuser",
+				SSHPort:    2222,
+			}),
+		},
+		{
+			desc: "using SSH tunnel flags with known hosts",
+			args: []string{
+				"--ssh-key", "/path/to/key",
+				"--ssh-address", "10.0.0.1",
+				"--ssh-user", "myuser",
+				"--ssh-known-hosts", "/path/to/known_hosts",
+				"projects/proj/locations/region/clusters/clust/instances/inst",
+			},
+			want: withDefaults(&proxy.Config{
+				SSHKey:        "/path/to/key",
+				SSHAddress:    "10.0.0.1",
+				SSHUser:       "myuser",
+				SSHKnownHosts: "/path/to/known_hosts",
+			}),
+		},
+		{
+			desc: "using SSH tunnel flags without ssh-key (agent mode)",
+			args: []string{
+				"--ssh-address", "10.0.0.1",
+				"--ssh-user", "myuser",
+				"projects/proj/locations/region/clusters/clust/instances/inst",
+			},
+			want: withDefaults(&proxy.Config{
+				SSHAddress: "10.0.0.1",
+				SSHUser:    "myuser",
 			}),
 		},
 	}
@@ -1059,6 +1106,56 @@ func TestNewCommandWithErrors(t *testing.T) {
 			args: []string{
 				"--run-connection-test",
 				"--fuse", "myfusedir",
+			},
+		},
+		{
+			desc: "when only ssh-key is set without address and user",
+			args: []string{
+				"--ssh-key", "/path/to/key",
+				"projects/proj/locations/region/clusters/clust/instances/inst",
+			},
+		},
+		{
+			desc: "when only ssh-address is set without ssh-user",
+			args: []string{
+				"--ssh-address", "1.2.3.4",
+				"projects/proj/locations/region/clusters/clust/instances/inst",
+			},
+		},
+		{
+			desc: "when only ssh-user is set without ssh-address",
+			args: []string{
+				"--ssh-user", "myuser",
+				"projects/proj/locations/region/clusters/clust/instances/inst",
+			},
+		},
+		{
+			desc: "when ssh-address contains a port",
+			args: []string{
+				"--ssh-key", "/path/to/key",
+				"--ssh-address", "10.0.0.1:2222",
+				"--ssh-user", "myuser",
+				"projects/proj/locations/region/clusters/clust/instances/inst",
+			},
+		},
+		{
+			desc: "when ssh-port is invalid",
+			args: []string{
+				"--ssh-key", "/path/to/key",
+				"--ssh-address", "10.0.0.1",
+				"--ssh-user", "myuser",
+				"--ssh-port", "banana",
+				"projects/proj/locations/region/clusters/clust/instances/inst",
+			},
+		},
+		{
+			desc: "when ssh-port is out of range",
+			args: []string{
+				"--ssh-key", "/path/to/key",
+				"--ssh-address", "10.0.0.1",
+				"--ssh-user", "myuser",
+				"--ssh-port", "99999",
+				"projects/proj/locations/region/clusters/clust/instances/inst",
 			},
 		}}
 
