@@ -46,7 +46,7 @@ alloydb-auth-proxy.%:
 	echo "Building binary for $$OS/$$ARCH..."; \
 	CGO_ENABLED=0 GOOS=$$OS GOARCH=$$ARCH go build \
 		-ldflags "-X github.com/GoogleCloudPlatform/alloydb-auth-proxy/cmd.metadataString=container" \
-		-o $@
+		-o bin/binary/$@
 
 .PHONY: build-binary
 build-binary: alloydb-auth-proxy.$(TARGETOS).$(TARGETARCH)
