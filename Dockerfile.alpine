@@ -12,21 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Use the latest stable golang 1.x to compile to a binary
-FROM --platform=$BUILDPLATFORM golang:1-alpine as build
-
-WORKDIR /go/src/alloydb-auth-proxy
-COPY . .
+# Allow proxy to be overwritten, but hardcode the HASH to ensure it is reproducible regardless of proxy
+ARG IMAGE_NAME_WITH_PROXY=alpine
+FROM ${IMAGE_NAME_WITH_PROXY}:3@sha256:5b10f432ef3da1b8d4c7eb6c487f2f5a8f096bc91145e68878dd4a5019afde11
 
 ARG TARGETOS
 ARG TARGETARCH
-
-RUN go get ./...
-RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} \
-    go build -ldflags "-X github.com/GoogleCloudPlatform/alloydb-auth-proxy/cmd.metadataString=container.alpine"
-
-# Final stage
-FROM alpine:3@sha256:a2d49ea686c2adfe3c992e47dc3b5e7fa6e6b5055609400dc2acaeb241c829f4
 
 LABEL org.opencontainers.image.source="https://github.com/GoogleCloudPlatform/alloydb-auth-proxy"
 
@@ -40,5 +31,5 @@ RUN addgroup -g 65532 -S nonroot && adduser -u 65532 -S nonroot -G nonroot
 # Set the uid as an integer for compatibility with runAsNonRoot in Kubernetes
 USER 65532
 
-COPY --from=build --chown=nonroot /go/src/alloydb-auth-proxy/alloydb-auth-proxy /alloydb-auth-proxy
+COPY --chown=nonroot alloydb-auth-proxy.${TARGETOS}.${TARGETARCH} /alloydb-auth-proxy
 ENTRYPOINT ["/alloydb-auth-proxy"]

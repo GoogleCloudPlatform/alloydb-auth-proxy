@@ -12,25 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Use the latest stable golang 1.x to compile to a binary
-FROM --platform=$BUILDPLATFORM golang:1 as build
-
-WORKDIR /go/src/alloydb-auth-proxy
-COPY . .
+FROM gcr.io/distroless/static:nonroot@sha256:963fa6c544fe5ce420f1f54fb88b6fb01479f054c8056d0f74cc2c6000df5240
 
 ARG TARGETOS
 ARG TARGETARCH
 
-RUN go get ./...
-RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} \
-    go build -ldflags "-X github.com/GoogleCloudPlatform/alloydb-auth-proxy/cmd.metadataString=container"
-
-# Final Stage
-FROM gcr.io/distroless/static:nonroot@sha256:963fa6c544fe5ce420f1f54fb88b6fb01479f054c8056d0f74cc2c6000df5240
-
 LABEL org.opencontainers.image.source="https://github.com/GoogleCloudPlatform/alloydb-auth-proxy"
 
-COPY --from=build --chown=nonroot /go/src/alloydb-auth-proxy/alloydb-auth-proxy /alloydb-auth-proxy
+COPY --chown=nonroot alloydb-auth-proxy.${TARGETOS}.${TARGETARCH} /alloydb-auth-proxy
 # set the uid as an integer for compatibility with runAsNonRoot in Kubernetes
 USER 65532
 ENTRYPOINT ["/alloydb-auth-proxy"]

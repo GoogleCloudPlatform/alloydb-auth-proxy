@@ -177,6 +177,7 @@ psql "host=127.0.0.1 port=5432 user=DB_USER dbname=DB_NAME"
   - [Container image](#container-image)
   - [Build from source](#build-from-source)
   - [Build your own container](#build-your-own-container)
+    - [Building container images with internal mirrors](#Building-container-images-with internal-mirrors)
 - [Authentication](#authentication)
 - [Usage](#usage)
   - [Basic usage](#basic-usage)
@@ -323,11 +324,32 @@ docker run --rm \
 
 Requires the latest version of [Go](https://go.dev/doc/install).
 
+#### Using go install
+
 ```sh
 go install github.com/GoogleCloudPlatform/alloydb-auth-proxy@latest
 ```
 
 The binary is placed in `$GOPATH/bin` or `$HOME/go/bin`.
+
+#### Using the Makefile
+
+If you have cloned the repository, you can use the provided `Makefile` to build the binary.
+
+Build the binary for your current OS and architecture (defaults to `linux/amd64`):
+
+```sh
+make build-binary
+```
+
+To build for a specific OS and architecture, pass `TARGETOS` and `TARGETARCH`:
+
+```sh
+TARGETOS=darwin TARGETARCH=arm64 make build-binary
+```
+
+The binary will be created in the root directory as `alloydb-auth-proxy.<os>.<arch>` (e.g., `alloydb-auth-proxy.linux.amd64`).
+
 
 ### Build your own container
 
@@ -338,20 +360,37 @@ and target architecture.
 If you don't have a registry to push to, you can
 [set up an Artifact Registry][Artifact Registry] in Google Cloud.
 
-To build the default container:
+You should use the `Makefile` to build the container images to ensure that the go binaries are built and ready before the docker build:
 
 ```sh
-docker buildx build --platform linux/amd64 -t my-custom-image-name --push .
+# Build default container image (alloydb-auth-proxy:latest)
+make build-image
+
+# Build Alpine container image (alloydb-auth-proxy:latest-alpine)
+make build-image-alpine
 ```
 
-Alternatively, you can build the Alpine variant:
+To build multi-arch images (requires `docker buildx`):
 
 ```sh
-docker buildx build --platform linux/amd64 -t my-custom-alpine-image -f Dockerfile.alpine --push .
+# Build multi-arch default container image
+make build-image-multi-default
+
+# Build multi-arch Alpine container image
+make build-image-multi-alpine
 ```
 
 [Artifact Registry]: https://cloud.google.com/artifact-registry/docs/docker/store-docker-container-images
 [distroless]: https://github.com/GoogleContainerTools/distroless
+
+#### Building container images with internal mirrors
+
+To use an internal registry proxy for the base image when building the Alpine images, use the `REGISTRY_PROXY` variable with `make` (applies to `build-image-alpine` and `build-image-multi-alpine`):
+
+```sh
+make build-image-alpine REGISTRY_PROXY=<Reference_To_Internal_Proxy>
+make build-image-multi-alpine REGISTRY_PROXY=<Reference_To_Internal_Proxy>
+```
 
 ---
 
