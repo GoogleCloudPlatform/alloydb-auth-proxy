@@ -15,7 +15,6 @@
 assign_issues:
   - enocom
   - nancynh
-  - rhatgadkar-goog
 
 assign_prs:
   - enocom
