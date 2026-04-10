@@ -675,6 +675,9 @@ the maximum time has passed. Defaults to 0s.`)
 		`Enables HTTP endpoints /startup, /liveness, and /readiness
 that report on the proxy's health. Endpoints are available on localhost
 only. Uses the port specified by the http-port flag.`)
+	localFlags.BoolVar(&c.conf.WithBackendCheck, "with-backend-check", false,
+		`Enables a backend connection check in the startup probe. Use with
+Cloud Run jobs only where Direct VPC egress setup may take some time.`)
 	localFlags.BoolVar(&c.conf.RunConnectionTest, "run-connection-test", false, `Runs a connection test
 against all specified instances. If an instance is unreachable, the Proxy exits with a failure
 status code.`)
@@ -1191,7 +1194,7 @@ func runSignalWrapper(cmd *Command) (err error) {
 		needsHTTPServer = true
 		cmd.logger.Infof("Starting health check server at %s",
 			net.JoinHostPort(cmd.conf.HTTPAddress, cmd.conf.HTTPPort))
-		hc := healthcheck.NewCheck(p, cmd.logger)
+		hc := healthcheck.NewCheck(p, cmd.logger, cmd.conf.WithBackendCheck)
 		mux.HandleFunc("/startup", hc.HandleStartup)
 		mux.HandleFunc("/readiness", hc.HandleReadiness)
 		mux.HandleFunc("/liveness", hc.HandleLiveness)
