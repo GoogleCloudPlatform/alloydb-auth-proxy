@@ -176,6 +176,7 @@ psql "host=127.0.0.1 port=5432 user=DB_USER dbname=DB_NAME"
   - [Binary](#binary)
   - [Container image](#container-image)
   - [Build from source](#build-from-source)
+  - [Build your own container](#build-your-own-container)
 - [Authentication](#authentication)
 - [Usage](#usage)
   - [Basic usage](#basic-usage)
@@ -329,7 +330,29 @@ go install github.com/GoogleCloudPlatform/alloydb-auth-proxy@latest
 
 The binary is placed in `$GOPATH/bin` or `$HOME/go/bin`.
 
-[Artifact Registry]: https://cloud.google.com/artifact-registry
+### Build your own container
+
+You can build and push your own container image using the provided Dockerfiles.
+These Dockerfiles require `docker buildx` to correctly set the build platform
+and target architecture.
+
+If you don't have a registry to push to, you can
+[set up an Artifact Registry][Artifact Registry] in Google Cloud.
+
+To build the default container:
+
+```sh
+docker buildx build --platform linux/amd64 -t my-custom-image-name --push .
+```
+
+Alternatively, you can build the Alpine or Bookworm variants:
+
+```sh
+docker buildx build --platform linux/amd64 -t my-custom-alpine-image -f Dockerfile.alpine --push .
+docker buildx build --platform linux/amd64 -t my-custom-bookworm-image -f Dockerfile.bookworm --push .
+```
+
+[Artifact Registry]: https://cloud.google.com/artifact-registry/docs/docker/store-docker-container-images
 [distroless]: https://github.com/GoogleContainerTools/distroless
 
 ---
