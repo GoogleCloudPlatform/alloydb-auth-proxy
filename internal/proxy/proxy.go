@@ -220,6 +220,10 @@ type Config struct {
 	// ExitZeroOnSigterm exits with 0 exit code when Sigterm received
 	ExitZeroOnSigterm bool
 
+	// WithBackendCheck enables a backend connection check in the readiness
+	// probe.
+	WithBackendCheck bool
+
 	// DisableBuiltInTelemetry disables the internal metric export. By
 	// default, the Dialer will report on its internal operations to the
 	// alloydb.googleapis.com system metric prefix. These metrics help AlloyDB

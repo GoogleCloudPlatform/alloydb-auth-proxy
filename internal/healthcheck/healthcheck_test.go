@@ -16,6 +16,7 @@ package healthcheck_test
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -104,10 +105,10 @@ func TestHandleStartupWhenNotNotified(t *testing.T) {
 			t.Logf("failed to close proxy client: %v", err)
 		}
 	}()
-	check := healthcheck.NewCheck(p, logger)
+	check := healthcheck.NewCheck(p, logger, false)
 
 	rec := httptest.NewRecorder()
-	check.HandleStartup(rec, &http.Request{URL: &url.URL{}})
+	check.HandleStartup(rec, httptest.NewRequest("GET", "/startup", nil))
 
 	// Startup is not complete because the Check has not been notified of the
 	// proxy's startup.
@@ -124,12 +125,12 @@ func TestHandleStartupWhenNotified(t *testing.T) {
 			t.Logf("failed to close proxy client: %v", err)
 		}
 	}()
-	check := healthcheck.NewCheck(p, logger)
+	check := healthcheck.NewCheck(p, logger, false)
 
 	check.NotifyStarted()
 
 	rec := httptest.NewRecorder()
-	check.HandleStartup(rec, &http.Request{URL: &url.URL{}})
+	check.HandleStartup(rec, httptest.NewRequest("GET", "/startup", nil))
 
 	resp := rec.Result()
 	if got, want := resp.StatusCode, http.StatusOK; got != want {
@@ -144,7 +145,7 @@ func TestHandleReadinessWhenNotNotified(t *testing.T) {
 			t.Logf("failed to close proxy client: %v", err)
 		}
 	}()
-	check := healthcheck.NewCheck(p, logger)
+	check := healthcheck.NewCheck(p, logger, false)
 
 	rec := httptest.NewRecorder()
 	check.HandleReadiness(rec, &http.Request{URL: &url.URL{}})
@@ -162,7 +163,7 @@ func TestHandleReadinessWhenStopped(t *testing.T) {
 			t.Logf("failed to close proxy client: %v", err)
 		}
 	}()
-	check := healthcheck.NewCheck(p, logger)
+	check := healthcheck.NewCheck(p, logger, false)
 
 	check.NotifyStarted() // The Proxy has started.
 	check.NotifyStopped() // And now the Proxy is shutting down.
@@ -184,7 +185,7 @@ func TestHandleReadinessForMaxConns(t *testing.T) {
 		}
 	}()
 	started := make(chan struct{})
-	check := healthcheck.NewCheck(p, logger)
+	check := healthcheck.NewCheck(p, logger, false)
 	go p.Serve(context.Background(), func() {
 		check.NotifyStarted()
 		close(started)
@@ -223,4 +224,52 @@ func TestHandleReadinessForMaxConns(t *testing.T) {
 	if !strings.Contains(string(body), "max connections") {
 		t.Fatalf("want max connections error, got = %v", string(body))
 	}
+}
+
+type errorDialer struct {
+	fakeDialer
+}
+
+func (*errorDialer) Dial(_ context.Context, _ string, _ ...alloydbconn.DialOption) (net.Conn, error) {
+	return nil, errors.New("dial error")
+}
+
+func TestHandleStartupWithBackendCheck(t *testing.T) {
+	t.Run("when backend check passes", func(t *testing.T) {
+		p := newTestProxy(t)
+		defer p.Close()
+		check := healthcheck.NewCheck(p, logger, true)
+		check.NotifyStarted()
+
+		rec := httptest.NewRecorder()
+		check.HandleStartup(rec, httptest.NewRequest("GET", "/startup", nil))
+
+		resp := rec.Result()
+		if got, want := resp.StatusCode, http.StatusOK; got != want {
+			t.Fatalf("want = %v, got = %v", want, got)
+		}
+	})
+	t.Run("when backend check fails", func(t *testing.T) {
+		p := newProxyWithParams(t, 0, &errorDialer{}, []proxy.InstanceConnConfig{
+			{Name: "projects/proj/locations/region/clusters/clust/instances/inst"},
+		})
+		defer p.Close()
+		check := healthcheck.NewCheck(p, logger, true)
+		check.NotifyStarted()
+
+		rec := httptest.NewRecorder()
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		defer cancel()
+		req, _ := http.NewRequestWithContext(ctx, "GET", "/startup", nil)
+		check.HandleStartup(rec, req)
+
+		resp := rec.Result()
+		if got, want := resp.StatusCode, http.StatusServiceUnavailable; got != want {
+			t.Fatalf("want = %v, got = %v", want, got)
+		}
+		body, _ := io.ReadAll(resp.Body)
+		if !strings.Contains(string(body), "dial error") {
+			t.Fatalf("want dial error, got = %v", string(body))
+		}
+	})
 }

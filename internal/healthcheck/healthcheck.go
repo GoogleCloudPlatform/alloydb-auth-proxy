@@ -29,23 +29,25 @@ import (
 // Check provides HTTP handlers for use as healthchecks typically in a
 // Kubernetes context.
 type Check struct {
-	startedOnce *sync.Once
-	started     chan struct{}
-	stoppedOnce *sync.Once
-	stopped     chan struct{}
-	proxy       *proxy.Client
-	logger      alloydb.Logger
+	startedOnce  *sync.Once
+	started      chan struct{}
+	stoppedOnce  *sync.Once
+	stopped      chan struct{}
+	proxy        *proxy.Client
+	logger       alloydb.Logger
+	backendCheck bool
 }
 
 // NewCheck is the initializer for Check.
-func NewCheck(p *proxy.Client, l alloydb.Logger) *Check {
+func NewCheck(p *proxy.Client, l alloydb.Logger, backendCheck bool) *Check {
 	return &Check{
-		startedOnce: &sync.Once{},
-		started:     make(chan struct{}),
-		stoppedOnce: &sync.Once{},
-		stopped:     make(chan struct{}),
-		proxy:       p,
-		logger:      l,
+		startedOnce:  &sync.Once{},
+		started:      make(chan struct{}),
+		stoppedOnce:  &sync.Once{},
+		stopped:      make(chan struct{}),
+		proxy:        p,
+		logger:       l,
+		backendCheck: backendCheck,
 	}
 }
 
@@ -61,9 +63,18 @@ func (c *Check) NotifyStopped() {
 }
 
 // HandleStartup reports whether the Check has been notified of startup.
-func (c *Check) HandleStartup(w http.ResponseWriter, _ *http.Request) {
+func (c *Check) HandleStartup(w http.ResponseWriter, r *http.Request) {
 	select {
 	case <-c.started:
+		if c.backendCheck {
+			if _, err := c.proxy.CheckConnections(r.Context()); err != nil {
+				c.logger.Errorf("[Health Check] Startup failed: %v", err)
+				w.WriteHeader(http.StatusServiceUnavailable)
+				w.Write([]byte(err.Error()))
+				return
+			}
+		}
+
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("ok"))
 	default:

@@ -355,6 +355,8 @@ alloydb-auth-proxy instance_uri... [flags]
   -u, --unix-socket string                   (*) Enables Unix sockets for all listeners using the provided directory.
       --user-agent string                    Space separated list of additional user agents, e.g. custom-agent/0.0.1
   -v, --version                              Print the alloydb-auth-proxy version
+      --with-backend-check                   Enables a backend connection check in the startup probe. Use with
+                                             Cloud Run jobs only where Direct VPC egress setup may take some time.
 ```
 
 ### SEE ALSO
