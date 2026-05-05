@@ -629,20 +629,10 @@ rendered docs in [docs/cmd](docs/cmd).
 
 ## Support policy
 
-### Major version lifecycle
-
-This project follows [semantic versioning](https://semver.org/).
-
-| Status | Description |
-|--------|-------------|
-| **Active** | Receives all new features and security fixes. Guaranteed for at least 1 year. |
-| **Deprecated** | Security and critical bug fixes only. Publicly supported for 1 year after deprecation. |
-| **Unsupported** | Major versions deprecated for ≥ 1 year. |
-
-### Release cadence
-
-The proxy targets a monthly release cadence. If no new features or fixes are
-added, a new PATCH version is released with the latest dependencies.
+This project follows [semantic versioning](https://semver.org/). We release a new
+version monthly with features, bug fixes, and security updates. If no new
+features are added, we still release a PATCH version with updated dependencies.
+We recommend always using the latest version.
 
 ---
 
