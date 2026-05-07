@@ -33,18 +33,24 @@ import (
 	"syscall"
 	"time"
 
-	"contrib.go.opencensus.io/exporter/prometheus"
-	"contrib.go.opencensus.io/exporter/stackdriver"
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/alloydb"
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/healthcheck"
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/log"
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/proxy"
 	"github.com/coreos/go-systemd/v22/daemon"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
-	"go.opencensus.io/trace"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/exporters/prometheus"
+	"go.opentelemetry.io/otel/sdk/resource"
+
+	gcpmetric "github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/metric"
+	gcptrace "github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/trace"
+	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.37.0"
 )
 
 var (
@@ -1079,27 +1085,64 @@ func runSignalWrapper(cmd *Command) (err error) {
 	enableMetrics := !cmd.conf.DisableMetrics
 	enableTraces := !cmd.conf.DisableTraces
 	if cmd.conf.TelemetryProject != "" && (enableMetrics || enableTraces) {
-		sd, err := stackdriver.NewExporter(stackdriver.Options{
-			ProjectID:    cmd.conf.TelemetryProject,
-			MetricPrefix: cmd.conf.TelemetryPrefix,
-		})
+		res, err := resource.New(ctx,
+			resource.WithAttributes(
+				semconv.ServiceNameKey.String("alloydb-auth-proxy"),
+				semconv.ServiceVersionKey.String(versionString),
+			),
+		)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to create resource: %w", err)
 		}
+		exporter, err := gcpmetric.New(
+			gcpmetric.WithProjectID(cmd.conf.TelemetryProject),
+			// TODO: cmd.conf.TelemetryPrefix
+		)
+		if err != nil {
+			return fmt.Errorf("failed to create Cloud Monitoring exporter: %w", err)
+		}
+
+		var mp *sdkmetric.MeterProvider
 		if enableMetrics {
-			err = sd.StartMetricsExporter()
+			provider := sdkmetric.NewMeterProvider(
+				sdkmetric.WithResource(res),
+				sdkmetric.WithReader(
+					sdkmetric.NewPeriodicReader(
+						exporter,
+						sdkmetric.WithInterval(60*time.Second),
+					),
+				),
+			)
+
+			otel.SetMeterProvider(provider)
+		}
+
+		var tp *sdktrace.TracerProvider
+		if enableTraces {
+			exporter, err := gcptrace.New(
+				gcptrace.WithProjectID(cmd.conf.TelemetryProject),
+			)
 			if err != nil {
 				return err
 			}
-		}
-		if enableTraces {
-			s := trace.ProbabilitySampler(1 / float64(cmd.conf.TelemetryTracingSampleRate))
-			trace.ApplyConfig(trace.Config{DefaultSampler: s})
-			trace.RegisterExporter(sd)
+			// TODO: fix this rate stuff
+			// s := trace.ProbabilitySampler(1 / float64(cmd.conf.TelemetryTracingSampleRate))
+			rate := 1 - float64(cmd.conf.TelemetryTracingSampleRate)
+			provider := sdktrace.NewTracerProvider(
+				sdktrace.WithResource(res),
+				sdktrace.WithBatcher(exporter),
+				sdktrace.WithSampler(sdktrace.TraceIDRatioBased(rate)),
+			)
+
+			otel.SetTracerProvider(provider)
 		}
 		defer func() {
-			sd.Flush()
-			sd.StopMetricsExporter()
+			if mp != nil {
+				_ = mp.Shutdown(context.Background())
+			}
+			if tp != nil {
+				_ = tp.Shutdown(context.Background())
+			}
 		}()
 	}
 
@@ -1178,13 +1221,30 @@ func runSignalWrapper(cmd *Command) (err error) {
 
 	if cmd.conf.Prometheus {
 		needsHTTPServer = true
-		e, err := prometheus.NewExporter(prometheus.Options{
-			Namespace: cmd.conf.PrometheusNamespace,
-		})
+		res, err := resource.New(ctx,
+			resource.WithAttributes(
+				semconv.ServiceNameKey.String("alloydb-auth-proxy"),
+				semconv.ServiceVersionKey.String(versionString),
+			),
+		)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to create resource: %w", err)
 		}
-		mux.Handle("/metrics", e)
+		exporter, err := prometheus.New(
+			prometheus.WithoutTargetInfo(),
+			prometheus.WithoutScopeInfo(),
+			prometheus.WithNamespace(cmd.conf.PrometheusNamespace),
+		)
+		if err != nil {
+			return fmt.Errorf("failed to create prometheus exporter: %w", err)
+		}
+		provider := sdkmetric.NewMeterProvider(
+			sdkmetric.WithResource(res),
+			sdkmetric.WithReader(exporter),
+		)
+		otel.SetMeterProvider(provider)
+
+		mux.Handle("/metrics", promhttp.Handler())
 	}
 
 	if cmd.conf.HealthCheck {
