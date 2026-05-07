@@ -130,6 +130,9 @@ failed to connect to instance: dial tcp 10.x.x.x:5433: i/o timeout
 For local dev, enable a public IP on the instance. For production, run the proxy inside the VPC (GKE, Cloud Run, Compute Engine).
 
 ### Enable public IP
+
+> **Tell the user**: "Enabling public IP removes VPC isolation — your instance becomes reachable from the internet. Only do this for local development. In production, keep the instance private and run the proxy inside the VPC."
+
 ```bash
 gcloud alloydb instances update INSTANCE_ID \
   --cluster=CLUSTER_ID --region=REGION \
