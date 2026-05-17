@@ -26,5 +26,12 @@
       "groupName": "Non-major dependency updates",
       "matchUpdateTypes": ["minor", "patch"],
     },
+    {
+      "description": "Bundle all JavaScript example deps into a single low-noise PR",
+      "matchManagers": ["npm"],
+      "matchFileNames": ["examples/**"],
+      "groupName": "example dependencies",
+      "commitMessagePrefix": "chore:",
+    },
   ]
 }

@@ -54,3 +54,8 @@ out/
 .DS_Store
 __pycache__
 .pytest_cache
+
+# Node.js (examples/run)
+node_modules/
+dist/
+npm-debug.log*

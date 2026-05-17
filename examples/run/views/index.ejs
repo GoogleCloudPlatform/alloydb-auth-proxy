@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hello from AlloyDB</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext y='14' font-size='14'%3E%E2%9C%A8%3C/text%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #f7f8fb;
+    --surface: #ffffff;
+    --text: #1f2328;
+    --muted: #57606a;
+    --border: #e4e7eb;
+    --accent: #1a73e8;
+    --accent-2: #34a853;
+    --danger: #d93025;
+    --danger-soft: #fce8e6;
+    --code-bg: #f3f4f6;
+    --shadow: 0 1px 3px rgba(16,24,40,.04), 0 8px 24px rgba(16,24,40,.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --border: #30363d;
+      --accent: #4c8eff;
+      --accent-2: #56d364;
+      --danger: #ff6b6b;
+      --danger-soft: #3a1d1d;
+      --code-bg: #0d1117;
+      --shadow: 0 1px 3px rgba(0,0,0,.2), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 48px 24px 64px;
+  }
+  .hero {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 8px;
+  }
+  .badge {
+    width: 56px; height: 56px;
+    border-radius: 14px;
+    display: grid; place-items: center;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    flex-shrink: 0;
+    padding: 6px;
+    overflow: hidden;
+  }
+  .badge.error {
+    background: linear-gradient(135deg, #d93025, #f29900);
+    border-color: transparent;
+    color: #fff;
+    padding: 0;
+  }
+  .badge img { width: 100%; height: 100%; display: block; }
+  .badge.error svg { width: 28px; height: 28px; }
+  h1 {
+    font-size: 28px;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+  .subtitle {
+    color: var(--muted);
+    margin: 0 0 32px;
+    font-size: 15px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .card + .card { margin-top: 20px; }
+  .card-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  dl.kv {
+    margin: 0;
+    padding: 8px 20px;
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 0;
+  }
+  dl.kv > div { display: contents; }
+  dl.kv dt, dl.kv dd {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    margin: 0;
+  }
+  dl.kv > div:last-child dt,
+  dl.kv > div:last-child dd { border-bottom: none; }
+  dl.kv dt {
+    color: var(--muted);
+    font-size: 14px;
+    padding-right: 24px;
+  }
+  dl.kv dd {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 13px;
+    word-break: break-all;
+  }
+  pre.query {
+    margin: 0;
+    padding: 14px 20px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  pre.query .kw { color: var(--accent); font-weight: 600; }
+  dl.kv dt.sql {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  pre.diagram {
+    margin: 0;
+    padding: 20px 16px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.4;
+    overflow-x: auto;
+    text-align: center;
+    white-space: pre;
+  }
+  pre.diagram code {
+    display: inline-block;
+    text-align: left;
+    font-family: inherit;
+  }
+  ol.steps {
+    margin: 0;
+    padding: 8px 20px 16px 44px;
+    color: var(--muted);
+  }
+  ol.steps li {
+    padding: 6px 0;
+    font-size: 14px;
+  }
+  ol.steps li strong { color: var(--text); font-weight: 600; }
+  ol.steps code, dl.kv code {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12.5px;
+  }
+  .next-steps {
+    margin-top: 24px;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .next-steps a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .next-steps a:hover { text-decoration: underline; }
+  .error-box {
+    padding: 16px 20px;
+    background: var(--danger-soft);
+    color: var(--danger);
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 13px;
+    word-break: break-all;
+  }
+  footer {
+    margin-top: 40px;
+    text-align: center;
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+  footer a {
+    color: var(--muted);
+    text-decoration: none;
+  }
+  footer a:hover { color: var(--accent); }
+  footer code {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <% if (ok) { %>
+  <div class="hero">
+    <div class="badge" aria-hidden="true">
+      <img src="/alloydb.svg" alt="">
+    </div>
+    <h1>Hello from AlloyDB!</h1>
+  </div>
+  <p class="subtitle">
+    Your Cloud Run service is connected securely to AlloyDB through the Auth
+    Proxy.
+  </p>
+
+  <div class="card">
+    <div class="card-header">Live query response from your AlloyDB instance</div>
+    <pre class="query">SELECT version(), now(), current_database(), current_user;</pre>
+    <dl class="kv">
+      <div><dt class="sql">version()</dt><dd><%= version %></dd></div>
+      <div><dt class="sql">now()</dt><dd><%= server_time %></dd></div>
+      <div><dt class="sql">current_database()</dt><dd><%= database %></dd></div>
+      <div><dt class="sql">current_user</dt><dd><%= user %></dd></div>
+    </dl>
+  </div>
+
+  <div class="card">
+    <div class="card-header">How does this app connect to AlloyDB?</div>
+    <pre class="diagram" aria-label="Request flow diagram"><code>
+                  ┌─────────── Cloud Run service ───────────┐
+                  │                                         │
+ ┌─────────┐      │  ┌─────┐         ┌──────────────────┐   │      ┌─────────┐
+ │ Browser │─────▶│  │ App │────────▶│   Auth Proxy     │───┼─────▶│ AlloyDB │
+ └─────────┘      │  └─────┘         │ ──────────────── │   │      └─────────┘
+                  │                  │  • mTLS tunnel   │   │
+    HTTPS         │  loopback        │  • IAM authn/z   │   │          mTLS
+                  │  (no TLS)        │  • cert rotation │   │
+                  │                  └──────────────────┘   │
+                  └─────────────────────────────────────────┘
+</code></pre>
+    <ol class="steps">
+      <li>Your browser sent a request to this <strong>Cloud Run</strong> service.</li>
+      <li>
+          The app opened a plain <strong>localhost connection</strong> to the
+          <strong>Auth Proxy</strong> sidecar on
+          <code><%= host %>:<%= port %></code> &mdash; no TLS config or database
+          password in app code.
+      </li>
+      <li>
+          The Auth Proxy called the <strong>AlloyDB API</strong> as its
+          <strong>IAM principal (IAM authz)</strong>  to fetch the instance's
+          <strong>connection info</strong> and an
+          <strong>ephemeral client certificate</strong>, then opened an
+          <strong>mTLS</strong> tunnel to the target instance.
+      </li>
+      <li>
+          To log in, the Proxy fetched the IAM principal's
+          <strong>OAuth2 access token</strong> and forwarded it to AlloyDB as
+          the password &mdash; a <strong>passwordless handshake (IAM authn)</strong>
+          from the app's perspective.
+      </li>
+      <li>
+          The Proxy ensures all future connections have a valid connection by
+          <strong>auto-rotating the ephemeral certificate every ~12 hours</strong>
+          and <strong>using a fresh OAuth2 token</strong> once the current one expires
+          (every ~1 hour), all with no app restart required.
+      </li>
+      <li>
+          The app sent the query through the tunnel and received the values
+          shown above from the AlloyDB instance.
+      </li>
+    </ol>
+  </div>
+
+  <% } else { %>
+  <div class="hero">
+    <div class="badge error" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    </div>
+    <h1>Couldn&rsquo;t reach AlloyDB</h1>
+  </div>
+  <p class="subtitle">
+    The app started, but the query to AlloyDB failed. Check the Auth Proxy
+    sidecar logs and confirm the values below match your instance.
+  </p>
+
+  <div class="card">
+    <div class="card-header">Error</div>
+    <div class="error-box"><%= error %></div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">Configuration</div>
+    <dl class="kv">
+      <div><dt>Proxy endpoint</dt><dd><%= host %>:<%= port %></dd></div>
+    </dl>
+  </div>
+  <% } %>
+
+  <p class="next-steps">
+    Also try <a href="/api/status">/api/status</a> for the same data as JSON.
+  </p>
+
+  <footer>
+    Served from <code>examples/run</code> &middot;
+    <a href="https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/tree/main/examples/run">source</a> &middot;
+    <a href="https://cloud.google.com/alloydb/docs/auth-proxy/overview">Auth Proxy docs</a>
+  </footer>
+</div>
+</body>
+</html>

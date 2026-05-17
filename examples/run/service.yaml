@@ -1,0 +1,68 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Cloud Run service: hello-alloydb app + AlloyDB Auth Proxy sidecar.
+#
+# This file uses shell-style placeholders ($PROJECT_ID, $REGION,
+# $CLUSTER, $INSTANCE). The README's deploy step expands them with
+# `sed` before piping to `gcloud run services replace`.
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: hello-alloydb
+spec:
+  template:
+    metadata:
+      annotations:
+        # gen2 execution environment is required for sidecar containers.
+        run.googleapis.com/execution-environment: gen2
+        # Direct VPC egress lets the proxy reach AlloyDB's private IP
+        # without a Serverless VPC Access connector.
+        run.googleapis.com/network-interfaces: '[{"network":"default","subnetwork":"default"}]'
+        run.googleapis.com/vpc-access-egress: private-ranges-only
+        run.googleapis.com/container-dependencies: '{"app":["alloydb-auth-proxy"]}'
+    spec:
+      serviceAccountName: hello-alloydb@$PROJECT_ID.iam.gserviceaccount.com
+      containers:
+        # The demo app. Waits for the proxy to be ready, then queries
+        # AlloyDB through it on 127.0.0.1:5432.
+        - name: app
+          image: gcr.io/enocom-experiments-304623/hello-alloydb:latest
+          ports:
+            - containerPort: 8080
+          env:
+            # IAM principal of the service account, with the
+            # ".gserviceaccount.com" suffix stripped (AlloyDB convention).
+            - name: DB_USER
+              value: hello-alloydb@$PROJECT_ID.iam
+
+        # The AlloyDB Auth Proxy as a sidecar. It authenticates with
+        # Google Cloud using this service's IAM identity, requests an
+        # OAuth token for IAM database authn (--auto-iam-authn), and
+        # exposes a local TCP listener that the app connects to.
+        - name: alloydb-auth-proxy
+          image: gcr.io/alloydb-connectors/alloydb-auth-proxy:1.14
+          args:
+            - "--port=5432"
+            - "--auto-iam-authn"
+            - "--health-check"
+            - "--http-address=0.0.0.0"
+            - "--http-port=9090"
+            - "projects/$PROJECT_ID/locations/$REGION/clusters/$CLUSTER/instances/$INSTANCE"
+          startupProbe:
+            httpGet:
+              path: /startup
+              port: 9090
+            periodSeconds: 1
+            failureThreshold: 30
