@@ -295,7 +295,6 @@ Tag                | Base image
 ------------------ | -------------------------------------------
 `VERSION`          | [distroless][] (default, non-root, minimal)
 `VERSION-alpine`   | Alpine
-`VERSION-bookworm` | Debian Bookworm
 
 Use Alpine or Debian variants when you need a shell or debugging tools.
 
@@ -345,11 +344,10 @@ To build the default container:
 docker buildx build --platform linux/amd64 -t my-custom-image-name --push .
 ```
 
-Alternatively, you can build the Alpine or Bookworm variants:
+Alternatively, you can build the Alpine variant:
 
 ```sh
 docker buildx build --platform linux/amd64 -t my-custom-alpine-image -f Dockerfile.alpine --push .
-docker buildx build --platform linux/amd64 -t my-custom-bookworm-image -f Dockerfile.bookworm --push .
 ```
 
 [Artifact Registry]: https://cloud.google.com/artifact-registry/docs/docker/store-docker-container-images
