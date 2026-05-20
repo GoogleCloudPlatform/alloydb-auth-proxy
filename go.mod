@@ -17,7 +17,7 @@ require (
 	go.opentelemetry.io/otel v1.43.0
 	golang.org/x/oauth2 v0.36.0
 	golang.org/x/sys v0.44.0
-	google.golang.org/api v0.279.0
+	google.golang.org/api v0.280.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 )
 
@@ -86,7 +86,7 @@ require (
 	google.golang.org/genproto v0.0.0-20260319201613-d00831a3d3e7 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20260401024825-9d38bb4040a9 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260511170946-3700d4141b60 // indirect
-	google.golang.org/grpc v1.81.0 // indirect
+	google.golang.org/grpc v1.81.1 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
