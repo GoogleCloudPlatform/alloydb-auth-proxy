@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.15.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.14.4...v1.15.0) (2026-05-21)
+
+
+### Features
+
+* add check to verify backend connection in readiness probe ([#919](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/919)) ([e5eba50](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/e5eba5026f7a9670ac4b5e5cd9daa242cccbe799))
+* drop Bookworm container ([#942](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/942)) ([f426293](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/f4262932d14c1a25fa912fda6737d1fdd4eabe73))
+
 ## [1.14.4](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.14.3...v1.14.4) (2026-05-13)
 
 
