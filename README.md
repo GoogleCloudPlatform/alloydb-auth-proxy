@@ -176,8 +176,9 @@ psql "host=127.0.0.1 port=5432 user=DB_USER dbname=DB_NAME"
   - [Binary](#binary)
   - [Container image](#container-image)
   - [Build from source](#build-from-source)
+    - [Go](#using-go-install)
   - [Build your own container](#build-your-own-container)
-    - [Building container images with internal mirrors](#Building-container-images-with internal-mirrors)
+    - [Using internal mirrors](#using-internal-mirrors)
 - [Authentication](#authentication)
 - [Usage](#usage)
   - [Basic usage](#basic-usage)
@@ -348,14 +349,14 @@ To build for a specific OS and architecture, pass `TARGETOS` and `TARGETARCH`:
 TARGETOS=darwin TARGETARCH=arm64 make build-binary
 ```
 
-The binary will be created in the root directory as `alloydb-auth-proxy.<os>.<arch>` (e.g., `alloydb-auth-proxy.linux.amd64`).
+The binary will be created in the `bin/binary/` directory as `alloydb-auth-proxy.<os>.<arch>` (e.g., `alloydb-auth-proxy.linux.amd64`).
 
 
 ### Build your own container
 
 You can build and push your own container image using the provided Dockerfiles.
-These Dockerfiles require `docker buildx` to correctly set the build platform
-and target architecture.
+These Dockerfiles require `go` to build the binaries outside docker, and `docker buildx`
+to correctly set the build platform and target architecture.
 
 If you don't have a registry to push to, you can
 [set up an Artifact Registry][Artifact Registry] in Google Cloud.
@@ -383,7 +384,7 @@ make build-image-multi-alpine
 [Artifact Registry]: https://cloud.google.com/artifact-registry/docs/docker/store-docker-container-images
 [distroless]: https://github.com/GoogleContainerTools/distroless
 
-#### Building container images with internal mirrors
+#### Using internal mirrors
 
 To use an internal registry proxy for the base image when building the Alpine images, use the `REGISTRY_PROXY` variable with `make` (applies to `build-image-alpine` and `build-image-multi-alpine`):
 

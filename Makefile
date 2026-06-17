@@ -89,5 +89,5 @@ build-image-multi-alpine: build-binaries-multi
 
 .PHONY: clean
 clean:
-	rm -f alloydb-auth-proxy.*
+	rm -f bin/binary/*
 	rm -f bin/image/*
