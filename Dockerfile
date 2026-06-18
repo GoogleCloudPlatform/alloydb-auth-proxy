@@ -18,6 +18,7 @@ ARG TARGETOS
 ARG TARGETARCH
 
 LABEL org.opencontainers.image.source="https://github.com/GoogleCloudPlatform/alloydb-auth-proxy"
+ENV ALLOYDB_PROXY_METADATA="container"
 
 COPY --chown=nonroot bin/binary/alloydb-auth-proxy.${TARGETOS}.${TARGETARCH} /alloydb-auth-proxy
 # set the uid as an integer for compatibility with runAsNonRoot in Kubernetes
