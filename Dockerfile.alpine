@@ -20,6 +20,7 @@ ARG TARGETOS
 ARG TARGETARCH
 
 LABEL org.opencontainers.image.source="https://github.com/GoogleCloudPlatform/alloydb-auth-proxy"
+ENV ALLOYDB_PROXY_METADATA="container.alpine"
 
 RUN apk add --no-cache \
     ca-certificates \

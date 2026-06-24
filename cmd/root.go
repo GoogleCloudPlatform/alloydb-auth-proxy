@@ -65,7 +65,10 @@ func init() {
 // metadata.
 func semanticVersion() string {
 	v := strings.TrimSpace(versionString)
-	if metadataString != "" {
+	osMetadata := os.Getenv("ALLOYDB_PROXY_METADATA")
+	if osMetadata != "" {
+		v += "+" + osMetadata
+	} else if metadataString != "" {
 		v += "+" + metadataString
 	}
 	return v
