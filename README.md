@@ -415,6 +415,7 @@ For less-common scenarios, the proxy also accepts explicit credentials via flags
 |------|-------------|
 | `--credentials-file PATH` | Path to a service account key JSON file |
 | `--token TOKEN` | An OAuth2 Bearer token |
+| `--login-token TOKEN` | A separate OAuth2 Bearer token for IAM database authentication login |
 
 **Required IAM roles** for any principal connecting through the proxy:
 
@@ -653,6 +654,7 @@ rendered docs in [docs/cmd](docs/cmd).
 | `-i, --auto-iam-authn` | false | Enable Auto IAM Authentication |
 | `-c, --credentials-file` | | Path to service account key JSON |
 | `-t, --token` | | OAuth2 Bearer token |
+| `--login-token` | | Separate token for IAM database authentication login |
 | `--public-ip` | false | Connect via public IP |
 | `--psc` | false | Connect via Private Service Connect |
 | `-u, --unix-socket` | | Directory for Unix socket listeners |
