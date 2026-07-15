@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.16.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.15.2...v1.16.0) (2026-07-15)
+
+
+### Features
+
+* add --login-token flag for separate IAM database authentication… ([#848](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/848)) ([33a4171](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/33a41712d5ebc370d447a7e2136fa259924af0d0))
+
 ## [1.15.2](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.15.1...v1.15.2) (2026-07-14)
 
 
