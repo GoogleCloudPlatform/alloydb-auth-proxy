@@ -360,6 +360,30 @@ func TestNewCommandArguments(t *testing.T) {
 			}),
 		},
 		{
+			desc: "using the login-token flag",
+			args: []string{
+				"--auto-iam-authn",
+				"--token", "MYCOOLTOKEN",
+				"--login-token", "MYCOOLLOGINTOKEN",
+				"projects/proj/locations/region/clusters/clust/instances/inst"},
+			want: withDefaults(&proxy.Config{
+				AutoIAMAuthN: true,
+				Token:        "MYCOOLTOKEN",
+				LoginToken:   "MYCOOLLOGINTOKEN",
+			}),
+		},
+		{
+			desc: "using the login-token flag without the token flag",
+			args: []string{
+				"--auto-iam-authn",
+				"--login-token", "MYCOOLLOGINTOKEN",
+				"projects/proj/locations/region/clusters/clust/instances/inst"},
+			want: withDefaults(&proxy.Config{
+				AutoIAMAuthN: true,
+				LoginToken:   "MYCOOLLOGINTOKEN",
+			}),
+		},
+		{
 			desc: "using the credentiale file flag",
 			args: []string{"--credentials-file", "/path/to/file", "projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{

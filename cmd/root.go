@@ -612,6 +612,9 @@ func NewCommand(opts ...Option) *Command {
 		"Space separated list of additional user agents, e.g. custom-agent/0.0.1")
 	localFlags.StringVarP(&c.conf.Token, "token", "t", "",
 		"Bearer token used for authorization.")
+	localFlags.StringVar(&c.conf.LoginToken, "login-token", "",
+		`Bearer token used as a separate credential for IAM database
+authentication login. Only used when --auto-iam-authn is enabled.`)
 	localFlags.StringVarP(&c.conf.CredentialsFile, "credentials-file", "c", "",
 		"Path to a service account key to use for authentication.")
 	localFlags.StringVarP(&c.conf.CredentialsJSON, "json-credentials", "j", "",
@@ -1032,6 +1035,11 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 	}
 
 	conf.Instances = ics
+
+	if conf.LoginToken != "" && !conf.AutoIAMAuthNEnabled() {
+		cmd.logger.Infof("Ignoring --login-token because --auto-iam-authn is not enabled (globally or per-instance)")
+	}
+
 	return nil
 }
 

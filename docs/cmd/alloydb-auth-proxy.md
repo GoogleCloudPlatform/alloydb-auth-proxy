@@ -327,6 +327,8 @@ alloydb-auth-proxy instance_uri... [flags]
                                              the cached copy has expired. Use this setting in environments where the
                                              CPU may be throttled and a background refresh cannot run reliably
                                              (e.g., Cloud Run)
+      --login-token string                   Bearer token used as a separate credential for IAM database
+                                             authentication login. Only used when --auto-iam-authn is enabled.
       --max-connections uint                 Limits the number of connections by refusing any additional connections.
                                              When this flag is not set, there is no limit.
       --max-sigterm-delay duration           Maximum amount of time to wait after for any open connections

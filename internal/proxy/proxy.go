@@ -100,6 +100,10 @@ type Config struct {
 	// Token is the Bearer token used for authorization.
 	Token string
 
+	// LoginToken is the Bearer token scoped for IAM database authentication
+	// login.
+	LoginToken string
+
 	// CredentialsFile is the path to a service account key.
 	CredentialsFile string
 
@@ -332,9 +336,9 @@ func credentialsOpt(c Config, l alloydb.Logger) (alloydbconn.Option, error) {
 	}
 }
 
-// autoIAMAuthNEnabled returns true if IAM authentication is enabled globally
+// AutoIAMAuthNEnabled returns true if IAM authentication is enabled globally
 // or for any instance in the configuration.
-func (c *Config) autoIAMAuthNEnabled() bool {
+func (c *Config) AutoIAMAuthNEnabled() bool {
 	if c.AutoIAMAuthN {
 		return true
 	}
@@ -362,8 +366,17 @@ func (c *Config) DialerOptions(l alloydb.Logger) ([]alloydbconn.Option, error) {
 		opts = append(opts, alloydbconn.WithAdminAPIEndpoint(c.APIEndpointURL))
 	}
 
-	if c.autoIAMAuthNEnabled() {
+	if c.AutoIAMAuthNEnabled() {
 		opts = append(opts, alloydbconn.WithIAMAuthN())
+		switch {
+		case c.LoginToken != "":
+			l.Infof("Authenticating IAM database logins with the login token")
+			opts = append(opts, alloydbconn.WithIAMAuthNTokenSource(
+				oauth2.StaticTokenSource(&oauth2.Token{AccessToken: c.LoginToken}),
+			))
+		case c.Token != "" || c.ImpersonationChain != "":
+			l.Infof("Note: reusing the configured API credential for IAM database authentication login")
+		}
 	}
 
 	if c.DebugLogs {
