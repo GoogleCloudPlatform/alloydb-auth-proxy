@@ -47,7 +47,7 @@ Pick your platform below, or see [all installation options](#installation).
 <summary>Linux (amd64)</summary>
 
 ```sh
-URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.15.1"
+URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.15.2"
 wget "$URL/alloydb-auth-proxy.linux.amd64" -O alloydb-auth-proxy
 chmod +x alloydb-auth-proxy
 ```
@@ -57,7 +57,7 @@ chmod +x alloydb-auth-proxy
 <summary>Mac (Apple Silicon)</summary>
 
 ```sh
-URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.15.1"
+URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.15.2"
 wget "$URL/alloydb-auth-proxy.darwin.arm64" -O alloydb-auth-proxy
 chmod +x alloydb-auth-proxy
 ```
@@ -67,7 +67,7 @@ chmod +x alloydb-auth-proxy
 <summary>Mac (Intel)</summary>
 
 ```sh
-URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.15.1"
+URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.15.2"
 wget "$URL/alloydb-auth-proxy.darwin.amd64" -O alloydb-auth-proxy
 chmod +x alloydb-auth-proxy
 ```
@@ -77,7 +77,7 @@ chmod +x alloydb-auth-proxy
 <summary>Windows (x64)</summary>
 
 ```powershell
-Invoke-WebRequest -Uri "https://storage.googleapis.com/alloydb-auth-proxy/v1.15.1/alloydb-auth-proxy-x64.exe" -OutFile "alloydb-auth-proxy.exe"
+Invoke-WebRequest -Uri "https://storage.googleapis.com/alloydb-auth-proxy/v1.15.2/alloydb-auth-proxy-x64.exe" -OutFile "alloydb-auth-proxy.exe"
 ```
 </details>
 
@@ -85,7 +85,7 @@ Invoke-WebRequest -Uri "https://storage.googleapis.com/alloydb-auth-proxy/v1.15.
 <summary>Container image</summary>
 
 ```sh
-docker pull gcr.io/alloydb-connectors/alloydb-auth-proxy:1.15.1
+docker pull gcr.io/alloydb-connectors/alloydb-auth-proxy:1.15.2
 ```
 </details>
 <!-- {x-release-please-end} -->
@@ -147,9 +147,9 @@ projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE
 docker run --rm \
   -v "$HOME/.config/gcloud:/gcloud" \
   -e GOOGLE_APPLICATION_CREDENTIALS=/gcloud/application_default_credentials.json \
-  -p 1.15.1.1:5432:5432 \
-  gcr.io/alloydb-connectors/alloydb-auth-proxy:1.15.1 \
-  --address 1.15.1.0 \
+  -p 1.15.2.1:5432:5432 \
+  gcr.io/alloydb-connectors/alloydb-auth-proxy:1.15.2 \
+  --address 1.15.2.0 \
   projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE
 ```
 </details>
@@ -215,7 +215,7 @@ Download the latest binary for your OS and architecture from
 <summary>Linux amd64</summary>
 
 ```sh
-URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.15.1"
+URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.15.2"
 wget "$URL/alloydb-auth-proxy.linux.amd64" -O alloydb-auth-proxy
 chmod +x alloydb-auth-proxy
 ```
@@ -225,7 +225,7 @@ chmod +x alloydb-auth-proxy
 <summary>Linux 386</summary>
 
 ```sh
-URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.15.1"
+URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.15.2"
 wget "$URL/alloydb-auth-proxy.linux.386" -O alloydb-auth-proxy
 chmod +x alloydb-auth-proxy
 ```
@@ -235,7 +235,7 @@ chmod +x alloydb-auth-proxy
 <summary>Linux arm64</summary>
 
 ```sh
-URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.15.1"
+URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.15.2"
 wget "$URL/alloydb-auth-proxy.linux.arm64" -O alloydb-auth-proxy
 chmod +x alloydb-auth-proxy
 ```
@@ -245,7 +245,7 @@ chmod +x alloydb-auth-proxy
 <summary>Mac (Intel)</summary>
 
 ```sh
-URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.15.1"
+URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.15.2"
 wget "$URL/alloydb-auth-proxy.darwin.amd64" -O alloydb-auth-proxy
 chmod +x alloydb-auth-proxy
 ```
@@ -255,7 +255,7 @@ chmod +x alloydb-auth-proxy
 <summary>Mac (Apple Silicon)</summary>
 
 ```sh
-URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.15.1"
+URL="https://storage.googleapis.com/alloydb-auth-proxy/v1.15.2"
 wget "$URL/alloydb-auth-proxy.darwin.arm64" -O alloydb-auth-proxy
 chmod +x alloydb-auth-proxy
 ```
@@ -265,7 +265,7 @@ chmod +x alloydb-auth-proxy
 <summary>Windows x64</summary>
 
 ```powershell
-Invoke-WebRequest -Uri "https://storage.googleapis.com/alloydb-auth-proxy/v1.15.1/alloydb-auth-proxy-x64.exe" -OutFile "alloydb-auth-proxy.exe"
+Invoke-WebRequest -Uri "https://storage.googleapis.com/alloydb-auth-proxy/v1.15.2/alloydb-auth-proxy-x64.exe" -OutFile "alloydb-auth-proxy.exe"
 ```
 </details>
 
@@ -273,7 +273,7 @@ Invoke-WebRequest -Uri "https://storage.googleapis.com/alloydb-auth-proxy/v1.15.
 <summary>Windows x86</summary>
 
 ```powershell
-Invoke-WebRequest -Uri "https://storage.googleapis.com/alloydb-auth-proxy/v1.15.1/alloydb-auth-proxy-x86.exe" -OutFile "alloydb-auth-proxy.exe"
+Invoke-WebRequest -Uri "https://storage.googleapis.com/alloydb-auth-proxy/v1.15.2/alloydb-auth-proxy-x86.exe" -OutFile "alloydb-auth-proxy.exe"
 ```
 </details>
 <!-- {x-release-please-end} -->
@@ -303,7 +303,7 @@ Use Alpine or Debian variants when you need a shell or debugging tools.
 <!-- {x-release-please-start-version} -->
 ```sh
 # Pull a specific version (recommended over :latest)
-docker pull gcr.io/alloydb-connectors/alloydb-auth-proxy:1.15.1
+docker pull gcr.io/alloydb-connectors/alloydb-auth-proxy:1.15.2
 ```
 <!-- {x-release-please-end} -->
 
