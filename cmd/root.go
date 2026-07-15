@@ -613,7 +613,8 @@ func NewCommand(opts ...Option) *Command {
 	localFlags.StringVarP(&c.conf.Token, "token", "t", "",
 		"Bearer token used for authorization.")
 	localFlags.StringVar(&c.conf.LoginToken, "login-token", "",
-		"Bearer token used as a separate credential for IAM database authentication login. Only used when --auto-iam-authn is enabled.")
+		`Bearer token used as a separate credential for IAM database
+authentication login. Only used when --auto-iam-authn is enabled.`)
 	localFlags.StringVarP(&c.conf.CredentialsFile, "credentials-file", "c", "",
 		"Path to a service account key to use for authentication.")
 	localFlags.StringVarP(&c.conf.CredentialsJSON, "json-credentials", "j", "",
