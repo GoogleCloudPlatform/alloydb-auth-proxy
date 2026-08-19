@@ -137,6 +137,10 @@ type Config struct {
 	// APIEndpointURL is the URL of the AlloyDB Admin API.
 	APIEndpointURL string
 
+	// UniverseDomain is the universe domain for the TPC environment. When left
+	// blank, the proxy will use the Google Default Universe (GDU): googleapis.com
+	UniverseDomain string
+
 	// Instances are configuration for individual instances. Instance
 	// configuration takes precedence over global configuration.
 	Instances []InstanceConnConfig
