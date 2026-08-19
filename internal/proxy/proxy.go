@@ -272,6 +272,9 @@ func credentialsOpt(c Config, l alloydb.Logger) (alloydbconn.Option, error) {
 	// credentials token source.
 	if c.ImpersonationChain != "" {
 		var iopts []option.ClientOption
+		if c.UniverseDomain != "" {
+			iopts = append(iopts, option.WithUniverseDomain(c.UniverseDomain))
+		}
 		switch {
 		case c.Token != "":
 			l.Infof("Impersonating service account with OAuth2 token")
@@ -364,6 +367,10 @@ func (c *Config) DialerOptions(l alloydb.Logger) ([]alloydbconn.Option, error) {
 
 	if c.APIEndpointURL != "" {
 		opts = append(opts, alloydbconn.WithAdminAPIEndpoint(c.APIEndpointURL))
+	}
+
+	if c.UniverseDomain != "" {
+		opts = append(opts, alloydbconn.WithUniverseDomain(c.UniverseDomain))
 	}
 
 	if c.AutoIAMAuthNEnabled() {

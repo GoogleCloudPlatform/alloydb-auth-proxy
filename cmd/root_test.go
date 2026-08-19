@@ -1347,3 +1347,42 @@ func TestQuitQuitQuitWithErrors(t *testing.T) {
 		t.Fatalf("want = %v, got = %v", errCloseFailed, got)
 	}
 }
+
+func TestUniverseDomainFlag(t *testing.T) {
+	t.Parallel()
+	tcs := []struct {
+		desc string
+		args []string
+		want string
+	}{
+		{
+			desc: "with universe domain specified",
+			args: []string{"--universe-domain", "my-universe.cloud", "projects/p/locations/r/clusters/c/instances/i"},
+			want: "my-universe.cloud",
+		},
+	}
+	for _, tc := range tcs {
+		t.Run(tc.desc, func(t *testing.T) {
+			c, err := parseArgs(tc.args)
+			if err != nil {
+				t.Fatalf("parseArgs failed: %v", err)
+			}
+			if c.conf.UniverseDomain != tc.want {
+				t.Errorf("got %q, want %q", c.conf.UniverseDomain, tc.want)
+			}
+		})
+	}
+}
+
+func TestUniverseDomainMutualExclusion(t *testing.T) {
+	t.Parallel()
+	args := []string{
+		"--alloydbadmin-api-endpoint", "https://alloydb.googleapis.com",
+		"--universe-domain", "my-universe.cloud",
+		"projects/p/locations/r/clusters/c/instances/i",
+	}
+	_, err := parseArgs(args)
+	if err == nil {
+		t.Fatal("expected error when both --alloydbadmin-api-endpoint and --universe-domain are provided, got nil")
+	}
+}

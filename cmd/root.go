@@ -643,6 +643,8 @@ the maximum time has passed. Defaults to 0s.`)
 	localFlags.StringVar(&c.conf.APIEndpointURL, "alloydbadmin-api-endpoint",
 		"https://alloydb.googleapis.com",
 		"When set, the proxy uses this host as the base API path.")
+	localFlags.StringVar(&c.conf.UniverseDomain, "universe-domain", "",
+		"Universe Domain for non-GDU environments. (default: googleapis.com)")
 	localFlags.StringVar(&c.conf.FUSEDir, "fuse", "",
 		"Mount a directory at the path using FUSE to access AlloyDB instances.")
 	localFlags.StringVar(&c.conf.FUSETempDir, "fuse-tmp-dir",
@@ -907,6 +909,8 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 	}
 
 	if userHasSetLocal(cmd, "alloydbadmin-api-endpoint") {
+	localFlags.StringVar(&c.conf.UniverseDomain, "universe-domain", "",
+		"Universe Domain for non-GDU environments. (default: googleapis.com)")
 		_, err := url.Parse(conf.APIEndpointURL)
 		if err != nil {
 			return newBadCommandError(fmt.Sprintf(
