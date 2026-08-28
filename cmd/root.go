@@ -908,20 +908,11 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 		return newBadCommandError("cannot specify --json-credentials and --gcloud-auth flags at the same time")
 	}
 
-	if userHasSetLocal(cmd, "alloydbadmin-api-endpoint") {
-	localFlags.StringVar(&c.conf.UniverseDomain, "universe-domain", "",
-		"Universe Domain for non-GDU environments. (default: googleapis.com)")
-		_, err := url.Parse(conf.APIEndpointURL)
-		if err != nil {
-			return newBadCommandError(fmt.Sprintf(
-				"provided value for --alloydbadmin-api-endpoint is not a valid url, %v",
-				conf.APIEndpointURL,
-			))
-		}
-
-		// Remove trailing '/' if included
-		conf.APIEndpointURL = strings.TrimSuffix(conf.APIEndpointURL, "/")
-		cmd.logger.Infof("Using API Endpoint %v", conf.APIEndpointURL)
+	if userHasSetLocal(cmd, "alloydbadmin-api-endpoint") && userHasSetLocal(cmd, "universe-domain") {
+		return newBadCommandError(fmt.Sprintf(
+			"provided value for --alloydbadmin-api-endpoint is not a valid url, %v",
+			conf.APIEndpointURL,
+		))
 	}
 
 	if userHasSetGlobal(cmd, "http-port") && !userHasSetLocal(cmd, "prometheus") && !userHasSetLocal(cmd, "health-check") {
