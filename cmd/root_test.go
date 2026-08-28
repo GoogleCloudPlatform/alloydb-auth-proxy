@@ -1363,9 +1363,9 @@ func TestUniverseDomainFlag(t *testing.T) {
 	}
 	for _, tc := range tcs {
 		t.Run(tc.desc, func(t *testing.T) {
-			c, err := parseArgs(tc.args)
+			c, err := invokeProxyCommand(tc.args)
 			if err != nil {
-				t.Fatalf("parseArgs failed: %v", err)
+				t.Fatalf("invokeProxyCommand failed: %v", err)
 			}
 			if c.conf.UniverseDomain != tc.want {
 				t.Errorf("got %q, want %q", c.conf.UniverseDomain, tc.want)
@@ -1381,7 +1381,7 @@ func TestUniverseDomainMutualExclusion(t *testing.T) {
 		"--universe-domain", "my-universe.cloud",
 		"projects/p/locations/r/clusters/c/instances/i",
 	}
-	_, err := parseArgs(args)
+	_, err := invokeProxyCommand(args)
 	if err == nil {
 		t.Fatal("expected error when both --alloydbadmin-api-endpoint and --universe-domain are provided, got nil")
 	}
