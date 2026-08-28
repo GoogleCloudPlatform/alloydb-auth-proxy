@@ -17,6 +17,7 @@ package proxy
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -750,6 +751,9 @@ func (c *Client) serveSocketMount(_ context.Context, s *socketMount) error {
 	for {
 		cConn, err := s.Accept()
 		if err != nil {
+			if errors.Is(err, net.ErrClosed) {
+				return nil
+			}
 			if nerr, ok := err.(net.Error); ok && nerr.Timeout() {
 				c.logger.Errorf("[%s] Error accepting connection: %v", s.instShort, err)
 				// For transient errors, wait a small amount of time to see if it resolves itself

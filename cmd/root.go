@@ -914,16 +914,16 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 			conf.APIEndpointURL,
 		))
 	}
-  if conf.APIEndpointURL != "" {
-    conf.APIEndpointURL = strings.TrimSuffix(conf.APIEndpointURL, "/")
-    _, err := url.Parse(conf.APIEndpointURL)
-    if err != nil {
-      return newBadCommandError(fmt.Sprintf(
-        "value %q is not a valid URL",
-        conf.APIEndpointURL,
-      ))
-    }
-  }
+	if conf.APIEndpointURL != "" {
+		conf.APIEndpointURL = strings.TrimSuffix(conf.APIEndpointURL, "/")
+		_, err := url.Parse(conf.APIEndpointURL)
+		if err != nil {
+			return newBadCommandError(fmt.Sprintf(
+				"value %q is not a valid URL",
+				conf.APIEndpointURL,
+			))
+		}
+	}
 
 	if userHasSetGlobal(cmd, "http-port") && !userHasSetLocal(cmd, "prometheus") && !userHasSetLocal(cmd, "health-check") {
 		cmd.logger.Infof("Ignoring --http-port because --prometheus or --health-check was not set")
