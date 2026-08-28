@@ -57,6 +57,11 @@ projects/<PROJECT>/locations/<REGION>/clusters/<CLUSTER>/instances/<INSTANCE>`,
 		os.Getenv("ALLOYDB_DB"),
 		"Name of the database to connect to.",
 	)
+	alloydbUniverseDomain = flag.String(
+		"alloydb_universe_domain",
+		os.Getenv("ALLOYDB_UNIVERSE_DOMAIN"),
+		"Universe domain for the AlloyDB instances.",
+	)
 )
 
 func requirePostgresVars(t *testing.T) {
