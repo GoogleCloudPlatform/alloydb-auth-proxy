@@ -519,8 +519,6 @@ func (s *spyHandler) wasCalled() bool {
 }
 
 func TestClientInitializationWithCustomHost(t *testing.T) {
-	t.Setenv("GOOGLE_CLOUD_UNIVERSE_DOMAIN", "")
-	defer cleanup()
 	if testing.Short() {
 		t.Skip("skipping client initialization test that requires valid credentials")
 	}
