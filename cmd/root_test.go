@@ -1385,4 +1385,8 @@ func TestUniverseDomainMutualExclusion(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error when both --alloydbadmin-api-endpoint and --universe-domain are provided, got nil")
 	}
+	want := "cannot specify --alloydbadmin-api-endpoint and --universe-domain flags at the same time"
+	if !strings.Contains(err.Error(), want) {
+		t.Errorf("got %q, want error containing %q", err, want)
+	}
 }

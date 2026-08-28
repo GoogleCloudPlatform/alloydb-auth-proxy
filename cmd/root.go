@@ -909,10 +909,7 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 	}
 
 	if userHasSetLocal(cmd, "alloydbadmin-api-endpoint") && userHasSetLocal(cmd, "universe-domain") {
-		return newBadCommandError(fmt.Sprintf(
-			"provided value for --alloydbadmin-api-endpoint is not a valid url, %v",
-			conf.APIEndpointURL,
-		))
+		return newBadCommandError("cannot specify --alloydbadmin-api-endpoint and --universe-domain flags at the same time")
 	}
 	if conf.APIEndpointURL != "" {
 		conf.APIEndpointURL = strings.TrimSuffix(conf.APIEndpointURL, "/")

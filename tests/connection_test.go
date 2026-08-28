@@ -81,6 +81,9 @@ func proxyConnTestWithReady(t *testing.T, args []string, driver, dsn string, rea
 	ctx, cancel := context.WithTimeout(context.Background(), connTestTimeout)
 	defer cancel()
 	// Start the proxy
+	if *alloydbUniverseDomain != "" {
+		args = append(args, "--universe-domain", *alloydbUniverseDomain)
+	}
 	p, err := StartProxy(ctx, args...)
 	if err != nil {
 		t.Fatalf("unable to start proxy: %v", err)
