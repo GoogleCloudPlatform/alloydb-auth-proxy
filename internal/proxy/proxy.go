@@ -369,7 +369,7 @@ func (c *Config) DialerOptions(l alloydb.Logger) ([]alloydbconn.Option, error) {
 	}
 	opts = append(opts, co)
 
-	if c.APIEndpointURL != "" {
+	if c.APIEndpointURL != "" && c.APIEndpointURL != "https://alloydb.googleapis.com" {
 		opts = append(opts, alloydbconn.WithAdminAPIEndpoint(c.APIEndpointURL))
 	}
 
