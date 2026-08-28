@@ -298,7 +298,6 @@ alloydb-auth-proxy instance_uri... [flags]
   -a, --address string                       (*) Address on which to bind AlloyDB instance listeners. (default "127.0.0.1")
       --admin-port string                    Port for localhost-only admin server (default "9091")
       --alloydbadmin-api-endpoint string     When set, the proxy uses this host as the base API path. (default "https://alloydb.googleapis.com")
-      --universe-domain string               Universe Domain for non-GDU environments. (default: googleapis.com)
   -i, --auto-iam-authn                       (*) Enables Automatic IAM Authentication for all instances
       --config-file string                   Path to a TOML file containing configuration options.
   -c, --credentials-file string              Path to a service account key to use for authentication.
@@ -355,6 +354,7 @@ alloydb-auth-proxy instance_uri... [flags]
       --telemetry-sample-rate int            Configure the denominator of the probabilistic sample rate of traces sent to Cloud Trace
                                              (e.g., 10,000 traces 1/10,000 calls). (default 10000)
   -t, --token string                         Bearer token used for authorization.
+      --universe-domain string               Universe Domain for non-GDU environments. (default: googleapis.com)
   -u, --unix-socket string                   (*) Enables Unix sockets for all listeners using the provided directory.
       --user-agent string                    Space separated list of additional user agents, e.g. custom-agent/0.0.1
   -v, --version                              Print the alloydb-auth-proxy version
