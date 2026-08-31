@@ -920,6 +920,7 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 				conf.APIEndpointURL,
 			))
 		}
+    cmd.logger.Infof("Using API Endpoint %v", conf.APIEndpointURL)
 	}
 
 	if userHasSetGlobal(cmd, "http-port") && !userHasSetLocal(cmd, "prometheus") && !userHasSetLocal(cmd, "health-check") {
