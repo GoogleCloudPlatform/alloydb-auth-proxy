@@ -89,7 +89,7 @@ func Execute() {
 // Command represents an invocation of the AlloyDB Auth Proxy.
 type Command struct {
 	*cobra.Command
-	conf   *proxy.Config
+	conf    *proxy.Config
 	logger  alloydb.Logger
 	dialer  alloydb.Dialer
 	cleanup func() error
@@ -1097,7 +1097,7 @@ func runSignalWrapper(cmd *Command) (err error) {
 	enableTraces := !cmd.conf.DisableTraces
 	if cmd.conf.TelemetryProject != "" && (enableMetrics || enableTraces) {
 		sd, err := stackdriver.NewExporter(stackdriver.Options{
-			ProjectID:   cmd.conf.TelemetryProject,
+			ProjectID:    cmd.conf.TelemetryProject,
 			MetricPrefix: cmd.conf.TelemetryPrefix,
 		})
 		if err != nil {
@@ -1188,7 +1188,7 @@ func runSignalWrapper(cmd *Command) (err error) {
 
 	var (
 		needsHTTPServer bool
-		mux         = http.NewServeMux()
+		mux             = http.NewServeMux()
 		notifyStarted   = func() {}
 		notifyStopped   = func() {}
 	)
@@ -1229,7 +1229,7 @@ func runSignalWrapper(cmd *Command) (err error) {
 
 	var (
 		needsAdminServer bool
-		m          = http.NewServeMux()
+		m                = http.NewServeMux()
 	)
 	if cmd.conf.QuitQuitQuit {
 		needsAdminServer = true
@@ -1296,7 +1296,7 @@ func quitquitquit(quitOnce *sync.Once, shutdownCh chan<- error) http.HandlerFunc
 
 func startHTTPServer(ctx context.Context, l alloydb.Logger, addr string, mux *http.ServeMux, shutdownCh chan<- error) {
 	server := &http.Server{
-		Addr:   addr,
+		Addr:    addr,
 		Handler: mux,
 	}
 	// Start the HTTP server.
