@@ -17,6 +17,7 @@ package proxy
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -136,6 +137,10 @@ type Config struct {
 
 	// APIEndpointURL is the URL of the AlloyDB Admin API.
 	APIEndpointURL string
+
+	// UniverseDomain is the universe domain for the TPC environment. When left
+	// blank, the proxy will use the Google Default Universe (GDU): googleapis.com
+	UniverseDomain string
 
 	// Instances are configuration for individual instances. Instance
 	// configuration takes precedence over global configuration.
@@ -272,6 +277,9 @@ func credentialsOpt(c Config, l alloydb.Logger) (alloydbconn.Option, error) {
 	// credentials token source.
 	if c.ImpersonationChain != "" {
 		var iopts []option.ClientOption
+		if c.UniverseDomain != "" {
+			iopts = append(iopts, option.WithUniverseDomain(c.UniverseDomain))
+		}
 		switch {
 		case c.Token != "":
 			l.Infof("Impersonating service account with OAuth2 token")
@@ -364,6 +372,10 @@ func (c *Config) DialerOptions(l alloydb.Logger) ([]alloydbconn.Option, error) {
 
 	if c.APIEndpointURL != "" {
 		opts = append(opts, alloydbconn.WithAdminAPIEndpoint(c.APIEndpointURL))
+	}
+
+	if c.UniverseDomain != "" {
+		opts = append(opts, alloydbconn.WithUniverseDomain(c.UniverseDomain))
 	}
 
 	if c.AutoIAMAuthNEnabled() {
@@ -745,6 +757,9 @@ func (c *Client) serveSocketMount(ctx context.Context, s *socketMount) error {
 		}
 		cConn, err := s.Accept()
 		if err != nil {
+			if errors.Is(err, net.ErrClosed) {
+				return nil
+			}
 			if nerr, ok := err.(net.Error); ok && nerr.Timeout() {
 				c.logger.Errorf("[%s] Error accepting connection: %v", s.instShort, err)
 				// For transient errors, wait a small amount of time to see if it resolves itself

@@ -641,8 +641,10 @@ to close after receiving a TERM signal. The proxy will shut
 down when the number of open connections reaches 0 or when
 the maximum time has passed. Defaults to 0s.`)
 	localFlags.StringVar(&c.conf.APIEndpointURL, "alloydbadmin-api-endpoint",
-		"https://alloydb.googleapis.com",
+		"",
 		"When set, the proxy uses this host as the base API path.")
+	localFlags.StringVar(&c.conf.UniverseDomain, "universe-domain", "",
+		"Universe Domain for non-GDU environments. (default: googleapis.com)")
 	localFlags.StringVar(&c.conf.FUSEDir, "fuse", "",
 		"Mount a directory at the path using FUSE to access AlloyDB instances.")
 	localFlags.StringVar(&c.conf.FUSETempDir, "fuse-tmp-dir",
@@ -906,17 +908,18 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 		return newBadCommandError("cannot specify --json-credentials and --gcloud-auth flags at the same time")
 	}
 
-	if userHasSetLocal(cmd, "alloydbadmin-api-endpoint") {
+	if userHasSetLocal(cmd, "alloydbadmin-api-endpoint") && userHasSetLocal(cmd, "universe-domain") {
+		return newBadCommandError("cannot specify --alloydbadmin-api-endpoint and --universe-domain flags at the same time")
+	}
+	if conf.APIEndpointURL != "" {
+		conf.APIEndpointURL = strings.TrimSuffix(conf.APIEndpointURL, "/")
 		_, err := url.Parse(conf.APIEndpointURL)
 		if err != nil {
 			return newBadCommandError(fmt.Sprintf(
-				"provided value for --alloydbadmin-api-endpoint is not a valid url, %v",
+				"value %q is not a valid URL",
 				conf.APIEndpointURL,
 			))
 		}
-
-		// Remove trailing '/' if included
-		conf.APIEndpointURL = strings.TrimSuffix(conf.APIEndpointURL, "/")
 		cmd.logger.Infof("Using API Endpoint %v", conf.APIEndpointURL)
 	}
 

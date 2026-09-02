@@ -101,9 +101,6 @@ func withDefaults(c *proxy.Config) *proxy.Config {
 	if c.TelemetryTracingSampleRate == 0 {
 		c.TelemetryTracingSampleRate = 10_000
 	}
-	if c.APIEndpointURL == "" {
-		c.APIEndpointURL = "https://alloydb.googleapis.com"
-	}
 	return c
 }
 
@@ -1345,5 +1342,48 @@ func TestQuitQuitQuitWithErrors(t *testing.T) {
 	got := <-errCh
 	if !strings.Contains(got.Error(), "close failed") {
 		t.Fatalf("want = %v, got = %v", errCloseFailed, got)
+	}
+}
+
+func TestUniverseDomainFlag(t *testing.T) {
+	t.Parallel()
+	tcs := []struct {
+		desc string
+		args []string
+		want string
+	}{
+		{
+			desc: "with universe domain specified",
+			args: []string{"--universe-domain", "my-universe.cloud", "projects/p/locations/r/clusters/c/instances/i"},
+			want: "my-universe.cloud",
+		},
+	}
+	for _, tc := range tcs {
+		t.Run(tc.desc, func(t *testing.T) {
+			c, err := invokeProxyCommand(tc.args)
+			if err != nil {
+				t.Fatalf("invokeProxyCommand failed: %v", err)
+			}
+			if c.conf.UniverseDomain != tc.want {
+				t.Errorf("got %q, want %q", c.conf.UniverseDomain, tc.want)
+			}
+		})
+	}
+}
+
+func TestUniverseDomainMutualExclusion(t *testing.T) {
+	t.Parallel()
+	args := []string{
+		"--alloydbadmin-api-endpoint", "https://alloydb.googleapis.com",
+		"--universe-domain", "my-universe.cloud",
+		"projects/p/locations/r/clusters/c/instances/i",
+	}
+	_, err := invokeProxyCommand(args)
+	if err == nil {
+		t.Fatal("expected error when both --alloydbadmin-api-endpoint and --universe-domain are provided, got nil")
+	}
+	want := "cannot specify --alloydbadmin-api-endpoint and --universe-domain flags at the same time"
+	if !strings.Contains(err.Error(), want) {
+		t.Errorf("got %q, want error containing %q", err, want)
 	}
 }
