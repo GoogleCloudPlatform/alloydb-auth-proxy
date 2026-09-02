@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.17.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.16.0...v1.17.0) (2026-09-02)
+
+
+### Features
+
+* Support --universe-domain CLI flag for TPC environments ([#968](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/968)) ([cebffe8](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/cebffe8c68afd15e82231ef5163e20bef3121810))
+
 ## [1.16.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.15.2...v1.16.0) (2026-08-12)
 
 
