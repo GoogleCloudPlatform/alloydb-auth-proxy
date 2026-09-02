@@ -747,8 +747,14 @@ func (c *Client) Close() error {
 
 // serveSocketMount persistently listens to the socketMounts listener and proxies connections to a
 // given AlloyDB instance.
-func (c *Client) serveSocketMount(_ context.Context, s *socketMount) error {
+func (c *Client) serveSocketMount(ctx context.Context, s *socketMount) error {
 	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		default:
+			// Keep looping.
+		}
 		cConn, err := s.Accept()
 		if err != nil {
 			if errors.Is(err, net.ErrClosed) {
