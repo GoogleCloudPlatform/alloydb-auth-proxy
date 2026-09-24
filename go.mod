@@ -17,7 +17,7 @@ require (
 	go.opentelemetry.io/otel v1.46.0
 	golang.org/x/oauth2 v0.37.0
 	golang.org/x/sys v0.48.0
-	google.golang.org/api v0.298.0
+	google.golang.org/api v0.299.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 )
 
