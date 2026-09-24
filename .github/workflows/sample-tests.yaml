@@ -31,14 +31,10 @@ jobs:
     runs-on: ubuntu-latest
     # Required permissions
     permissions:
-      pull-requests: write
-      issues: write
+      pull-requests: read
     # Set job outputs to values from filter step
     outputs:
-      java: ${{ steps.filter.outputs.java }}
-      nodejs: ${{ steps.filter.outputs.nodejs }}
       go: ${{ steps.filter.outputs.go }}
-      python: ${{ steps.filter.outputs.python }}
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
     - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
@@ -51,8 +47,13 @@ jobs:
     # This ensures that the go job executes after the changes job, since it's dependent on
     # that job's output.
     needs: changes
-    if: ${{ needs.changes.outputs.go == 'true' || github.event_name == 'schedule' }}
     runs-on: [self-hosted, linux, x64]
+    # run when Go samples change (or on schedule), on all builds except pull
+    # requests from forks or dependabot
+    if: |
+      (needs.changes.outputs.go == 'true' || github.event_name == 'schedule') &&
+      (github.event_name != 'pull_request' ||
+      (github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]'))
     permissions:
       contents: 'read'
       id-token: 'write'
@@ -81,8 +82,8 @@ jobs:
         uses: google-github-actions/get-secretmanager-secrets@bc9c54b29fdffb8a47776820a7d26e77b379d262 # v3.0.0
         with:
           secrets: |-
-            ALLOYDB_INSTANCE_NAME:alloydb-connector-testing/ALLOYDB_INSTANCE_NAME
-            ALLOYDB_CLUSTER_PASS:alloydb-connector-testing/ALLOYDB_CLUSTER_PASS
+            ALLOYDB_INSTANCE_NAME:${{ vars.GOOGLE_CLOUD_PROJECT }}/ALLOYDB_INSTANCE_NAME
+            ALLOYDB_CLUSTER_PASS:${{ vars.GOOGLE_CLOUD_PROJECT }}/ALLOYDB_CLUSTER_PASS
 
       - name: Run tests
         env:
