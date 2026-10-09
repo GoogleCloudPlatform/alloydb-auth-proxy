@@ -450,10 +450,10 @@ var (
 	// Instance URI is in the format:
 	// 'projects/<PROJECT>/locations/<REGION>/clusters/<CLUSTER>/instances/<INSTANCE>'
 	// Additionally, we have to support legacy "domain-scoped" projects (e.g. "google.com:PROJECT")
-	instURIRegex = regexp.MustCompile("projects/([^:]+(?::[^:]+)?)/locations/(.+)/clusters/(.+)/instances/(.+)")
+	instURIRegex = regexp.MustCompile(`^projects/([^/:]+(?::[^/:]+)?)/locations/([^/]+)/clusters/([^/]+)/instances/([^/]+)$`)
 	// unixRegex is the expected format for a Unix socket
 	// e.g. project.region.cluster.instance
-	unixRegex = regexp.MustCompile(`([^:]+(?:-[^:]+)?)\.(.+)\.(.+)\.(.+)`)
+	unixRegex = regexp.MustCompile(`^([^/:]+)\.([^/.]+)\.([^/.]+)\.([^/.]+)$`)
 	// domainNameRegex matches a well-formed domain name in accordance with
 	// RFC 1035, RFC 1123 and RFC 2181. A trailing dot is permitted.
 	domainNameRegex = regexp.MustCompile(
@@ -517,11 +517,10 @@ func toFullURI(short string) (string, error) {
 	if m == nil {
 		return "", fmt.Errorf("invalid short name: %v", short)
 	}
-	project := string(m[1])
 	// Adjust short name for legacy projects. Google Cloud projects cannot have
 	// underscores in them. When there's an underscore in the short name, it's a
 	// marker for a colon. So replace the underscore with the original colon.
-	project = strings.ReplaceAll(project, "_", ":")
+	project := strings.ReplaceAll(string(m[1]), "_", ":")
 	region := string(m[2])
 	cluster := string(m[3])
 	name := string(m[4])
