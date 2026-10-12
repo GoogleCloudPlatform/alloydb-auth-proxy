@@ -278,7 +278,8 @@ Static Connection Info
         "ipAddress": "<PSA-based private IP address>",
         "publicIpAddress": "<public IP address>",
         "pscInstanceConfig": {
-            "pscDnsName": "<PSC DNS name>"
+            "pscDnsName": "<PSC DNS name>",
+            "pscAutoDnsName": "<optional automatic PSC DNS name>"
         },
         "pemCertificateChain": [
             "<client cert>", "<intermediate cert>", "<CA cert>"
@@ -340,7 +341,9 @@ alloydb-auth-proxy instance_uri... [flags]
   -p, --port int                             (*) Initial port to use for listeners. Subsequent listeners increment from this value. (default 5432)
       --prometheus                           Enable Prometheus HTTP endpoint /metrics
       --prometheus-namespace string          Use the provided Prometheus namespace for metrics
-      --psc                                  (*) Connect to the PSC endpoint for all instances
+      --psc                                  (*) Connect to the PSC endpoint for all instances. The Proxy attempts the
+                                             instance's manual PSC DNS name first and automatically falls back to the
+                                             instance's automatic PSC DNS name if the manual one is unreachable.
       --public-ip                            (*) Connect to the public ip address for all instances
       --quiet                                Log error messages only
       --quitquitquit                         Enable quitquitquit endpoint on the localhost admin server
