@@ -656,7 +656,7 @@ rendered docs in [docs/cmd](docs/cmd).
 | `-t, --token` | | OAuth2 Bearer token |
 | `--login-token` | | Separate token for IAM database authentication login |
 | `--public-ip` | false | Connect via public IP |
-| `--psc` | false | Connect via Private Service Connect |
+| `--psc` | false | Connect via Private Service Connect; falls back to the automatic PSC DNS name if the manual one is unreachable |
 | `-u, --unix-socket` | | Directory for Unix socket listeners |
 | `--lazy-refresh` | false | Refresh certs on-demand (for throttled CPUs) |
 | `--health-check` | false | Enable `/startup`, `/liveness`, `/readiness` |
