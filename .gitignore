@@ -13,6 +13,9 @@
 
 /key.json
 /logs/
+.tools
+test_results.txt
+test-results
 
 
 ### SAMPLES
