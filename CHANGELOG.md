@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.17.1](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.17.0...v1.17.1) (2026-10-15)
+
+
+### Bug Fixes
+
+* downgrade go-fuse to v2.11.0 and add linux/386 build check ([#999](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/999)) ([0cb9ec0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/0cb9ec02203ba0c11494a6a1ae41ab33208b3ca7))
+
 ## [1.17.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.16.0...v1.17.0) (2026-09-14)
 
 
