@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/cmd"
 	"github.com/spf13/cobra/doc"
@@ -46,6 +47,14 @@ func main() {
 
 	c := cmd.NewCommand()
 	c.DisableAutoGenTag = true
+	// Re-add the release-please marker (stripped from --help output) so
+	// release-please bumps the version in the generated docs.
+	const marker = "<!-- {x-release-please-version} -->"
+	c.Command.Long = strings.Replace(c.Command.Long, "licenses.tar.gz ", "licenses.tar.gz "+marker, 1)
+	if !strings.Contains(c.Command.Long, marker) {
+		fmt.Fprintln(os.Stderr, "gendocs: failed to add release-please version marker")
+		os.Exit(1)
+	}
 
 	if err := doc.GenMarkdownTree(c.Command, outDir); err != nil {
 		fmt.Fprintf(os.Stderr, "gendocs: %v", err)
