@@ -34,7 +34,7 @@ spec:
         env:
         - name: DB_HOST
           # The port value here (5432) should match the --port flag below.
-          value: "localhost:5342"
+          value: "localhost:5432"
         - name: DB_USER
           valueFrom:
             secretKeyRef:
