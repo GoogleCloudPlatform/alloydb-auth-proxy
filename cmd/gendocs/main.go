@@ -50,8 +50,8 @@ func main() {
 	// Re-add the release-please marker (stripped from --help output) so
 	// release-please bumps the version in the generated docs.
 	const marker = "<!-- {x-release-please-version} -->"
-	c.Command.Long = strings.Replace(c.Command.Long, "licenses.tar.gz ", "licenses.tar.gz "+marker, 1)
-	if !strings.Contains(c.Command.Long, marker) {
+	c.Long = strings.Replace(c.Long, "licenses.tar.gz ", "licenses.tar.gz "+marker, 1)
+	if !strings.Contains(c.Long, marker) {
 		fmt.Fprintln(os.Stderr, "gendocs: failed to add release-please version marker")
 		os.Exit(1)
 	}
