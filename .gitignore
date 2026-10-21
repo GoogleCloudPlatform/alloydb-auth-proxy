@@ -13,6 +13,10 @@
 
 /key.json
 /logs/
+.tools
+test_results.txt
+test-results
+build.sh
 
 
 ### SAMPLES
