@@ -1,6 +1,6 @@
 module github.com/GoogleCloudPlatform/alloydb-auth-proxy
 
-go 1.26.0
+go 1.27.0
 
 require (
 	cloud.google.com/go/alloydbconn v1.19.2
