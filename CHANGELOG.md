@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.17.2](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.17.1...v1.17.2) (2026-10-22)
+
+
+### Bug Fixes
+
+* port number needs to match according to comments ([#1005](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/1005)) ([f3c0781](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/f3c07813d427fc8e617a54e30afe8c287a569127))
+* update go.mod to go 1.27.3 ([#1012](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/1012)) ([65b42b9](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/65b42b932c2632bec6041cf4adc5db4466d73e26))
+
 ## [1.17.1](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.17.0...v1.17.1) (2026-10-15)
 
 
