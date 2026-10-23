@@ -7,6 +7,20 @@
   "postUpdateOptions": [
     "gomodTidy"
   ],
+  "customManagers": [
+    {
+      // Workflows normally read the Go version from go.mod via
+      // actions/setup-go's go-version-file, so there is nothing to update
+      // here. This is a backstop for any workflow that pins a literal
+      // version instead, so it can never silently fall behind.
+      "customType": "regex",
+      "description": "Literal go-version values in GitHub Actions workflows",
+      "managerFilePatterns": ["/^\\.github/workflows/[^/]+\\.ya?ml$/"],
+      "matchStrings": ["go-version:\\s*[\"']?(?<currentValue>\\d+\\.\\d+(?:\\.\\d+)?)[\"']?"],
+      "depNameTemplate": "go",
+      "datasourceTemplate": "golang-version"
+    }
+  ],
   "packageRules": [
     {
       "description": "Group all dependencies for Samples",
@@ -25,6 +39,27 @@
       "matchManagers": ["gomod"],
       "groupName": "Non-major dependency updates",
       "matchUpdateTypes": ["minor", "patch"],
+    },
+    {
+      // Renovate does not propose updates to the go directive by default,
+      // since it is only a minimum. We build and release with it, so keep it
+      // on the latest Go release to pick up toolchain security fixes.
+      // rangeStrategy "bump" is required: the directive is a range (">= x").
+      "description": "Go release used to build the proxy",
+      "matchManagers": ["gomod", "custom.regex"],
+      "matchFileNames": ["go.mod", ".github/workflows/**"],
+      "matchDepNames": ["go"],
+      "rangeStrategy": "bump",
+      "groupName": "Go version",
+      "commitMessageTopic": "Go",
+    },
+    {
+      // Emitted by default, and only present if a toolchain line is added.
+      "matchManagers": ["gomod"],
+      "matchFileNames": ["go.mod"],
+      "matchDepTypes": ["toolchain"],
+      "groupName": "Go version",
+      "commitMessageTopic": "Go toolchain",
     },
   ]
 }
