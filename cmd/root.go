@@ -387,7 +387,8 @@ Static Connection Info
         "ipAddress": "<PSA-based private IP address>",
         "publicIpAddress": "<public IP address>",
         "pscInstanceConfig": {
-            "pscDnsName": "<PSC DNS name>"
+            "pscDnsName": "<PSC DNS name>",
+            "pscAutoDnsName": "<optional automatic PSC DNS name>"
         },
         "pemCertificateChain": [
             "<client cert>", "<intermediate cert>", "<CA cert>"
@@ -715,7 +716,9 @@ CPU may be throttled and a background refresh cannot run reliably
 	localFlags.BoolVar(&c.conf.PublicIP, "public-ip", false,
 		"(*) Connect to the public ip address for all instances")
 	localFlags.BoolVar(&c.conf.PSC, "psc", false,
-		"(*) Connect to the PSC endpoint for all instances")
+		`(*) Connect to the PSC endpoint for all instances. The Proxy attempts the
+instance's manual PSC DNS name first and automatically falls back to the
+instance's automatic PSC DNS name if the manual one is unreachable.`)
 
 	return c
 }
