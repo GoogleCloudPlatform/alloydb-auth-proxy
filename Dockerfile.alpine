@@ -14,7 +14,7 @@
 
 # Allow proxy to be overwritten, but hardcode the HASH to ensure it is reproducible regardless of proxy
 ARG IMAGE_NAME_WITH_PROXY=alpine
-FROM ${IMAGE_NAME_WITH_PROXY}:3@sha256:71e9b7bae160ba167fa17414401b94cbcdaf3c32feeab9298bd794a2a0614c35
+FROM ${IMAGE_NAME_WITH_PROXY}:3@sha256:f59abe656b692d901e184be3445e084786602108599d2a51d229c0f5a48c71bf
 
 ARG TARGETOS
 ARG TARGETARCH
