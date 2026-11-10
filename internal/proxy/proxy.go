@@ -58,6 +58,10 @@ type InstanceConnConfig struct {
 	// necessary. If set, UnixSocketPath takes precedence over UnixSocket, Addr
 	// and Port.
 	UnixSocketPath string
+	// UnixSocketMode sets the file permissions for the Unix socket and
+	// directory created for this instance. If set, takes precedence over
+	// Config.UnixSocketMode.
+	UnixSocketMode *os.FileMode
 
 	// AutoIAMAuthN enables automatic IAM authentication on the instance only.
 	// See Config.AutoIAMAuthN for more details.
@@ -125,6 +129,10 @@ type Config struct {
 	// UnixSocket is the directory where Unix sockets will be created,
 	// connected to any Instances. If set, takes precedence over Addr and Port.
 	UnixSocket string
+
+	// UnixSocketMode sets the file permissions for Unix sockets and
+	// directories created by the proxy. Defaults to 0700 if unset.
+	UnixSocketMode os.FileMode
 
 	// FUSEDir enables a file system in user space at the provided path that
 	// connects to the requested instance only when a client requests it.
@@ -851,7 +859,7 @@ func newSocketMount(ctx context.Context, conf *Config, pc *portConfig, inst Inst
 		address = net.JoinHostPort(a, fmt.Sprint(np))
 	} else {
 		network = "unix"
-		address, err = newUnixSocketMount(inst, conf.UnixSocket, true)
+		address, err = newUnixSocketMount(inst, conf.UnixSocket, conf.unixSocketMode(inst), true)
 		if err != nil {
 			return nil, err
 		}
@@ -862,11 +870,10 @@ func newSocketMount(ctx context.Context, conf *Config, pc *portConfig, inst Inst
 	if err != nil {
 		return nil, err
 	}
-	// Change file permisions to allow access for user, group, and other.
+	// Set socket file permissions (defaults to 0700 owner-only unless
+	// overridden by UnixSocketMode).
 	if network == "unix" {
-		// Best effort. If this call fails, group and other won't have write
-		// access.
-		_ = os.Chmod(address, 0777)
+		_ = os.Chmod(address, conf.unixSocketMode(inst))
 	}
 	opts := dialOptions(*conf, inst)
 	m := &socketMount{
@@ -878,9 +885,19 @@ func newSocketMount(ctx context.Context, conf *Config, pc *portConfig, inst Inst
 	return m, nil
 }
 
+func (c *Config) unixSocketMode(inst InstanceConnConfig) os.FileMode {
+	if inst.UnixSocketMode != nil && *inst.UnixSocketMode != 0 {
+		return *inst.UnixSocketMode
+	}
+	if c.UnixSocketMode != 0 {
+		return c.UnixSocketMode
+	}
+	return 0700
+}
+
 // newUnixSocketMount parses the configuration and returns the path to the unix
 // socket, or an error if that path is not valid.
-func newUnixSocketMount(inst InstanceConnConfig, unixSocketDir string, postgres bool) (string, error) {
+func newUnixSocketMount(inst InstanceConnConfig, unixSocketDir string, mode os.FileMode, postgres bool) (string, error) {
 	var (
 		// the path to the unix socket
 		address string
@@ -917,9 +934,12 @@ func newUnixSocketMount(inst InstanceConnConfig, unixSocketDir string, postgres 
 	if postgres {
 		// Make the directory only if it hasn't already been created.
 		if _, err := os.Stat(address); err != nil {
-			if err = os.Mkdir(address, 0777); err != nil {
+			if err = os.Mkdir(address, mode); err != nil {
 				return "", err
 			}
+			_ = os.Chmod(address, mode)
+		} else if inst.UnixSocketPath == "" {
+			_ = os.Chmod(address, mode)
 		}
 		address = UnixAddress(address, ".s.PGSQL.5432")
 	}

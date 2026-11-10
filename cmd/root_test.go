@@ -427,6 +427,29 @@ func TestNewCommandArguments(t *testing.T) {
 			}),
 		},
 		{
+			desc: "using the unix socket mode flag",
+			args: []string{"--unix-socket-mode", "0777", "projects/proj/locations/region/clusters/clust/instances/inst"},
+			want: withDefaults(&proxy.Config{
+				UnixSocketMode: 0777,
+			}),
+		},
+		{
+			desc: "using the unix socket mode flag with 0o prefix",
+			args: []string{"--unix-socket-mode", "0o750", "projects/proj/locations/region/clusters/clust/instances/inst"},
+			want: withDefaults(&proxy.Config{
+				UnixSocketMode: 0750,
+			}),
+		},
+		{
+			desc: "using the unix socket mode query param",
+			args: []string{"projects/proj/locations/region/clusters/clust/instances/inst?unix-socket-mode=0770"},
+			want: withDefaults(&proxy.Config{
+				Instances: []proxy.InstanceConnConfig{{
+					UnixSocketMode: pointer(os.FileMode(0770)),
+				}},
+			}),
+		},
+		{
 			desc: "using the max connections flag",
 			args: []string{"--max-connections", "1", "projects/proj/locations/region/clusters/clust/instances/inst"},
 			want: withDefaults(&proxy.Config{
@@ -665,6 +688,14 @@ func TestNewCommandWithEnvironmentConfig(t *testing.T) {
 			envValue: "/path/to/dir/",
 			want: withDefaults(&proxy.Config{
 				UnixSocket: "/path/to/dir/",
+			}),
+		},
+		{
+			desc:     "using the unix socket mode envvar",
+			envName:  "ALLOYDB_PROXY_UNIX_SOCKET_MODE",
+			envValue: "0770",
+			want: withDefaults(&proxy.Config{
+				UnixSocketMode: 0770,
 			}),
 		},
 		{
@@ -1080,6 +1111,39 @@ func TestNewCommandWithErrors(t *testing.T) {
 			args: []string{
 				"--run-connection-test",
 				"--fuse", "myfusedir",
+			},
+		},
+		{
+			desc: "using an invalid unix-socket-mode flag",
+			args: []string{
+				"--unix-socket-mode", "0999",
+				"projects/proj/locations/region/clusters/clust/instances/inst",
+			},
+		},
+		{
+			desc: "using an out-of-range unix-socket-mode flag",
+			args: []string{
+				"--unix-socket-mode", "1777",
+				"projects/proj/locations/region/clusters/clust/instances/inst",
+			},
+		},
+		{
+			desc: "using a zero unix-socket-mode flag",
+			args: []string{
+				"--unix-socket-mode", "0000",
+				"projects/proj/locations/region/clusters/clust/instances/inst",
+			},
+		},
+		{
+			desc: "using an empty unix-socket-mode query param",
+			args: []string{
+				"projects/proj/locations/region/clusters/clust/instances/inst?unix-socket-mode=",
+			},
+		},
+		{
+			desc: "using an invalid unix-socket-mode query param",
+			args: []string{
+				"projects/proj/locations/region/clusters/clust/instances/inst?unix-socket-mode=invalid",
 			},
 		}}
 

@@ -37,9 +37,11 @@ func configureFUSE(c *Client, conf *Config) (*Client, error) {
 	if _, err := os.Stat(conf.FUSEDir); err != nil {
 		return nil, err
 	}
-	if err := os.MkdirAll(conf.FUSETempDir, 0777); err != nil {
+	mode := conf.unixSocketMode(InstanceConnConfig{})
+	if err := os.MkdirAll(conf.FUSETempDir, mode); err != nil {
 		return nil, err
 	}
+	_ = os.Chmod(conf.FUSETempDir, mode)
 	c.fuseMount = fuseMount{
 		fuseDir:     conf.FUSEDir,
 		fuseTempDir: conf.FUSETempDir,
