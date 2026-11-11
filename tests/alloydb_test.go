@@ -254,7 +254,7 @@ func TestPostgresPSC(t *testing.T) {
 		*alloydbUser, *alloydbPass, *alloydbDB,
 	)
 	proxyConnTest(t, []string{
-		*alloydbPSCInstanceURI, "--psc", "--port=10007",
+		*alloydbPSCInstanceURI, "--psc", "--port=10007", "--debug-logs",
 		"--disable-built-in-telemetry",
 	}, "pgx", dsn)
 }
