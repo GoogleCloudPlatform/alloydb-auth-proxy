@@ -510,6 +510,20 @@ the shell):
 ./alloydb-auth-proxy 'INSTANCE_URI?unix-socket-path=/path/to/socket'
 ```
 
+By default, Unix sockets and their parent directories are created with `0700`
+(owner-only) permissions so that other OS users on the same host cannot connect
+to the proxy's listener. If you intentionally need to share the socket across
+OS users or container UIDs (for example, in a multi-container pod), pass
+`--unix-socket-mode` (e.g., `--unix-socket-mode 0770` or
+`--unix-socket-mode 0777`; in a config file, specify it as a quoted octal
+string such as `unix-socket-mode = "0770"`).
+
+> [!WARNING]
+> Widening `--unix-socket-mode` (such as `0777`) on a multi-tenant host allows
+> any local OS user who can access the socket to connect through the proxy's
+> encrypted tunnel—and when `--auto-iam-authn` is enabled, to authenticate to
+> the database as the proxy's IAM principal without supplying a password.
+
 ### Config file
 
 Instead of flags, you can supply a TOML, YAML, or JSON config file:
@@ -658,6 +672,7 @@ rendered docs in [docs/cmd](docs/cmd).
 | `--public-ip` | false | Connect via public IP |
 | `--psc` | false | Connect via Private Service Connect |
 | `-u, --unix-socket` | | Directory for Unix socket listeners |
+| `--unix-socket-mode` | `0700` | File permissions (octal) for Unix sockets and directories |
 | `--lazy-refresh` | false | Refresh certs on-demand (for throttled CPUs) |
 | `--health-check` | false | Enable `/startup`, `/liveness`, `/readiness` |
 | `--prometheus` | false | Enable Prometheus `/metrics` endpoint |

@@ -710,6 +710,8 @@ CPU may be throttled and a background refresh cannot run reliably
 		"(*) Initial port to use for listeners. Subsequent listeners increment from this value.")
 	localFlags.StringVarP(&c.conf.UnixSocket, "unix-socket", "u", "",
 		`(*) Enables Unix sockets for all listeners using the provided directory.`)
+	localFlags.String("unix-socket-mode", "0700",
+		`(*) Sets the file permissions for Unix sockets and directories (in octal, e.g. 0700 or 0777).`)
 	localFlags.BoolVarP(&c.conf.AutoIAMAuthN, "auto-iam-authn", "i", false,
 		"(*) Enables Automatic IAM Authentication for all instances")
 	localFlags.BoolVar(&c.conf.PublicIP, "public-ip", false,
@@ -883,6 +885,14 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 	if userHasSetLocal(cmd, "port") && userHasSetLocal(cmd, "unix-socket") {
 		return newBadCommandError("cannot specify --unix-socket and --port together")
 	}
+	if userHasSetLocal(cmd, "unix-socket-mode") {
+		modeStr, _ := cmd.LocalFlags().GetString("unix-socket-mode")
+		m, err := parseUnixSocketMode(modeStr)
+		if err != nil {
+			return err
+		}
+		conf.UnixSocketMode = m
+	}
 	// First, validate global config.
 	if ip := net.ParseIP(conf.Addr); ip == nil {
 		return newBadCommandError(fmt.Sprintf("not a valid IP address: %q", conf.Addr))
@@ -1021,6 +1031,17 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 
 			}
 
+			if um, umok := q["unix-socket-mode"]; umok {
+				if len(um) != 1 {
+					return newBadCommandError(fmt.Sprintf("unix-socket-mode query param should be only one value: %q", um))
+				}
+				m, err := parseUnixSocketMode(um[0])
+				if err != nil {
+					return err
+				}
+				ic.UnixSocketMode = &m
+			}
+
 			ic.AutoIAMAuthN, err = parseBoolOpt(q, "auto-iam-authn")
 			if err != nil {
 				return err
@@ -1044,6 +1065,18 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 	}
 
 	return nil
+}
+
+func parseUnixSocketMode(val string) (os.FileMode, error) {
+	cleaned := strings.TrimPrefix(strings.TrimPrefix(val, "0o"), "0O")
+	if cleaned == "" {
+		return 0, newBadCommandError(fmt.Sprintf("invalid unix-socket-mode %q: must be an octal permission value between 0001 and 0777", val))
+	}
+	m, err := strconv.ParseUint(cleaned, 8, 32)
+	if err != nil || m == 0 || m > 0777 {
+		return 0, newBadCommandError(fmt.Sprintf("invalid unix-socket-mode %q: must be an octal permission value between 0001 and 0777", val))
+	}
+	return os.FileMode(m), nil
 }
 
 // parseBoolOpt parses a boolean option from the query string.

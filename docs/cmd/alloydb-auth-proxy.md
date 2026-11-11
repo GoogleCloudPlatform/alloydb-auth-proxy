@@ -356,6 +356,7 @@ alloydb-auth-proxy instance_uri... [flags]
   -t, --token string                         Bearer token used for authorization.
       --universe-domain string               Universe Domain for non-GDU environments. (default: googleapis.com)
   -u, --unix-socket string                   (*) Enables Unix sockets for all listeners using the provided directory.
+      --unix-socket-mode string              (*) Sets the file permissions for Unix sockets and directories (in octal, e.g. 0700 or 0777). (default "0700")
       --user-agent string                    Space separated list of additional user agents, e.g. custom-agent/0.0.1
   -v, --version                              Print the alloydb-auth-proxy version
       --with-backend-check                   Enables a backend connection check in the startup probe. Useful for
