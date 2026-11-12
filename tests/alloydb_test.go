@@ -15,10 +15,16 @@
 package tests
 
 import (
+	"bufio"
+	"context"
+	"database/sql"
 	"flag"
 	"fmt"
 	"os"
+	"strings"
+	"sync"
 	"testing"
+	"time"
 
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/proxy"
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -257,4 +263,62 @@ func TestPostgresPSC(t *testing.T) {
 		*alloydbPSCInstanceURI, "--psc", "--port=10007", "--debug-logs",
 		"--disable-built-in-telemetry",
 	}, "pgx", dsn)
+}
+
+// TestPostgresPSCDialLogs is a DO NOT MERGE diagnostic: it connects over PSC
+// with debug logs enabled and prints the connector's dial logs, which
+// proxyConnTest discards once the proxy is ready, so CI shows which PSC DNS
+// name was dialed.
+func TestPostgresPSCDialLogs(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping Postgres integration tests")
+	}
+	requirePostgresVars(t)
+
+	ctx, cancel := context.WithTimeout(context.Background(), connTestTimeout)
+	defer cancel()
+	p, err := StartProxy(ctx, *alloydbPSCInstanceURI, "--psc", "--port=10019",
+		"--debug-logs", "--disable-built-in-telemetry")
+	if err != nil {
+		t.Fatalf("unable to start proxy: %v", err)
+	}
+	defer p.Close()
+	if out, err := p.WaitForServe(ctx); err != nil {
+		t.Fatalf("unable to verify proxy was serving: %s \n %s", err, out)
+	}
+
+	var (
+		mu    sync.Mutex
+		lines []string
+	)
+	go func() {
+		s := bufio.NewScanner(p.Out)
+		for s.Scan() {
+			mu.Lock()
+			lines = append(lines, s.Text())
+			mu.Unlock()
+		}
+	}()
+
+	dsn := fmt.Sprintf(
+		"host=127.0.0.1 port=10019 user=%v password=%v database=%v sslmode=disable",
+		*alloydbUser, *alloydbPass, *alloydbDB,
+	)
+	db, err := sql.Open("pgx", dsn)
+	if err != nil {
+		t.Fatalf("unable to connect to db: %s", err)
+	}
+	defer db.Close()
+	if _, err := db.Exec("SELECT 1;"); err != nil {
+		t.Fatalf("unable to exec on db: %s", err)
+	}
+	time.Sleep(time.Second) // let the log lines drain
+
+	mu.Lock()
+	defer mu.Unlock()
+	for _, l := range lines {
+		if strings.Contains(l, "Dialing") || strings.Contains(l, "Connected securely") {
+			t.Log(l)
+		}
+	}
 }
