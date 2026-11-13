@@ -51,6 +51,11 @@ func TestUnixSocketDir(t *testing.T) {
 			want: "ep.global.alloydb-psa.goog",
 		},
 		{
+			desc:    "invalid DNS name",
+			in:      "-invalid..domain",
+			wantErr: true,
+		},
+		{
 			in:      "projects/myproj/locations/reg/clusters/clust/instances/",
 			wantErr: true,
 		},
@@ -73,6 +78,61 @@ func TestUnixSocketDir(t *testing.T) {
 				t.Fatalf("want = %v, got = %v", tc.want, got)
 			}
 
+		})
+	}
+}
+
+func TestShortInstURI(t *testing.T) {
+	tcs := []struct {
+		desc    string
+		in      string
+		want    string
+		wantErr bool
+	}{
+		{
+			desc: "good input",
+			in:   "projects/proj/locations/reg/clusters/clust/instances/inst",
+			want: "proj.reg.clust.inst",
+		},
+		{
+			desc: "legacy domain project",
+			in:   "projects/google.com:proj/locations/reg/clusters/clust/instances/inst",
+			want: "google.com:proj.reg.clust.inst",
+		},
+		{
+			desc: "write endpoint DNS name",
+			in:   "ep.global.alloydb-psa.goog",
+			want: "ep.global.alloydb-psa.goog",
+		},
+		{
+			desc: "write endpoint DNS name with uppercase and trailing dot",
+			in:   "EP.Global.AlloyDB-PSA.Goog.",
+			want: "ep.global.alloydb-psa.goog",
+		},
+		{
+			desc:    "invalid DNS name",
+			in:      "-invalid..domain",
+			wantErr: true,
+		},
+		{
+			desc:    "invalid instance URI",
+			in:      "projects/myproj/locations/reg/clusters/clust/instances/",
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range tcs {
+		t.Run(tc.desc, func(t *testing.T) {
+			got, gotErr := ShortInstURI(tc.in)
+			if tc.wantErr {
+				if gotErr == nil {
+					t.Fatal("want err != nil, got err == nil")
+				}
+				return
+			}
+			if got != tc.want {
+				t.Fatalf("want = %v, got = %v", tc.want, got)
+			}
 		})
 	}
 }

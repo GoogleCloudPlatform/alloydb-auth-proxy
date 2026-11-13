@@ -480,13 +480,13 @@ func ParseInstanceURI(inst string) (string, string, string, string, error) {
 // or returns the normalized domain name if inst is a valid DNS domain name.
 func ShortInstURI(inst string) (string, error) {
 	p, r, c, i, err := ParseInstanceURI(inst)
-	if err == nil {
-		return strings.Join([]string{p, r, c, i}, "."), nil
+	if err != nil {
+		if IsValidDomain(inst) {
+			return strings.ToLower(strings.TrimSuffix(inst, ".")), nil
+		}
+		return "", err
 	}
-	if IsValidDomain(inst) {
-		return strings.ToLower(strings.TrimSuffix(inst, ".")), nil
-	}
-	return "", err
+	return strings.Join([]string{p, r, c, i}, "."), nil
 }
 
 // UnixSocketDir returns a shorted instance connection name to prevent
@@ -494,20 +494,20 @@ func ShortInstURI(inst string) (string, error) {
 // the normalized domain name if inst is a valid DNS domain name.
 func UnixSocketDir(dir, inst string) (string, error) {
 	project, region, cluster, name, err := ParseInstanceURI(strings.ToLower(inst))
-	if err == nil {
-		// Colons are not allowed on Windows, but are present in legacy project
-		// names (e.g., google.com:myproj). Replace any colon with an underscore to
-		// support Windows. Underscores are not allowed in project names. So use an
-		// underscore to have a Windows-friendly delimitor that can serve as a
-		// marker to recover the legacy project name when necessary (e.g., FUSE).
-		project = strings.ReplaceAll(project, ":", "_")
-		shortName := strings.Join([]string{project, region, cluster, name}, ".")
-		return filepath.Join(dir, shortName), nil
+	if err != nil {
+		if IsValidDomain(inst) {
+			return filepath.Join(dir, strings.ToLower(strings.TrimSuffix(inst, "."))), nil
+		}
+		return "", err
 	}
-	if IsValidDomain(inst) {
-		return filepath.Join(dir, strings.ToLower(strings.TrimSuffix(inst, "."))), nil
-	}
-	return "", err
+	// Colons are not allowed on Windows, but are present in legacy project
+	// names (e.g., google.com:myproj). Replace any colon with an underscore to
+	// support Windows. Underscores are not allowed in project names. So use an
+	// underscore to have a Windows-friendly delimitor that can serve as a
+	// marker to recover the legacy project name when necessary (e.g., FUSE).
+	project = strings.ReplaceAll(project, ":", "_")
+	shortName := strings.Join([]string{project, region, cluster, name}, ".")
+	return filepath.Join(dir, shortName), nil
 }
 
 // toFullURI converts a shortened Unix socket name (e.g.,
