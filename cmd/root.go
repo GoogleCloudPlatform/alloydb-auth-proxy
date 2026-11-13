@@ -172,6 +172,15 @@ Starting the Proxy
       ./alloydb-auth-proxy \
           projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE
 
+  You may also start the proxy with an AlloyDB write endpoint DNS name (when
+  running within the cluster's VPC network):
+
+      ./alloydb-auth-proxy my-endpoint.global.alloydb-psa.goog
+
+  When configured with a DNS name, the proxy checks the DNS TXT record every 30
+  seconds and closes existing connections to the old instance when the target
+  instance changes.
+
   By default, the proxy will start a TCP listener on Postgres' default port
   5432. If multiple instances are specified which all use the same database
   engine, the first will be started on the default port and subsequent
@@ -957,7 +966,7 @@ func parseConfig(cmd *Command, conf *proxy.Config, args []string) error {
 		// split into instance uri and query parameters
 		res := strings.SplitN(a, "?", 2)
 		_, _, _, _, err := proxy.ParseInstanceURI(res[0])
-		if err != nil {
+		if err != nil && !proxy.IsValidDomain(res[0]) {
 			return newBadCommandError(fmt.Sprintf("could not parse instance uri: %q", res[0]))
 		}
 		ic := proxy.InstanceConnConfig{Name: res[0]}

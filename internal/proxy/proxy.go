@@ -370,6 +370,7 @@ func (c *Config) AutoIAMAuthNEnabled() bool {
 // values for use by alloydbconn.NewClient()
 func (c *Config) DialerOptions(l alloydb.Logger) ([]alloydbconn.Option, error) {
 	opts := []alloydbconn.Option{
+		alloydbconn.WithDNSResolver(),
 		alloydbconn.WithUserAgent(c.UserAgent),
 	}
 	co, err := credentialsOpt(*c, l)
@@ -453,7 +454,17 @@ var (
 	// unixRegex is the expected format for a Unix socket
 	// e.g. project.region.cluster.instance
 	unixRegex = regexp.MustCompile(`([^:]+(?:-[^:]+)?)\.(.+)\.(.+)\.(.+)`)
+	// domainNameRegex matches a well-formed domain name in accordance with
+	// RFC 1035, RFC 1123 and RFC 2181. A trailing dot is permitted.
+	domainNameRegex = regexp.MustCompile(
+		`^(?:[_a-z0-9](?:[_a-z0-9-]{0,61}[a-z0-9])?\.)+(?:[a-z](?:[a-z0-9-]{0,61}[a-z0-9])?)?$`,
+	)
 )
+
+// IsValidDomain reports whether dn is a well-formed domain name.
+func IsValidDomain(dn string) bool {
+	return domainNameRegex.MatchString(strings.ToLower(dn))
+}
 
 // ParseInstanceURI validates the instance uri is in the proper format and
 // returns the project, region, cluster, and instance name.
@@ -465,30 +476,38 @@ func ParseInstanceURI(inst string) (string, string, string, string, error) {
 	return string(m[1]), string(m[2]), string(m[3]), string(m[4]), nil
 }
 
-// ShortInstURI shortens the instance URI into project.region.cluster.instance.
+// ShortInstURI shortens the instance URI into project.region.cluster.instance,
+// or returns the normalized domain name if inst is a valid DNS domain name.
 func ShortInstURI(inst string) (string, error) {
 	p, r, c, i, err := ParseInstanceURI(inst)
-	if err != nil {
-		return "", err
+	if err == nil {
+		return strings.Join([]string{p, r, c, i}, "."), nil
 	}
-	return strings.Join([]string{p, r, c, i}, "."), nil
+	if IsValidDomain(inst) {
+		return strings.ToLower(strings.TrimSuffix(inst, ".")), nil
+	}
+	return "", err
 }
 
 // UnixSocketDir returns a shorted instance connection name to prevent
-// exceeding the Unix socket length, e.g., project.region.cluster.instance
+// exceeding the Unix socket length, e.g., project.region.cluster.instance, or
+// the normalized domain name if inst is a valid DNS domain name.
 func UnixSocketDir(dir, inst string) (string, error) {
 	project, region, cluster, name, err := ParseInstanceURI(strings.ToLower(inst))
-	if err != nil {
-		return "", err
+	if err == nil {
+		// Colons are not allowed on Windows, but are present in legacy project
+		// names (e.g., google.com:myproj). Replace any colon with an underscore to
+		// support Windows. Underscores are not allowed in project names. So use an
+		// underscore to have a Windows-friendly delimitor that can serve as a
+		// marker to recover the legacy project name when necessary (e.g., FUSE).
+		project = strings.ReplaceAll(project, ":", "_")
+		shortName := strings.Join([]string{project, region, cluster, name}, ".")
+		return filepath.Join(dir, shortName), nil
 	}
-	// Colons are not allowed on Windows, but are present in legacy project
-	// names (e.g., google.com:myproj). Replace any colon with an underscore to
-	// support Windows. Underscores are not allowed in project names. So use an
-	// underscore to have a Windows-friendly delimitor that can serve as a
-	// marker to recover the legacy project name when necessary (e.g., FUSE).
-	project = strings.ReplaceAll(project, ":", "_")
-	shortName := strings.Join([]string{project, region, cluster, name}, ".")
-	return filepath.Join(dir, shortName), nil
+	if IsValidDomain(inst) {
+		return filepath.Join(dir, strings.ToLower(strings.TrimSuffix(inst, "."))), nil
+	}
+	return "", err
 }
 
 // toFullURI converts a shortened Unix socket name (e.g.,

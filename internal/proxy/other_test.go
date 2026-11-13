@@ -41,6 +41,16 @@ func TestUnixSocketDir(t *testing.T) {
 			want: "google.com_proj.reg.clust.inst",
 		},
 		{
+			desc: "write endpoint DNS name",
+			in:   "ep.global.alloydb-psa.goog",
+			want: "ep.global.alloydb-psa.goog",
+		},
+		{
+			desc: "write endpoint DNS name with uppercase and trailing dot",
+			in:   "EP.Global.AlloyDB-PSA.Goog.",
+			want: "ep.global.alloydb-psa.goog",
+		},
+		{
 			in:      "projects/myproj/locations/reg/clusters/clust/instances/",
 			wantErr: true,
 		},
