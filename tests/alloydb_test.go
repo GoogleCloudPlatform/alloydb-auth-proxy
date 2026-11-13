@@ -37,6 +37,11 @@ projects/<PROJECT>/locations/<REGION>/clusters/<CLUSTER>/instances/<INSTANCE>`,
 		`AlloyDB PSC instance connection name, in the form of
 projects/<PROJECT>/locations/<REGION>/clusters/<CLUSTER>/instances/<INSTANCE>`,
 	)
+	alloydbWriteEndpoint = flag.String(
+		"alloydb_write_endpoint",
+		os.Getenv("ALLOYDB_PSA_WRITE_ENDPOINT"),
+		"AlloyDB write endpoint DNS name, e.g. <ENDPOINT>.global.alloydb-psa.goog",
+	)
 	alloydbUser = flag.String(
 		"alloydb_user",
 		os.Getenv("ALLOYDB_USER"),
@@ -255,6 +260,25 @@ func TestPostgresPSC(t *testing.T) {
 	)
 	proxyConnTest(t, []string{
 		*alloydbPSCInstanceURI, "--psc", "--port=10007",
+		"--disable-built-in-telemetry",
+	}, "pgx", dsn)
+}
+
+func TestPostgresWriteEndpoint(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping Postgres integration tests")
+	}
+	requirePostgresVars(t)
+	if *alloydbWriteEndpoint == "" {
+		t.Fatal("'alloydb_write_endpoint' not set")
+	}
+
+	dsn := fmt.Sprintf(
+		"host=127.0.0.1 port=10009 user=%v password=%v database=%v sslmode=disable",
+		*alloydbUser, *alloydbPass, *alloydbDB,
+	)
+	proxyConnTest(t, []string{
+		*alloydbWriteEndpoint, "--port=10009",
 		"--disable-built-in-telemetry",
 	}, "pgx", dsn)
 }

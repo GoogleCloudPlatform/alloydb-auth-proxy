@@ -185,6 +185,7 @@ psql "host=127.0.0.1 port=5432 user=DB_USER dbname=DB_NAME"
   - [Multiple instances](#multiple-instances)
   - [Custom address and port](#custom-address-and-port)
   - [Public IP](#public-ip)
+  - [Write endpoints (DNS)](#write-endpoints-dns)
   - [Auto IAM Authentication](#auto-iam-authentication)
   - [Per-instance configuration](#per-instance-configuration)
   - [Unix sockets](#unix-sockets)
@@ -478,6 +479,21 @@ projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE
 ```sh
 ./alloydb-auth-proxy --public-ip INSTANCE_URI
 ```
+
+### Write endpoints (DNS)
+
+Pass an AlloyDB write endpoint DNS name (whose TXT record holds the target
+instance URI) instead of an instance URI:
+
+```sh
+./alloydb-auth-proxy my-endpoint.global.alloydb-psa.goog
+```
+
+Write endpoint DNS names only resolve from within the VPC network of the
+cluster. The proxy re-checks the TXT record every 30 seconds; when it points to
+a different instance (for example, after a switchover or failover), the proxy
+closes existing connections to the old instance so clients reconnect to the new
+primary.
 
 ### Auto IAM Authentication
 
