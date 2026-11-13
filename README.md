@@ -670,7 +670,7 @@ rendered docs in [docs/cmd](docs/cmd).
 | `-t, --token` | | OAuth2 Bearer token |
 | `--login-token` | | Separate token for IAM database authentication login |
 | `--public-ip` | false | Connect via public IP |
-| `--psc` | false | Connect via Private Service Connect |
+| `--psc` | false | Connect via Private Service Connect; falls back to the automatic PSC DNS name if the manual one is unreachable |
 | `-u, --unix-socket` | | Directory for Unix socket listeners |
 | `--unix-socket-mode` | `0700` | File permissions (octal) for Unix sockets and directories |
 | `--lazy-refresh` | false | Refresh certs on-demand (for throttled CPUs) |

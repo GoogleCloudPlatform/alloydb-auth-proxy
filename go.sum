@@ -15,10 +15,10 @@ cloud.google.com/go v0.62.0/go.mod h1:jmCYTdRCQuc1PHIIJ/maLInMho30T/Y0M4hTdTShOY
 cloud.google.com/go v0.65.0/go.mod h1:O5N8zS7uWy9vkA9vayVHs65eM1ubvY4h553ofrNHObY=
 cloud.google.com/go v0.123.0 h1:2NAUJwPR47q+E35uaJeYoNhuNEM9kM8SjgRgdeOJUSE=
 cloud.google.com/go v0.123.0/go.mod h1:xBoMV08QcqUGuPW65Qfm1o9Y4zKZBpGS+7bImXLTAZU=
-cloud.google.com/go/alloydb v1.26.0 h1:UTzyumJ8tEo0CqwzLkV4WMGnCxvvhw3BDy1nXfCt9KE=
-cloud.google.com/go/alloydb v1.26.0/go.mod h1:oqHGc/Xb5fWtH+wIDpu2wcPJX9oML/fGJuH/sp8ysyo=
-cloud.google.com/go/alloydbconn v1.19.2 h1:aLNknC+15pBcbwO8QkihLh8ZksoHXEtem0SLFCNRSEM=
-cloud.google.com/go/alloydbconn v1.19.2/go.mod h1:v42NVpqxmyTtsf/vmOmOS5kNGd7sdR3KrVUPL7EYOhk=
+cloud.google.com/go/alloydb v1.29.0 h1:MZtWvGBAFbs7PMl65MH79PRRS8OQgPBkIiI5ysO+dP0=
+cloud.google.com/go/alloydb v1.29.0/go.mod h1:EC2XA/9Y4fIcecu/HQyNkodt8TYN4XTkQzcv+a0eJfU=
+cloud.google.com/go/alloydbconn v1.20.0 h1:Ll3GSOlPsqjmh+NgBhMQKl7qSZQoOxjMbunuC0zRuDY=
+cloud.google.com/go/alloydbconn v1.20.0/go.mod h1:UJC2Yl4yKK/kNoaKM3bZE506FfVuHXfCA/lJTkDXU4c=
 cloud.google.com/go/auth v0.24.1-0.20261001053825-dbc26066f70a h1:jW1ZLFy9oa5ai8LOI40z6s+DL1cO/L1KSm9hVGnibn8=
 cloud.google.com/go/auth v0.24.1-0.20261001053825-dbc26066f70a/go.mod h1:1dmBXa9xfBvBr39ZnDUDkaaA91ccq9CcqENDgJA4d7c=
 cloud.google.com/go/auth/oauth2adapt v0.3.0 h1:FY8oSZpCYoUNv6QxVODuMjQz4IlSOVeiQtZ08vLPz88=
