@@ -41,6 +41,12 @@
       "matchUpdateTypes": ["minor", "patch"],
     },
     {
+      "description": "Separate go-fuse updates into their own PR",
+      "matchManagers": ["gomod"],
+      "matchDepNames": ["github.com/hanwen/go-fuse/v2"],
+      "groupName": "go-fuse",
+    },
+    {
       // Renovate does not propose updates to the go directive by default,
       // since it is only a minimum. We build and release with it, so keep it
       // on the latest Go release to pick up toolchain security fixes.
