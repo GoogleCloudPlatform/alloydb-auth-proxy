@@ -42,8 +42,8 @@ alloydb-auth-proxy wait [flags]
 ### Options
 
 ```
-  -h, --help           help for wait
-  -m, --max duration   maximum amount of time to wait for startup (default 30s)
+  -h, --help[=true|false]   help for wait
+  -m, --max duration        maximum amount of time to wait for startup (default 30s)
 ```
 
 ### Options inherited from parent commands
@@ -51,10 +51,9 @@ alloydb-auth-proxy wait [flags]
 ```
       --http-address string   Address for Prometheus and health check server (default "localhost")
       --http-port string      Port for the Prometheus server to use (default "9090")
-      --quiet                 Log error messages only
+      --quiet[=true|false]    Log error messages only
 ```
 
 ### SEE ALSO
 
 * [alloydb-auth-proxy](alloydb-auth-proxy.md)	 - alloydb-auth-proxy provides a secure way to authorize connections to AlloyDB.
-

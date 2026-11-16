@@ -36,7 +36,7 @@ alloydb-auth-proxy shutdown [flags]
 
 ```
       --admin-port string   port for the admin server (default "9091")
-  -h, --help                help for shutdown
+  -h, --help[=true|false]   help for shutdown
 ```
 
 ### Options inherited from parent commands
@@ -44,10 +44,9 @@ alloydb-auth-proxy shutdown [flags]
 ```
       --http-address string   Address for Prometheus and health check server (default "localhost")
       --http-port string      Port for the Prometheus server to use (default "9090")
-      --quiet                 Log error messages only
+      --quiet[=true|false]    Log error messages only
 ```
 
 ### SEE ALSO
 
 * [alloydb-auth-proxy](alloydb-auth-proxy.md)	 - alloydb-auth-proxy provides a secure way to authorize connections to AlloyDB.
-
