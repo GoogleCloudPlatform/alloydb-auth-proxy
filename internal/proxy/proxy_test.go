@@ -103,11 +103,35 @@ func TestClientInitialization(t *testing.T) {
 	defer cleanup()
 	inst1 := "projects/proj/locations/region/clusters/clust/instances/inst1"
 	inst2 := "projects/proj/locations/region/clusters/clust/instances/inst2"
+	dnsInst := "ep.global.alloydb-psa.goog"
 	wantUnix := "proj.region.clust.inst1"
 	testUnixSocketPath := path.Join(testDir, "db")
 	testUnixSocketPathPg := path.Join(testDir, "db", ".s.PGSQL.5432")
 
 	tcs := []testCase{
+		{
+			desc: "with a DNS write endpoint",
+			in: &proxy.Config{
+				Addr: "127.0.0.1",
+				Port: 5000,
+				Instances: []proxy.InstanceConnConfig{
+					{Name: dnsInst},
+				},
+			},
+			wantTCPAddrs: []string{"127.0.0.1:5000"},
+		},
+		{
+			desc: "with a Unix socket for a DNS write endpoint",
+			in: &proxy.Config{
+				UnixSocket: testDir,
+				Instances: []proxy.InstanceConnConfig{
+					{Name: dnsInst},
+				},
+			},
+			wantUnixAddrs: []string{
+				filepath.Join(testDir, dnsInst, ".s.PGSQL.5432"),
+			},
+		},
 		{
 			desc: "multiple instances",
 			in: &proxy.Config{

@@ -63,6 +63,15 @@ Starting the Proxy
       ./alloydb-auth-proxy \
           projects/PROJECT/locations/REGION/clusters/CLUSTER/instances/INSTANCE
 
+  You may also start the proxy with an AlloyDB write endpoint DNS name (when
+  running within the cluster's VPC network):
+
+      ./alloydb-auth-proxy my-endpoint.global.alloydb-psa.goog
+
+  When configured with a DNS name, the proxy checks the DNS TXT record every 30
+  seconds and closes existing connections to the old instance when the target
+  instance changes.
+
   By default, the proxy will start a TCP listener on Postgres' default port
   5432. If multiple instances are specified which all use the same database
   engine, the first will be started on the default port and subsequent

@@ -156,6 +156,26 @@ func TestNewCommandArguments(t *testing.T) {
 			}),
 		},
 		{
+			desc: "with a DNS write endpoint",
+			args: []string{"ep.global.alloydb-psa.goog"},
+			want: withDefaults(&proxy.Config{
+				Addr:      "127.0.0.1",
+				Instances: []proxy.InstanceConnConfig{{Name: "ep.global.alloydb-psa.goog"}},
+			}),
+		},
+		{
+			desc: "with a DNS write endpoint and query params",
+			args: []string{"ep.global.alloydb-psa.goog?auto-iam-authn=true&port=6000"},
+			want: withDefaults(&proxy.Config{
+				Addr: "127.0.0.1",
+				Instances: []proxy.InstanceConnConfig{{
+					Name:         "ep.global.alloydb-psa.goog",
+					AutoIAMAuthN: pointer(true),
+					Port:         6000,
+				}},
+			}),
+		},
+		{
 			desc: "Auto IAM AuthN",
 			args: []string{
 				"--auto-iam-authn",

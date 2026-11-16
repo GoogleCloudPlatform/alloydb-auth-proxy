@@ -96,6 +96,7 @@ jobs:
             IMPERSONATED_USER:${{ vars.GOOGLE_CLOUD_PROJECT }}/IMPERSONATED_USER
             ALLOYDB_IAM_USER:${{ vars.GOOGLE_CLOUD_PROJECT }}/ALLOYDB_PROXY_IAM_USER
             ALLOYDB_PSC_INSTANCE_URI:${{ vars.GOOGLE_CLOUD_PROJECT }}/ALLOYDB_PSC_INSTANCE_URI
+            ALLOYDB_PSA_WRITE_ENDPOINT:${{ vars.GOOGLE_CLOUD_PROJECT }}/ALLOYDB_PSA_WRITE_ENDPOINT
 
       - name: Run tests
         env:
@@ -106,6 +107,7 @@ jobs:
           IMPERSONATED_USER: '${{ steps.secrets.outputs.IMPERSONATED_USER }}'
           ALLOYDB_IAM_USER: '${{ steps.secrets.outputs.ALLOYDB_IAM_USER }}'
           ALLOYDB_PSC_INSTANCE_URI: '${{ steps.secrets.outputs.ALLOYDB_PSC_INSTANCE_URI }}'
+          ALLOYDB_PSA_WRITE_ENDPOINT: '${{ steps.secrets.outputs.ALLOYDB_PSA_WRITE_ENDPOINT }}'
         # specifying bash shell ensures a failure in a piped process isn't lost by using `set -eo pipefail`
         shell: bash
         run: |
