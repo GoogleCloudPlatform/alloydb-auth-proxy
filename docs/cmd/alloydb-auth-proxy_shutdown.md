@@ -50,3 +50,4 @@ alloydb-auth-proxy shutdown [flags]
 ### SEE ALSO
 
 * [alloydb-auth-proxy](alloydb-auth-proxy.md)	 - alloydb-auth-proxy provides a secure way to authorize connections to AlloyDB.
+
