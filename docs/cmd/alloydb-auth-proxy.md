@@ -305,74 +305,74 @@ alloydb-auth-proxy instance_uri... [flags]
 ### Options
 
 ```
-  -a, --address string                       (*) Address on which to bind AlloyDB instance listeners. (default "127.0.0.1")
-      --admin-port string                    Port for localhost-only admin server (default "9091")
-      --alloydbadmin-api-endpoint string     When set, the proxy uses this host as the base API path.
-  -i, --auto-iam-authn                       (*) Enables Automatic IAM Authentication for all instances
-      --config-file string                   Path to a TOML file containing configuration options.
-  -c, --credentials-file string              Path to a service account key to use for authentication.
-      --debug                                Enable pprof on the localhost admin server
-      --debug-logs                           Enable debug logging
-      --disable-built-in-telemetry           Disables the internal metric reporter
-      --disable-metrics                      Disable Cloud Monitoring integration (used with telemetry-project)
-      --disable-traces                       Disable Cloud Trace integration (used with telemetry-project)
-      --exit-zero-sigterm                    Exit with 0 exit code when Sigterm received (default is 143)
-      --fuse string                          Mount a directory at the path using FUSE to access AlloyDB instances.
-      --fuse-tmp-dir string                  Temp dir for Unix sockets created with FUSE (default "/tmp/alloydb-tmp")
-  -g, --gcloud-auth                          Use gcloud's user credentials as a source of IAM credentials.
-                                             NOTE: this flag is a legacy feature and generally should not be used.
-                                             Instead prefer Application Default Credentials
-                                             (enabled with: gcloud auth application-default login) which
-                                             the Proxy will then pick-up automatically.
-      --health-check                         Enables HTTP endpoints /startup, /liveness, and /readiness
-                                             that report on the proxy's health. Endpoints are available on localhost
-                                             only. Uses the port specified by the http-port flag.
-  -h, --help                                 Display help information for alloydb-auth-proxy
-      --http-address string                  Address for Prometheus and health check server (default "localhost")
-      --http-port string                     Port for the Prometheus server to use (default "9090")
-      --impersonate-service-account string   Comma separated list of service accounts to impersonate. Last value
-                                             +is the target account.
-  -j, --json-credentials string              Use service account key JSON as a source of IAM credentials.
-      --lazy-refresh                         Configure a lazy refresh where connection info is retrieved only if
-                                             the cached copy has expired. Use this setting in environments where the
-                                             CPU may be throttled and a background refresh cannot run reliably
-                                             (e.g., Cloud Run)
-      --login-token string                   Bearer token used as a separate credential for IAM database
-                                             authentication login. Only used when --auto-iam-authn is enabled.
-      --max-connections uint                 Limits the number of connections by refusing any additional connections.
-                                             When this flag is not set, there is no limit.
-      --max-sigterm-delay duration           Maximum amount of time to wait after for any open connections
-                                             to close after receiving a TERM signal. The proxy will shut
-                                             down when the number of open connections reaches 0 or when
-                                             the maximum time has passed. Defaults to 0s.
-      --min-sigterm-delay duration           The number of seconds to accept new connections after receiving a TERM
-                                             signal. Defaults to 0s.
-  -p, --port int                             (*) Initial port to use for listeners. Subsequent listeners increment from this value. (default 5432)
-      --prometheus                           Enable Prometheus HTTP endpoint /metrics
-      --prometheus-namespace string          Use the provided Prometheus namespace for metrics
-      --psc                                  (*) Connect to the PSC endpoint for all instances. The Proxy attempts the
-                                             instance's manual PSC DNS name first and automatically falls back to the
-                                             instance's automatic PSC DNS name if the manual one is unreachable.
-      --public-ip                            (*) Connect to the public ip address for all instances
-      --quiet                                Log error messages only
-      --quitquitquit                         Enable quitquitquit endpoint on the localhost admin server
-      --run-connection-test                  Runs a connection test
-                                             against all specified instances. If an instance is unreachable, the Proxy exits with a failure
-                                             status code.
-      --static-connection-info string        JSON file with static connection info. See --help for format.
-  -l, --structured-logs                      Enable structured logs using the LogEntry format
-      --telemetry-prefix string              Prefix to use for Cloud Monitoring metrics.
-      --telemetry-project string             Enable Cloud Monitoring and Cloud Trace integration with the provided project ID.
-      --telemetry-sample-rate int            Configure the denominator of the probabilistic sample rate of traces sent to Cloud Trace
-                                             (e.g., 10,000 traces 1/10,000 calls). (default 10000)
-  -t, --token string                         Bearer token used for authorization.
-      --universe-domain string               Universe Domain for non-GDU environments. (default: googleapis.com)
-  -u, --unix-socket string                   (*) Enables Unix sockets for all listeners using the provided directory.
-      --unix-socket-mode string              (*) Sets the file permissions for Unix sockets and directories (in octal, e.g. 0700 or 0777). (default "0700")
-      --user-agent string                    Space separated list of additional user agents, e.g. custom-agent/0.0.1
-  -v, --version                              Print the alloydb-auth-proxy version
-      --with-backend-check                   Enables a backend connection check in the startup probe. Useful for
-                                             Cloud Run's Direct VPC egress.
+  -a, --address string                            (*) Address on which to bind AlloyDB instance listeners. (default "127.0.0.1")
+      --admin-port string                         Port for localhost-only admin server (default "9091")
+      --alloydbadmin-api-endpoint string          When set, the proxy uses this host as the base API path.
+  -i, --auto-iam-authn[=true|false]               (*) Enables Automatic IAM Authentication for all instances
+      --config-file string                        Path to a TOML file containing configuration options.
+  -c, --credentials-file string                   Path to a service account key to use for authentication.
+      --debug[=true|false]                        Enable pprof on the localhost admin server
+      --debug-logs[=true|false]                   Enable debug logging
+      --disable-built-in-telemetry[=true|false]   Disables the internal metric reporter
+      --disable-metrics[=true|false]              Disable Cloud Monitoring integration (used with telemetry-project)
+      --disable-traces[=true|false]               Disable Cloud Trace integration (used with telemetry-project)
+      --exit-zero-sigterm[=true|false]            Exit with 0 exit code when Sigterm received (default is 143)
+      --fuse string                               Mount a directory at the path using FUSE to access AlloyDB instances.
+      --fuse-tmp-dir string                       Temp dir for Unix sockets created with FUSE (default "/tmp/alloydb-tmp")
+  -g, --gcloud-auth[=true|false]                  Use gcloud's user credentials as a source of IAM credentials.
+                                                  NOTE: this flag is a legacy feature and generally should not be used.
+                                                  Instead prefer Application Default Credentials
+                                                  (enabled with: gcloud auth application-default login) which
+                                                  the Proxy will then pick-up automatically.
+      --health-check[=true|false]                 Enables HTTP endpoints /startup, /liveness, and /readiness
+                                                  that report on the proxy's health. Endpoints are available on localhost
+                                                  only. Uses the port specified by the http-port flag.
+  -h, --help[=true|false]                         Display help information for alloydb-auth-proxy
+      --http-address string                       Address for Prometheus and health check server (default "localhost")
+      --http-port string                          Port for the Prometheus server to use (default "9090")
+      --impersonate-service-account string        Comma separated list of service accounts to impersonate. Last value
+                                                  +is the target account.
+  -j, --json-credentials string                   Use service account key JSON as a source of IAM credentials.
+      --lazy-refresh[=true|false]                 Configure a lazy refresh where connection info is retrieved only if
+                                                  the cached copy has expired. Use this setting in environments where the
+                                                  CPU may be throttled and a background refresh cannot run reliably
+                                                  (e.g., Cloud Run)
+      --login-token string                        Bearer token used as a separate credential for IAM database
+                                                  authentication login. Only used when --auto-iam-authn is enabled.
+      --max-connections uint                      Limits the number of connections by refusing any additional connections.
+                                                  When this flag is not set, there is no limit.
+      --max-sigterm-delay duration                Maximum amount of time to wait after for any open connections
+                                                  to close after receiving a TERM signal. The proxy will shut
+                                                  down when the number of open connections reaches 0 or when
+                                                  the maximum time has passed. Defaults to 0s.
+      --min-sigterm-delay duration                The number of seconds to accept new connections after receiving a TERM
+                                                  signal. Defaults to 0s.
+  -p, --port int                                  (*) Initial port to use for listeners. Subsequent listeners increment from this value. (default 5432)
+      --prometheus[=true|false]                   Enable Prometheus HTTP endpoint /metrics
+      --prometheus-namespace string               Use the provided Prometheus namespace for metrics
+      --psc[=true|false]                          (*) Connect to the PSC endpoint for all instances. The Proxy attempts the
+                                                  instance's manual PSC DNS name first and automatically falls back to the
+                                                  instance's automatic PSC DNS name if the manual one is unreachable.
+      --public-ip[=true|false]                    (*) Connect to the public ip address for all instances
+      --quiet[=true|false]                        Log error messages only
+      --quitquitquit[=true|false]                 Enable quitquitquit endpoint on the localhost admin server
+      --run-connection-test[=true|false]          Runs a connection test
+                                                  against all specified instances. If an instance is unreachable, the Proxy exits with a failure
+                                                  status code.
+      --static-connection-info string             JSON file with static connection info. See --help for format.
+  -l, --structured-logs[=true|false]              Enable structured logs using the LogEntry format
+      --telemetry-prefix string                   Prefix to use for Cloud Monitoring metrics.
+      --telemetry-project string                  Enable Cloud Monitoring and Cloud Trace integration with the provided project ID.
+      --telemetry-sample-rate int                 Configure the denominator of the probabilistic sample rate of traces sent to Cloud Trace
+                                                  (e.g., 10,000 traces 1/10,000 calls). (default 10000)
+  -t, --token string                              Bearer token used for authorization.
+      --universe-domain string                    Universe Domain for non-GDU environments. (default: googleapis.com)
+  -u, --unix-socket string                        (*) Enables Unix sockets for all listeners using the provided directory.
+      --unix-socket-mode string                   (*) Sets the file permissions for Unix sockets and directories (in octal, e.g. 0700 or 0777). (default "0700")
+      --user-agent string                         Space separated list of additional user agents, e.g. custom-agent/0.0.1
+  -v, --version[=true|false]                      Print the alloydb-auth-proxy version
+      --with-backend-check[=true|false]           Enables a backend connection check in the startup probe. Useful for
+                                                  Cloud Run's Direct VPC egress.
 ```
 
 ### SEE ALSO
