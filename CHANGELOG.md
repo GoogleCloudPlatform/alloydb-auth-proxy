@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.18.0](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.17.2...v1.18.0) (2026-11-17)
+
+
+### Features
+
+* add --unix-socket-mode flag and default permissions to 0700 ([#1016](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/1016)) ([161012d](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/161012d8efbff0f23e084bb6996f89f6e5ead9dd))
+* support connecting via DNS write endpoints ([#1020](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/issues/1020)) ([dfbaa53](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/commit/dfbaa53076f17266dd22abda9a60ab5ee28f794e))
+
 ## [1.17.2](https://github.com/GoogleCloudPlatform/alloydb-auth-proxy/compare/v1.17.1...v1.17.2) (2026-10-22)
 
 
