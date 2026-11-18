@@ -182,3 +182,104 @@ func TestToFullURI(t *testing.T) {
 		})
 	}
 }
+
+func TestParseInstanceURI(t *testing.T) {
+	tcs := []struct {
+		desc        string
+		in          string
+		wantProject string
+		wantRegion  string
+		wantCluster string
+		wantInst    string
+		wantErr     bool
+	}{
+		{
+			desc:        "standard instance URI",
+			in:          "projects/my-project/locations/us-central1/clusters/my-cluster/instances/my-instance",
+			wantProject: "my-project",
+			wantRegion:  "us-central1",
+			wantCluster: "my-cluster",
+			wantInst:    "my-instance",
+		},
+		{
+			desc:        "domain-scoped project",
+			in:          "projects/google.com:my-project/locations/us-central1/clusters/my-cluster/instances/my-instance",
+			wantProject: "google.com:my-project",
+			wantRegion:  "us-central1",
+			wantCluster: "my-cluster",
+			wantInst:    "my-instance",
+		},
+		{
+			desc:        "uppercase and digits",
+			in:          "projects/My-Project-1/locations/europe-west1/clusters/Cluster_1/instances/Inst-2",
+			wantProject: "My-Project-1",
+			wantRegion:  "europe-west1",
+			wantCluster: "Cluster_1",
+			wantInst:    "Inst-2",
+		},
+		{
+			desc:    "slash in project",
+			in:      "projects/org/my-project/locations/us-central1/clusters/my-cluster/instances/my-instance",
+			wantErr: true,
+		},
+		{
+			desc:    "slash in domain-scoped project",
+			in:      "projects/google.com:org/my-project/locations/us-central1/clusters/my-cluster/instances/my-instance",
+			wantErr: true,
+		},
+		{
+			desc:    "multiple colons in project",
+			in:      "projects/a:b:c/locations/us-central1/clusters/my-cluster/instances/my-instance",
+			wantErr: true,
+		},
+		{
+			desc:    "missing projects prefix",
+			in:      "my-project/locations/us-central1/clusters/my-cluster/instances/my-instance",
+			wantErr: true,
+		},
+		{
+			desc:    "extra leading segment",
+			in:      "extra/projects/my-project/locations/us-central1/clusters/my-cluster/instances/my-instance",
+			wantErr: true,
+		},
+		{
+			desc:    "trailing slash",
+			in:      "projects/my-project/locations/us-central1/clusters/my-cluster/instances/my-instance/",
+			wantErr: true,
+		},
+		{
+			desc:    "extra trailing segment",
+			in:      "projects/my-project/locations/us-central1/clusters/my-cluster/instances/my-instance/extra",
+			wantErr: true,
+		},
+		{
+			desc:    "empty project",
+			in:      "projects//locations/us-central1/clusters/my-cluster/instances/my-instance",
+			wantErr: true,
+		},
+		{
+			desc:    "wrong resource segment",
+			in:      "projects/my-project/regions/us-central1/clusters/my-cluster/instances/my-instance",
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range tcs {
+		t.Run(tc.desc, func(t *testing.T) {
+			proj, reg, clus, inst, err := ParseInstanceURI(tc.in)
+			if tc.wantErr {
+				if err == nil {
+					t.Fatalf("ParseInstanceURI(%q) expected error, got (%q, %q, %q, %q)", tc.in, proj, reg, clus, inst)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("ParseInstanceURI(%q) unexpected error: %v", tc.in, err)
+			}
+			if proj != tc.wantProject || reg != tc.wantRegion || clus != tc.wantCluster || inst != tc.wantInst {
+				t.Fatalf("ParseInstanceURI(%q) = (%q, %q, %q, %q), want (%q, %q, %q, %q)",
+					tc.in, proj, reg, clus, inst, tc.wantProject, tc.wantRegion, tc.wantCluster, tc.wantInst)
+			}
+		})
+	}
+}
