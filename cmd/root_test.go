@@ -23,6 +23,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"sync"
 	"testing"
@@ -32,6 +33,7 @@ import (
 	"github.com/GoogleCloudPlatform/alloydb-auth-proxy/internal/proxy"
 	"github.com/google/go-cmp/cmp"
 	"github.com/spf13/cobra"
+	"google.golang.org/api/option"
 )
 
 const (
@@ -1469,5 +1471,15 @@ func TestUniverseDomainMutualExclusion(t *testing.T) {
 	want := "cannot specify --alloydbadmin-api-endpoint and --universe-domain flags at the same time"
 	if !strings.Contains(err.Error(), want) {
 		t.Errorf("got %q, want error containing %q", err, want)
+	}
+}
+
+func TestTelemetryClientOptions(t *testing.T) {
+	if got := telemetryClientOptions(""); got != nil {
+		t.Errorf("telemetryClientOptions(\"\") = %v, want nil", got)
+	}
+	want := []option.ClientOption{option.WithUniverseDomain("my-universe.cloud")}
+	if got := telemetryClientOptions("my-universe.cloud"); !reflect.DeepEqual(got, want) {
+		t.Errorf("telemetryClientOptions(\"my-universe.cloud\") = %v, want %v", got, want)
 	}
 }
