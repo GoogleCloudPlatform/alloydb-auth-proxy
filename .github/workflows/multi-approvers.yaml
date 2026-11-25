@@ -41,7 +41,7 @@ jobs:
     runs-on: 'ubuntu-latest'
     steps:
       - name: 'Multi-approvers'
-        uses: 'abcxyz/actions/.github/actions/multi-approvers@4754ac050d18ff96ab5f5e8f44a7ed3d3f3766f3' # main
+        uses: 'abcxyz/actions/.github/actions/multi-approvers@ec97e7c58ddaf0f19e3e7ee29f972f68b3b9aa9e' # main
         with:
           team: 'googlers'
           token: '${{ secrets.MULTI_APPROVERS_TOKEN }}'
