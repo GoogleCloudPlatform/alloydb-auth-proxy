@@ -45,6 +45,7 @@ import (
 	"github.com/spf13/viper"
 	"go.opencensus.io/trace"
 	"go.opentelemetry.io/otel"
+	"google.golang.org/api/option"
 )
 
 var (
@@ -1142,8 +1143,10 @@ func runSignalWrapper(cmd *Command) (err error) {
 	enableTraces := !cmd.conf.DisableTraces
 	if cmd.conf.TelemetryProject != "" && (enableMetrics || enableTraces) {
 		sd, err := stackdriver.NewExporter(stackdriver.Options{
-			ProjectID:    cmd.conf.TelemetryProject,
-			MetricPrefix: cmd.conf.TelemetryPrefix,
+			ProjectID:               cmd.conf.TelemetryProject,
+			MetricPrefix:            cmd.conf.TelemetryPrefix,
+			MonitoringClientOptions: telemetryClientOptions(cmd.conf.UniverseDomain),
+			TraceClientOptions:      telemetryClientOptions(cmd.conf.UniverseDomain),
 		})
 		if err != nil {
 			return err
@@ -1362,4 +1365,15 @@ func startHTTPServer(ctx context.Context, l alloydb.Logger, addr string, mux *ht
 	if err := server.Shutdown(ctx2); err != nil {
 		l.Errorf("failed to shutdown HTTP server: %v\n", err)
 	}
+}
+
+// telemetryClientOptions returns the client options for the Cloud Monitoring
+// and Cloud Trace exporters, so that they send telemetry to the configured
+// universe domain. When --universe-domain is not set, the clients fall back to
+// the GOOGLE_CLOUD_UNIVERSE_DOMAIN environment variable, then googleapis.com.
+func telemetryClientOptions(universeDomain string) []option.ClientOption {
+	if universeDomain == "" {
+		return nil
+	}
+	return []option.ClientOption{option.WithUniverseDomain(universeDomain)}
 }
