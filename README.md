@@ -297,9 +297,13 @@ Each image is tagged with the proxy version. Available tag variants:
 Tag                | Base image
 ------------------ | -------------------------------------------
 `VERSION`          | [distroless][] (default, non-root, minimal)
-`VERSION-alpine`   | Alpine
+`VERSION-alpine`   | Alpine (not recommended for production)
 
-Use Alpine or Debian variants when you need a shell or debugging tools.
+We recommend the default distroless image. The Alpine image is provided for
+convenience when you need a shell or debugging tools. Because the Alpine base
+image receives a steady stream of security findings, we don't recommend it for
+production use. To reflect this, every Alpine image, including the latest, is
+also tagged `deprecated-public-image-<digest>`.
 
 <!-- {x-release-please-start-version} -->
 ```sh
